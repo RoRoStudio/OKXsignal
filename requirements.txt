@@ -1,0 +1,17 @@
+# Backend dependencies
+fastapi
+uvicorn
+pandas
+numpy
+aiohttp
+asyncio
+psycopg2
+python-dotenv
+
+# Streamlit dashboard
+streamlit
+plotly
+requests
+
+# Supabase (for Python integration)
+supabase
