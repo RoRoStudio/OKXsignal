@@ -1,5 +1,4 @@
 // ✅ Load Supabase Edge Runtime Definitions
-//import "https://esm.sh/@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // ✅ Load environment variables from Deno
@@ -23,6 +22,8 @@ Deno.serve(async (req) => {
         const instruments = await fetchInstruments();
         if (!instruments.length) throw new Error("No active USDT/USDC pairs found!");
 
+        console.log(`✅ ${instruments.length} trading pairs fetched.`);
+        
         let totalInserted = 0;
         let failedPairs: string[] = [];
 
@@ -30,6 +31,7 @@ Deno.serve(async (req) => {
             try {
                 const insertedCount = await syncPairData(pair);
                 totalInserted += insertedCount;
+                console.log(`✅ Inserted ${insertedCount} candles for ${pair}`);
             } catch (error) {
                 console.error(`❌ Failed for ${pair}:`, error);
                 failedPairs.push(pair);
@@ -56,76 +58,142 @@ Deno.serve(async (req) => {
 // ✅ Fetch all active USDT & USDC trading pairs
 async function fetchInstruments(): Promise<string[]> {
     console.log("📊 Fetching available USDT & USDC spot trading pairs...");
-    const response = await fetch(OKX_INSTRUMENTS_URL);
-    const data = await response.json() as { data?: any[] };
+    
+    try {
+        const response = await fetch(OKX_INSTRUMENTS_URL);
+        const data = await response.json() as { data?: any[] };
 
-    return data.data?.filter(x => (x.instId.endsWith("-USDT") || x.instId.endsWith("-USDC")) && x.state === "live").map(x => x.instId) || [];
+        if (!data.data) {
+            console.warn("⚠️ No trading pairs found in API response.");
+            return [];
+        }
+
+        const pairs = data.data
+            .filter(x => (x.instId.endsWith("-USDT") || x.instId.endsWith("-USDC")) && x.state === "live")
+            .map(x => x.instId);
+
+        console.log(`✅ Found ${pairs.length} trading pairs.`);
+        return pairs;
+    } catch (error) {
+        console.error("❌ Error fetching instruments:", error);
+        return [];
+    }
 }
 
 // ✅ Get last stored timestamp to fetch only missing candles
 async function getLastStoredTimestamp(pair: string): Promise<number> {
-    const { data, error } = await supabase
-        .from("candles_1D")
-        .select("timestamp")
-        .eq("pair", pair)
-        .order("timestamp", { ascending: false })
-        .limit(1);
+    try {
+        const { data, error } = await supabase
+            .from("candles_1D")
+            .select("timestamp")
+            .eq("pair", pair)
+            .order("timestamp", { ascending: false })
+            .limit(1);
 
-    if (error) {
-        console.error(`⚠️ Error fetching last timestamp for ${pair}:`, error);
+        if (error) {
+            console.warn(`⚠️ Error fetching last timestamp for ${pair}:`, error);
+            return 0;
+        }
+
+        return data.length ? new Date(data[0].timestamp).getTime() : 0;
+    } catch (error) {
+        console.warn(`⚠️ Unexpected error fetching timestamp for ${pair}:`, error);
         return 0;
     }
-    return data.length ? data[0].timestamp : 0;
 }
 
-// ✅ Fetch missing candles from OKX with retries
+// ✅ Fetch missing candles from OKX with retries + logging + timestamp correction
 async function fetchCandles(pair: string, lastTimestamp: number): Promise<any[]> {
-    console.log(`📡 Fetching candles for ${pair} (since ${new Date(lastTimestamp).toISOString()})`);
+  console.log(`📡 Fetching candles for ${pair} (since ${new Date(lastTimestamp).toISOString()})`);
 
-    let candles: any[] = [];
-    let startTime = lastTimestamp || 1483228800000;
-    let attempts = 0;
+  let candles: any[] = [];
+  let startTime = lastTimestamp || Date.now(); // Start from now if no data
+  let attempts = 0;
 
-    while (startTime < Date.now() && attempts < RETRY_LIMIT) {
-        try {
-            const url = `${OKX_API_URL}?instId=${pair}&bar=${TIMEFRAME}&limit=${MAX_CANDLES}&before=${startTime}`;
-            const response = await fetch(url);
-            const data = await response.json() as { data?: any[] };
+  while (startTime > 1483228800000 && attempts < RETRY_LIMIT) { // Stop if older than 2017
+      try {
+          // ✅ Convert `before` timestamp to correct format
+          const beforeTimestamp = Math.floor(startTime / 1000) * 1000;
 
-            if (!data.data || data.data.length === 0) return candles;
+          const url = `${OKX_API_URL}?instId=${pair}&bar=${TIMEFRAME}&limit=${MAX_CANDLES}&before=${beforeTimestamp}`;
+          console.log(`🔄 Attempt ${attempts + 1}/${RETRY_LIMIT} - Fetching URL: ${url}`);
 
-            for (const candle of data.data) {
-              const timestamp = new Date(parseInt(candle[0])).toISOString(); // Convert UNIX timestamp to ISO format
-                if (timestamp > lastTimestamp) {
-                    candles.push({
-                        timestamp,
-                        pair,
-                        open: parseFloat(candle[1]),
-                        high: parseFloat(candle[2]),
-                        low: parseFloat(candle[3]),
-                        close: parseFloat(candle[4]),
-                        volume: parseFloat(candle[5]),
-                    });
-                }
-            }
+          // ✅ Apply a timeout to avoid infinite wait
+          const response = await Promise.race([
+              fetch(url),
+              new Promise((_, reject) => setTimeout(() => reject(new Error("⏳ API Timeout!")), 5000)) // 5 sec timeout
+          ]) as Response;
 
-            startTime = candles.length ? candles[candles.length - 1].timestamp - 86400000 : Date.now();
+          if (!response.ok) {
+              console.warn(`⚠️ API responded with status: ${response.status}`);
+              return candles;
+          }
 
-        } catch (error) {
-            attempts++;
-            console.warn(`⚠️ Retry ${attempts}/${RETRY_LIMIT} for ${pair}...`);
-        }
-    }
+          const data = await response.json() as { data?: any[] };
+          console.log(`📩 Raw API response for ${pair}:`, JSON.stringify(data).slice(0, 500)); // Log first 500 chars
 
-    return candles;
+          if (!data.data || data.data.length === 0) {
+              console.warn(`⚠️ No candles found for ${pair}`);
+              return candles;
+          }
+
+          let oldestTimestamp = startTime;
+
+          for (const candle of data.data) {
+              if (candle.length < 9) {
+                  console.warn(`⚠️ Skipping malformed candle for ${pair}:`, JSON.stringify(candle));
+                  continue;
+              }
+
+              const timestamp = parseInt(candle[0]);
+              if (timestamp > lastTimestamp) {
+                  candles.push({
+                      timestamp: new Date(timestamp).toISOString(),
+                      pair,
+                      open: parseFloat(candle[1]),
+                      high: parseFloat(candle[2]),
+                      low: parseFloat(candle[3]),
+                      close: parseFloat(candle[4]),
+                      volume: parseFloat(candle[5]),
+                      quote_volume: parseFloat(candle[6]),
+                      taker_buy_base: parseFloat(candle[7]),
+                      taker_buy_quote: parseFloat(candle[8]),
+                  });
+
+                  oldestTimestamp = Math.min(oldestTimestamp, timestamp);
+              }
+          }
+
+          console.log(`✅ ${candles.length} candles fetched for ${pair}`);
+
+          // ✅ Update `startTime` to fetch older candles in next request
+          startTime = oldestTimestamp - 1;
+
+          // ✅ Stop fetching if there are no more older candles
+          if (candles.length < MAX_CANDLES) break;
+      } catch (error) {
+          attempts++;
+          console.warn(`⚠️ Retry ${attempts}/${RETRY_LIMIT} for ${pair}:`, error);
+      }
+  }
+
+  return candles;
 }
+
 
 // ✅ Store candles in Supabase
 async function storeCandles(pair: string, candles: any[]) {
-    const { error } = await supabase.from("candles_1D").insert(candles);
+    try {
+        const { error } = await supabase.from("candles_1D").insert(candles);
 
-    if (error) console.error(`❌ Failed to insert candles for ${pair}:`, error);
-    else console.log(`✅ Inserted ${candles.length} candles for ${pair}`);
+        if (error) {
+            console.error(`❌ Failed to insert candles for ${pair}:`, error);
+        } else {
+            console.log(`✅ Inserted ${candles.length} candles for ${pair}`);
+        }
+    } catch (error) {
+        console.error(`❌ Unexpected error inserting candles for ${pair}:`, error);
+    }
 }
 
 // ✅ Sync data for a specific pair
@@ -142,22 +210,26 @@ async function syncPairData(pair: string): Promise<number> {
 
 // ✅ Send daily report email
 async function sendEmailReport(newRecords: number, failedPairs: string[], errorMessage: string = "") {
-    await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-        body: JSON.stringify({
-            to: EMAIL_RECIPIENT,
-            subject: "📊 Daily Market Data Sync Report",
-            text: `
-                ⏳ Sync Time: ${new Date().toISOString()}
-                ✅ Inserted Candles: ${newRecords}
-                ❌ Failed Pairs: ${failedPairs.length}
-                ${failedPairs.length ? `🔴 Failed Pairs:\n${failedPairs.join(", ")}` : ""}
-                ${errorMessage ? `⚠️ Errors: ${errorMessage}` : ""}
-            `,
-        }),
-    });
+    try {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+                to: EMAIL_RECIPIENT,
+                subject: "📊 Daily Market Data Sync Report",
+                text: `
+                    ⏳ Sync Time: ${new Date().toISOString()}
+                    ✅ Inserted Candles: ${newRecords}
+                    ❌ Failed Pairs: ${failedPairs.length}
+                    ${failedPairs.length ? `🔴 Failed Pairs:\n${failedPairs.join(", ")}` : ""}
+                    ${errorMessage ? `⚠️ Errors: ${errorMessage}` : ""}
+                `,
+            }),
+        });
+    } catch (error) {
+        console.error("❌ Error sending email report:", error);
+    }
 }
