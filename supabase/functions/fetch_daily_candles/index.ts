@@ -10,6 +10,7 @@ const OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instT
 const MAX_CANDLES = 100;
 const TIMEFRAME = "1D";
 const RETRY_LIMIT = 3;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000; // We'll decrement by 1 day each attempt
 
 // ✅ Initialize Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -106,80 +107,70 @@ async function getLastStoredTimestamp(pair: string): Promise<number> {
 async function fetchCandles(pair: string, lastTimestamp: number): Promise<any[]> {
   console.log(`📡 Fetching candles for ${pair} (since ${new Date(lastTimestamp).toISOString()})`);
 
-  let candles: any[] = [];
-  let startTime = lastTimestamp || Date.now(); // Start from now if no data
-  let attempts = 0;
+  const allCandles: any[] = [];
+  let startTime = (lastTimestamp > 0) ? lastTimestamp : Date.now();
 
-  while (startTime > 1483228800000 && attempts < RETRY_LIMIT) { // Stop if older than 2017
-      try {
-          // ✅ Convert `before` timestamp to correct format
-          const beforeTimestamp = Math.floor(startTime / 1000) * 1000;
+  while (true) {
+    const url = `${OKX_API_URL}?instId=${pair}&bar=${TIMEFRAME}&limit=${MAX_CANDLES}&before=${Math.floor(startTime / 1000) * 1000}`;
+    console.log(`🔄 Fetching: ${url}`);
 
-          const url = `${OKX_API_URL}?instId=${pair}&bar=${TIMEFRAME}&limit=${MAX_CANDLES}&before=${beforeTimestamp}`;
-          console.log(`🔄 Attempt ${attempts + 1}/${RETRY_LIMIT} - Fetching URL: ${url}`);
+    let data;
+    try {
+      const response = await Promise.race([
+        fetch(url),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("⏳ API Timeout!")), 5000))
+      ]) as Response;
 
-          // ✅ Apply a timeout to avoid infinite wait
-          const response = await Promise.race([
-              fetch(url),
-              new Promise((_, reject) => setTimeout(() => reject(new Error("⏳ API Timeout!")), 5000)) // 5 sec timeout
-          ]) as Response;
-
-          if (!response.ok) {
-              console.warn(`⚠️ API responded with status: ${response.status}`);
-              return candles;
-          }
-
-          const data = await response.json() as { data?: any[] };
-          console.log(`📩 Raw API response for ${pair}:`, JSON.stringify(data).slice(0, 500)); // Log first 500 chars
-
-          if (!data.data || data.data.length === 0) {
-              console.warn(`⚠️ No candles found for ${pair}`);
-              return candles;
-          }
-
-          let oldestTimestamp = startTime;
-
-          for (const candle of data.data) {
-              if (candle.length < 9) {
-                  console.warn(`⚠️ Skipping malformed candle for ${pair}:`, JSON.stringify(candle));
-                  continue;
-              }
-
-              const timestamp = parseInt(candle[0]);
-              if (timestamp > lastTimestamp) {
-                  candles.push({
-                      timestamp: new Date(timestamp).toISOString(),
-                      pair,
-                      open: parseFloat(candle[1]),
-                      high: parseFloat(candle[2]),
-                      low: parseFloat(candle[3]),
-                      close: parseFloat(candle[4]),
-                      volume: parseFloat(candle[5]),
-                      quote_volume: parseFloat(candle[6]),
-                      taker_buy_base: parseFloat(candle[7]),
-                      taker_buy_quote: parseFloat(candle[8]),
-                  });
-
-                  oldestTimestamp = Math.min(oldestTimestamp, timestamp);
-              }
-          }
-
-          console.log(`✅ ${candles.length} candles fetched for ${pair}`);
-
-          // ✅ Update `startTime` to fetch older candles in next request
-          startTime = oldestTimestamp - 1;
-
-          // ✅ Stop fetching if there are no more older candles
-          if (candles.length < MAX_CANDLES) break;
-      } catch (error) {
-          attempts++;
-          console.warn(`⚠️ Retry ${attempts}/${RETRY_LIMIT} for ${pair}:`, error);
+      if (!response.ok) {
+        console.warn(`⚠️ API responded with status: ${response.status}`);
+        break; // or `return allCandles;`
       }
+      data = await response.json();
+    } catch (error) {
+      console.warn(`⚠️ Error fetching data for ${pair}:`, error);
+      break; // or retry logic, up to you
+    }
+
+    if (!data?.data || data.data.length === 0) {
+      console.warn(`⚠️ No more candles returned for ${pair}.`);
+      break;
+    }
+
+    let oldestTimestamp = startTime;
+    for (const candle of data.data) {
+      if (candle.length < 9) {
+        continue; // skip malformed
+      }
+      const ts = parseInt(candle[0]);
+      // Only push if candle is strictly newer than the last stored
+      if (ts > lastTimestamp) {
+        allCandles.push({
+          timestamp: new Date(ts).toISOString(),
+          pair,
+          open: parseFloat(candle[1]),
+          high: parseFloat(candle[2]),
+          low: parseFloat(candle[3]),
+          close: parseFloat(candle[4]),
+          volume: parseFloat(candle[5]),
+          quote_volume: parseFloat(candle[6]),
+          taker_buy_base: parseFloat(candle[7]),
+          taker_buy_quote: parseFloat(candle[8]),
+        });
+        oldestTimestamp = Math.min(oldestTimestamp, ts);
+      }
+    }
+
+    // Decrement so next request goes older
+    startTime = oldestTimestamp - 1;
+
+    // If we got fewer than MAX_CANDLES => no more older data
+    if (data.data.length < MAX_CANDLES) {
+      break;
+    }
   }
 
-  return candles;
+  return allCandles;
 }
-
 
 // ✅ Store candles in Supabase
 async function storeCandles(pair: string, candles: any[]) {
