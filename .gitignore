@@ -1,6 +1,7 @@
 # 🔹 Ignore Credentials
 backend/config/credentials.env
 backend/config/settings.py
+supabase
 
 # 🔹 Ignore Python Cache
 __pycache__/

@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // ✅ Load environment variables from Deno
 const SUPABASE_URL = Deno.env.get("SB_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SB_SERVICE_ROLE_KEY")!;
-const EMAIL_RECIPlIENT = Deno.env.get("EMAIL_RECIPIENT")!;
+const EMAIL_RECIPIENT = Deno.env.get("EMAIL_RECIPIENT")!;
 const OKX_API_URL = "https://www.okx.com/api/v5/market/candles";
 const OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT";
 const MAX_CANDLES = 100;
@@ -95,7 +95,7 @@ async function fetchCandles(pair: string, lastTimestamp: number): Promise<any[]>
             if (!data.data || data.data.length === 0) return candles;
 
             for (const candle of data.data) {
-                const timestamp = parseInt(candle[0]);
+              const timestamp = new Date(parseInt(candle[0])).toISOString(); // Convert UNIX timestamp to ISO format
                 if (timestamp > lastTimestamp) {
                     candles.push({
                         timestamp,
