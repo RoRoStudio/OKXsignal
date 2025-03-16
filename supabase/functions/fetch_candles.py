@@ -147,9 +147,7 @@ def insert_candles(pair, candles):
 
     print(f"📌 Attempting to insert {len(rows)} rows for {pair}...")
 
-    response = supabase.table("candles_1D") \
-        .upsert(rows, on_conflict=["pair", "timestamp"]) \
-        .execute()
+    response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp").execute()
 
     if response.data:
         print(f"✅ Successfully inserted {len(response.data)} rows for {pair}")
