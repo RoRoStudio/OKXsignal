@@ -145,18 +145,18 @@ def insert_candles(pair, candles):
         print(f"❌ No data to insert for {pair}, skipping...")
         return 0
 
-    print(f"📌 Attempting to insert {len(rows)} rows for {pair}...")  # 🔥 Log actual insert attempts
+    print(f"📌 Attempting to insert {len(rows)} rows for {pair}...")
 
-    response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp").execute()
+    response = supabase.table("candles_1D") \
+        .upsert(rows, on_conflict=["pair", "timestamp"]) \
+        .execute()
 
-    # Correctly check for errors
-    if response.error:
-        print(f"❌ Insert failed for {pair}: {response.error}")  # 🔥 Log failed insert attempts
-        return 0
+    if response.data:
+        print(f"✅ Successfully inserted {len(response.data)} rows for {pair}")
+        return len(response.data)
     else:
-        print(f"✅ Successfully inserted {len(rows)} rows for {pair}")
-
-    return len(rows)
+        print(f"❌ Insert failed for {pair}: {response}")
+        return 0
 
 
 def send_email(subject, body):
