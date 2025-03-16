@@ -85,8 +85,8 @@ def enforce_rate_limit(endpoint, request_count, start_time):
 
 
 def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
-    """Fetch daily candles from OKX using the appropriate endpoint."""
-    params = {"instId": pair, "bar": "1D", "limit": 100}  # Max limit for history-candles
+    """Fetch daily candles from OKX, filtering out existing ones."""
+    params = {"instId": pair, "bar": "1D", "limit": 100}
 
     if before_timestamp:
         params["before"] = str(int(before_timestamp.timestamp() * 1000))
@@ -94,11 +94,26 @@ def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
     response = requests.get(endpoint, params=params)
-    return response.json().get("data", [])
+    raw_candles = response.json().get("data", [])
+
+    existing_timestamps = set(
+        row["timestamp"]
+        for row in supabase.table("candles_1D")
+        .select("timestamp")
+        .eq("pair", pair)
+        .execute()
+        .data
+    )
+
+    filtered_candles = [
+        candle for candle in raw_candles if time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(candle[0]) / 1000)) not in existing_timestamps
+    ]
+
+    return filtered_candles
 
 
 def insert_candles(pair, candles):
-    """Insert candles into Supabase."""
+    """Insert candles into Supabase, handling duplicates properly."""
     rows = []
     for candle in candles:
         ts, open_, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote = (
@@ -119,7 +134,10 @@ def insert_candles(pair, candles):
             }
         )
 
-    response = supabase.table("candles_1D").upsert(rows).execute()
+    response = supabase.table("candles_1D") \
+        .upsert(rows, on_conflict=["pair", "timestamp"]) \
+        .execute()
+
     return len(rows)
 
 
