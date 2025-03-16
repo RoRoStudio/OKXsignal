@@ -61,7 +61,7 @@ def fetch_missing_timestamps(pair):
     existing_timestamps = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
-        .order("timestamp", asc=True) \
+        .order("timestamp", desc=False) \
         .execute()
 
     existing_timestamps = [
