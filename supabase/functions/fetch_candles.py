@@ -3,6 +3,7 @@ import os
 import time
 import smtplib
 import ssl
+from dateutil import parser
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 from supabase import create_client, Client
@@ -52,7 +53,7 @@ def fetch_latest_timestamp(pair):
         .execute()
 
     if response.data:
-        return datetime.strptime(response.data[0]['timestamp'], "%Y-%m-%d %H:%M:%S")
+        return parser.isoparse(response.data[0]['timestamp'])  # Auto-detects ISO format
     return None
 
 
@@ -66,9 +67,8 @@ def fetch_oldest_timestamp(pair):
         .execute()
 
     if response.data:
-        return datetime.strptime(response.data[0]['timestamp'], "%Y-%m-%d %H:%M:%S")
+        return parser.isoparse(response.data[0]['timestamp'])  # Auto-detects ISO format
     return None
-
 
 def enforce_rate_limit(endpoint, request_count, start_time):
     """Handles rate limit enforcement for different OKX endpoints."""
