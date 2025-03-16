@@ -135,7 +135,7 @@ def insert_candles(pair, candles):
         )
 
     response = supabase.table("candles_1D") \
-        .upsert(rows, on_conflict=["pair", "timestamp"]) \
+        .upsert(rows, on_conflict="pair,timestamp") \
         .execute()
 
     return len(rows)
