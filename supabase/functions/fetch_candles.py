@@ -10,21 +10,21 @@ from supabase import create_client, Client
 # Load environment variables
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")  # SMTP Email
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  # SMTP Password
+EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 EMAIL_RECIPIENT = "robert@rorostudio.com"
 
 SMTP_SERVER = "smtp-relay.brevo.com"
 SMTP_PORT = 587
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 # OKX API Endpoints
 OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
 OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"
+OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 
-# Rate Limit Handling (OKX allows 40 requests per 2 seconds)
-REQUESTS_PER_BATCH = 40
+# Rate Limit Handling (Separate limits for each endpoint)
+CANDLES_RATE_LIMIT = 40  # /market/candles → 40 requests per 2 seconds
+HISTORY_CANDLES_RATE_LIMIT = 20  # /market/history-candles → 20 requests per 2 seconds
 BATCH_INTERVAL = 2  # seconds
 
 # Initialize Supabase Client
@@ -53,42 +53,47 @@ def fetch_latest_timestamp(pair):
 
     if response.data:
         return datetime.strptime(response.data[0]['timestamp'], "%Y-%m-%d %H:%M:%S")
-    return None  # No existing data
+    return None
 
 
-def fetch_missing_timestamps(pair):
-    """Detect missing candles (gaps) in Supabase and return a list of timestamps to fill."""
-    existing_timestamps = supabase.table("candles_1D") \
+def fetch_oldest_timestamp(pair):
+    """Get the oldest timestamp stored in Supabase for the given pair."""
+    response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
         .order("timestamp", desc=False) \
+        .limit(1) \
         .execute()
 
-    existing_timestamps = [
-        datetime.strptime(row['timestamp'], "%Y-%m-%d %H:%M:%S") for row in existing_timestamps.data
-    ]
-
-    missing_timestamps = []
-    if existing_timestamps:
-        start_time = existing_timestamps[0]
-        end_time = existing_timestamps[-1]
-        current_time = start_time
-
-        while current_time <= end_time:
-            if current_time not in existing_timestamps:
-                missing_timestamps.append(current_time)
-            current_time += timedelta(days=1)
-
-    return missing_timestamps
+    if response.data:
+        return datetime.strptime(response.data[0]['timestamp'], "%Y-%m-%d %H:%M:%S")
+    return None
 
 
-def fetch_candles(pair, after_timestamp=None):
-    """Fetch daily candles from OKX for a given pair."""
-    params = {"instId": pair, "bar": "1D", "limit": "1500"}
+def enforce_rate_limit(endpoint, request_count, start_time):
+    """Handles rate limit enforcement for different OKX endpoints."""
+    rate_limit = CANDLES_RATE_LIMIT if endpoint == OKX_CANDLES_URL else HISTORY_CANDLES_RATE_LIMIT
+
+    request_count += 1
+    if request_count >= rate_limit:
+        elapsed = time.time() - start_time
+        if elapsed < BATCH_INTERVAL:
+            time.sleep(BATCH_INTERVAL - elapsed)
+        return 0, time.time()
+    
+    return request_count, start_time
+
+
+def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
+    """Fetch daily candles from OKX using the appropriate endpoint."""
+    params = {"instId": pair, "bar": "1D", "limit": 100}  # Max limit for history-candles
+
+    if before_timestamp:
+        params["before"] = str(int(before_timestamp.timestamp() * 1000))
     if after_timestamp:
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
-    response = requests.get(OKX_CANDLES_URL, params=params)
+    response = requests.get(endpoint, params=params)
     return response.json().get("data", [])
 
 
@@ -120,16 +125,23 @@ def insert_candles(pair, candles):
 
 def send_email(subject, body):
     """Send an email summary after execution."""
+    if not EMAIL_USERNAME or not EMAIL_PASSWORD:
+        print("Error: Missing email credentials. Skipping email notification.")
+        return
+
     msg = EmailMessage()
     msg.set_content(body)
     msg["Subject"] = subject
     msg["From"] = EMAIL_USERNAME
     msg["To"] = EMAIL_RECIPIENT
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
 
 def main():
@@ -138,40 +150,32 @@ def main():
     total_missing_fixed = 0
     failed_pairs = []
 
-    request_count = 0
+    request_count = {OKX_CANDLES_URL: 0, OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
 
     for pair in pairs:
         try:
             last_timestamp = fetch_latest_timestamp(pair)
-            missing_timestamps = fetch_missing_timestamps(pair)
+            oldest_timestamp = fetch_oldest_timestamp(pair)
 
-            # Fetch and insert latest candles
-            if last_timestamp:
-                candles = fetch_candles(pair, after_timestamp=last_timestamp)
-            else:
-                candles = fetch_candles(pair)
-
+            # Fetch latest candles using /market/candles
+            candles = fetch_candles(pair, OKX_CANDLES_URL, after_timestamp=last_timestamp)
             if candles:
-                inserted_count = insert_candles(pair, candles)
-                total_inserted += inserted_count
+                total_inserted += insert_candles(pair, candles)
 
-            # Fetch and insert missing candles
-            for missing_ts in missing_timestamps:
-                candles = fetch_candles(pair, after_timestamp=missing_ts)
-                if candles:
-                    fixed_count = insert_candles(pair, candles)
-                    total_missing_fixed += fixed_count
+            # Fetch older candles using /market/history-candles
+            while oldest_timestamp:
+                candles = fetch_candles(pair, OKX_HISTORY_CANDLES_URL, before_timestamp=oldest_timestamp)
+                if not candles:
+                    break
 
-            request_count += 2  # Two requests per pair (latest + missing candles)
+                total_missing_fixed += insert_candles(pair, candles)
+                oldest_timestamp = datetime.strptime(candles[-1][0], "%Y-%m-%d %H:%M:%S")
 
-            # Ensure we respect OKX rate limits
-            if request_count >= REQUESTS_PER_BATCH:
-                elapsed = time.time() - start_time
-                if elapsed < BATCH_INTERVAL:
-                    time.sleep(BATCH_INTERVAL - elapsed)
-                request_count = 0
-                start_time = time.time()
+                # Enforce separate rate limits
+                request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
+                    OKX_HISTORY_CANDLES_URL, request_count[OKX_HISTORY_CANDLES_URL], start_time
+                )
 
         except Exception as e:
             print(f"Failed for {pair}: {str(e)}")
@@ -179,14 +183,9 @@ def main():
 
     # Send summary email
     email_subject = "Daily OKX Candle Sync Report"
-    email_body = (
-        f"Pairs Processed: {len(pairs)}\n"
-        f"New Candles Inserted: {total_inserted}\n"
-        f"Missing Candles Fixed: {total_missing_fixed}\n"
-        f"Failed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
-    )
-
+    email_body = f"Pairs Processed: {len(pairs)}\nNew Candles Inserted: {total_inserted}\nMissing Candles Fixed: {total_missing_fixed}\nFailed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
     send_email(email_subject, email_body)
+
     print("Sync complete. Summary email sent.")
 
 
