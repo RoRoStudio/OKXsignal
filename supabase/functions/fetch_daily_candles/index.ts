@@ -1,140 +1,154 @@
-/**********************************************************************
-    SUPABASE EDGE FUNCTION WITH OKX RATE LIMIT HANDLING
-    DENO environment, no Node imports.
+/*********************************************************************************************
+  A MINIMAL SUPABASE EDGE FUNCTION THAT JUST WORKS
+  Deno environment, no Node imports.
 
-    Flow:
-      1)  fetchInstruments() -> all USDT/USDC spot pairs from OKX
-      2)  For each pair -> getLastStoredTimestamp() -> fetchAllCandles() -> storeCandles()
-      3)  Summaries + error handling -> sendEmailReport
+  Flow:
+    1) fetchInstruments() -> all USDT/USDC "live" spot pairs
+    2) For each pair:
+       - getLastStoredTimestamp() => lastTS
+       - fetchAllCandlesDescending(pair, lastTS)
+         => repeated calls with "before=someTs"
+         => gather all daily candles older than that 'before'
+         => break if we get 0 or fewer than 100
+       - skip candles whose ts <= lastTS (duplicates)
+       - sort ascending
+       - insert
 
-    Rate-limit logic:
-      - OKX says 40 requests per 2 seconds for the relevant endpoint.
-      - We'll do a small pause (e.g. 200ms) after every single request to keep it ~5 requests/sec,
-        which is definitely under 40/2sec.
+  TABLE candles_1D (unique on pair,timestamp):
+    id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMPTZ NOT NULL,
+    pair TEXT NOT NULL,
+    open DOUBLE PRECISION NOT NULL,
+    high DOUBLE PRECISION NOT NULL,
+    low DOUBLE PRECISION NOT NULL,
+    close DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    quote_volume DOUBLE PRECISION NOT NULL,
+    taker_buy_base DOUBLE PRECISION NOT NULL,
+    taker_buy_quote DOUBLE PRECISION NOT NULL,
+    UNIQUE (pair, timestamp)
 
-**********************************************************************/
+  WARNINGS:
+    • This code fetches *all* historical daily candles for each pair. 
+      For a big number of pairs and many years, that's a lot of requests.
+    • If you see "0 data" from OKX, we log the raw JSON so you can confirm the reason.
+
+*********************************************************************************************/
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ─────────────────────────────────────────────────────────────
-//  ENV Vars
-// ─────────────────────────────────────────────────────────────
-const SUPABASE_URL               = Deno.env.get("SB_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY  = Deno.env.get("SB_SERVICE_ROLE_KEY")!;
-const EMAIL_RECIPIENT            = Deno.env.get("EMAIL_RECIPIENT")!;
+// ENV
+const SUPABASE_URL              = Deno.env.get("SB_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SB_SERVICE_ROLE_KEY")!;
+const EMAIL_RECIPIENT           = Deno.env.get("EMAIL_RECIPIENT")!;
 
 // OKX constants
-const OKX_API_URL          = "https://www.okx.com/api/v5/market/candles";
-const OKX_INSTRUMENTS_URL  = "https://www.okx.com/api/v5/public/instruments?instType=SPOT";
-const TIMEFRAME            = "1D";
-const MAX_CANDLES_PER_CALL = 100;
+const OKX_API_URL           = "https://www.okx.com/api/v5/market/candles";
+const OKX_INSTRUMENTS_URL   = "https://www.okx.com/api/v5/public/instruments?instType=SPOT";
+const TIMEFRAME             = "1D";
+const MAX_CANDLES_PER_CHUNK = 100;
 
-// We'll define a "hard" cutoff date in ms, so we don't go back infinitely.
-const HARDCUTOFF_MS = new Date("2017-01-01T00:00:00Z").getTime();
-
-// Insert a short sleep after each request to respect rate limit
-// 200ms => 5 requests/second => 10 requests in 2s => well below 40 in 2s
+// We'll add a small 200ms sleep after each request => ~5 requests/sec
 async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ─────────────────────────────────────────────────────────────
-//  Supabase client
-// ─────────────────────────────────────────────────────────────
+// Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// ─────────────────────────────────────────────────────────────
-//  MAIN ENTRY POINT
-// ─────────────────────────────────────────────────────────────
+// MAIN ENTRY
 Deno.serve(async (req) => {
-  console.log("▶ Starting daily candle sync (with OKX rate limit handling) ...");
+  console.log("▶ Starting minimal daily candle fetch...");
 
   try {
-    const instruments = await fetchInstruments(); 
+    // 1) Get instruments (USDT/USDC)
+    const instruments = await fetchInstruments();
     if (!instruments.length) {
-      throw new Error("No USDT/USDC spot pairs found on OKX");
+      throw new Error("No USDT/USDC instruments found");
     }
-    console.log(`✅ Found ${instruments.length} relevant pairs.`);
+    console.log(`✅ Found ${instruments.length} instruments`);
 
+    // 2) For each pair => fetch & store
     let totalInserted = 0;
-    let failedPairs: string[] = [];
-
+    const failedPairs: string[] = [];
     for (const pair of instruments) {
       try {
-        const insertedCount = await syncPair(pair);
-        totalInserted += insertedCount;
-        console.log(`✅ [${pair}] Inserted ${insertedCount} new candles`);
+        const inserted = await syncPair(pair);
+        totalInserted += inserted;
+        console.log(`✅ [${pair}] => Inserted ${inserted} new candles`);
       } catch (err) {
-        console.error(`❌ [${pair}] Failure:`, err);
+        console.error(`❌ [${pair}] => FAILED =>`, err);
         failedPairs.push(pair);
       }
     }
 
-    // Send final email
+    // 3) Email
     await sendEmailReport(totalInserted, failedPairs);
-    console.log(`✅ Sync complete. Inserted total of ${totalInserted} candles.`);
+    console.log("✅ Completed daily candle fetch. Inserted total:", totalInserted);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      inserted: totalInserted, 
-      failed: failedPairs 
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(
+      JSON.stringify({ success: true, inserted: totalInserted, failed: failedPairs }), 
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
 
   } catch (error) {
-    console.error("🚨 Fatal error in daily candle sync:", error);
+    console.error("🚨 Fatal error =>", error);
     await sendEmailReport(0, [], error.message);
-    return new Response(JSON.stringify({ 
-      success: false, 
-      error: error.message 
-    }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 });
 
-// ─────────────────────────────────────────────────────────────
-//  fetchInstruments()
-//    - Get all USDT/USDC "live" spot pairs from OKX
-//    - Rate-limit: Just one call, then we do a 200ms sleep
-// ─────────────────────────────────────────────────────────────
+// fetchInstruments => returns all live spot pairs that end in -USDT or -USDC
 async function fetchInstruments(): Promise<string[]> {
-  console.log("▶ Fetching USDT & USDC spot instruments from OKX...");
+  console.log("▶ fetchInstruments => checking OKX /public/instruments for USDT/USDC...");
   try {
-    const resp = await Promise.race([
-      fetch(OKX_INSTRUMENTS_URL),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("⏳ OKX Timeout!")), 5000))
-    ]) as Response;
-    // Sleep after the request to avoid spamming (one request here).
-    await sleep(200);
-
+    const resp = await fetch(OKX_INSTRUMENTS_URL);
+    await sleep(200); // rate-limit
     if (!resp.ok) {
-      console.warn("⚠️ Non-200 fetching instruments. Status:", resp.status);
+      console.warn("⚠️ fetchInstruments => non-200 =>", resp.status);
       return [];
     }
-    const data = await resp.json() as { data?: any[]; code?: string; msg?: string; };
-    if (!data.data) {
-      console.warn("⚠️ instruments API returned empty data");
+    const json = await resp.json() as { data?: any[] };
+    if (!json?.data) {
+      console.warn("⚠️ fetchInstruments => missing data =>", json);
       return [];
     }
-    const instruments = data.data
-      .filter(d => (d.instId.endsWith("-USDT") || d.instId.endsWith("-USDC")) && d.state === "live")
+    const arr = json.data;
+    // filter "instId" ends in -USDT or -USDC, and state=live
+    const pairs = arr
+      .filter(d => 
+        (d.instId.endsWith("-USDT") || d.instId.endsWith("-USDC")) 
+        && d.state === "live"
+      )
       .map(d => d.instId);
-    console.log(`✅ fetchInstruments() => ${instruments.length} instruments`);
-    return instruments;
+    return pairs;
   } catch (err) {
-    console.error("❌ Error fetching instruments:", err);
+    console.error("❌ fetchInstruments => error =>", err);
     return [];
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  getLastStoredTimestamp(pair)
-//    - newest candle in "candles_1D", or 0 if none
-// ─────────────────────────────────────────────────────────────
+// syncPair => high-level
+async function syncPair(pair: string): Promise<number> {
+  const lastStored = await getLastStoredTimestamp(pair);
+  console.log(`▶ [${pair}] lastStored => ${lastStored} => ${new Date(lastStored).toISOString()}`);
+
+  // if lastStored=0 => that means we never stored a candle for this pair
+  // so we'll do "before = Date.now()" for first chunk
+  const newCandles = await fetchAllCandlesDescending(pair, lastStored);
+  if (!newCandles.length) {
+    console.log(`ℹ️ [${pair}] => no new candles => skipping insert`);
+    return 0;
+  }
+  // Insert
+  await storeCandles(pair, newCandles);
+  return newCandles.length;
+}
+
+// getLastStoredTimestamp => newest candle in DB
 async function getLastStoredTimestamp(pair: string): Promise<number> {
   try {
     const { data, error } = await supabase
@@ -145,170 +159,144 @@ async function getLastStoredTimestamp(pair: string): Promise<number> {
       .limit(1);
 
     if (error) {
-      console.warn(`⚠️ [${pair}] getLastStoredTimestamp error:`, error);
+      console.warn(`⚠️ [${pair}] getLastStoredTimestamp =>`, error);
       return 0;
     }
-    if (!data || !data.length) {
-      return 0;
-    }
+    if (!data || !data.length) return 0;
     return new Date(data[0].timestamp).getTime();
   } catch (err) {
-    console.warn(`⚠️ Unexpected error in getLastStoredTimestamp for [${pair}]:`, err);
+    console.warn(`⚠️ [${pair}] getLastStoredTimestamp => catch =>`, err);
     return 0;
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  fetchAllCandles(pair, lastTimestamp)
-//    - fetch from OKX in descending order
-//    - keep stepping older until no data or cutoff date
-//    - collect everything strictly newer than lastTimestamp
-//    - return ascending
-// ─────────────────────────────────────────────────────────────
-async function fetchAllCandles(pair: string, lastTimestamp: number): Promise<any[]> {
-  const allCandles: any[] = [];
-  // Start from now if lastTS=0, or from lastTS if we do have it:
-  let currentBefore = lastTimestamp > 0 ? lastTimestamp : Date.now();
+// fetchAllCandlesDescending => repeated calls in descending order
+// start: if lastStored=0 => before= Date.now()
+// else => before= lastStored
+// we keep chunking until we get < 100 or 0 data
+async function fetchAllCandlesDescending(pair: string, lastStored: number): Promise<any[]> {
+  console.log(`▶ [${pair}] fetchAllCandlesDescending => lastStored=${lastStored}`);
+  const results: any[] = [];
+
+  // If we never stored anything => we'll start from "now"
+  let currentBefore = (lastStored === 0) ? Date.now() : lastStored;
+  let chunkCount = 0;
 
   while (true) {
-    if (currentBefore < HARDCUTOFF_MS) {
-      console.log(`⚠️ [${pair}] Reached cutoff date. Stopping.`);
-      break;
-    }
+    const beforeParam = Math.floor(currentBefore / 1000) * 1000;
+    const url = `${OKX_API_URL}?instId=${pair}&bar=${TIMEFRAME}&limit=${MAX_CANDLES_PER_CHUNK}&before=${beforeParam}`;
+    console.log(`🔄 [${pair}] chunk #${chunkCount+1} => before=${beforeParam} => ${new Date(beforeParam).toISOString()}`);
 
-    const useBefore = Math.floor(currentBefore / 1000) * 1000;
-    const url = `${OKX_API_URL}?instId=${pair}&bar=${TIMEFRAME}&limit=${MAX_CANDLES_PER_CALL}&before=${useBefore}`;
-    console.log(`🔄 [${pair}] Fetch chunk => ${url}`);
-
-    let jsonData: any;
+    let raw;
     try {
-      const resp = await Promise.race([
-        fetch(url),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("⏳ OKX Timeout!")), 5000))
-      ]) as Response;
-
-      // Sleep after the request to keep under rate limit
-      await sleep(200);
-
+      const resp = await fetch(url);
+      await sleep(200); // rate-limit
       if (!resp.ok) {
-        console.warn(`⚠️ [${pair}] Non-OK response: ${resp.status}`);
+        console.warn(`⚠️ [${pair}] chunk #${chunkCount+1} => non-200 =>`, resp.status);
         break;
       }
-      jsonData = await resp.json();
+      raw = await resp.json();
     } catch (err) {
-      console.warn(`⚠️ [${pair}] Error fetching chunk:`, err);
+      console.warn(`⚠️ [${pair}] chunk #${chunkCount+1} => fetch error =>`, err);
       break;
     }
 
-    if (!jsonData?.data || !jsonData.data.length) {
-      console.warn(`⚠️ [${pair}] No more data from OKX.`);
+    if (!raw?.data) {
+      console.warn(`⚠️ [${pair}] chunk #${chunkCount+1} => no 'data' =>`, JSON.stringify(raw).slice(0,400));
       break;
     }
 
-    let oldestInThisBatch = currentBefore;
-    let newCandlesCount   = 0;
+    const arr = raw.data;
+    console.log(`ℹ️ [${pair}] chunk #${chunkCount+1} => got ${arr.length} candles total. Example:`, arr[0] || "none");
 
-    for (const c of jsonData.data) {
-      if (c.length < 9) {
-        continue; // malformed
+    if (!arr.length) {
+      // no data => done
+      console.warn(`⚠️ [${pair}] chunk #${chunkCount+1} => 0 data => break`);
+      break;
+    }
+
+    let oldestTsInChunk = currentBefore;
+    let accepted = 0;
+
+    // Each candle: [ts, open, high, low, close, volume, quoteVol, takerBuyBase, takerBuyQuote]
+    // They come newest -> oldest
+    for (const c of arr) {
+      if (!Array.isArray(c) || c.length<9) {
+        continue; // skip malformed
       }
-      const ts = parseInt(c[0], 10);
-      if (ts <= lastTimestamp) {
-        // already have it
+      const [tsStr, open, high, low, close, vol, qVol, takerBase, takerQuote] = c;
+      const tsNum = parseInt(tsStr, 10);
+
+      if (tsNum <= lastStored) {
+        // means we already have it => skip
         continue;
       }
-      if (ts < HARDCUTOFF_MS) {
-        // older than our global cutoff => skip
-        continue;
-      }
-      allCandles.push({
-        timestamp      : new Date(ts).toISOString(),
-        pair           : pair,
-        open           : parseFloat(c[1]),
-        high           : parseFloat(c[2]),
-        low            : parseFloat(c[3]),
-        close          : parseFloat(c[4]),
-        volume         : parseFloat(c[5]),
-        quote_volume   : parseFloat(c[6]),
-        taker_buy_base : parseFloat(c[7]),
-        taker_buy_quote: parseFloat(c[8]),
+      // Accept
+      results.push({
+        timestamp      : new Date(tsNum).toISOString(),
+        pair,
+        open           : +open,
+        high           : +high,
+        low            : +low,
+        close          : +close,
+        volume         : +vol,
+        quote_volume   : +qVol,
+        taker_buy_base : +takerBase,
+        taker_buy_quote: +takerQuote,
       });
-      oldestInThisBatch = Math.min(oldestInThisBatch, ts);
-      newCandlesCount++;
+      oldestTsInChunk = Math.min(oldestTsInChunk, tsNum);
+      accepted++;
     }
 
-    console.log(`✅ [${pair}] chunk had ${jsonData.data.length} raw, accepted ${newCandlesCount}`);
+    console.log(`✅ [${pair}] chunk #${chunkCount+1} => accepted ${accepted} / ${arr.length}`);
 
-    currentBefore = oldestInThisBatch - 1;
+    // next chunk => before = oldestTsInChunk - 1
+    currentBefore = oldestTsInChunk - 1;
+    chunkCount++;
 
-    if (jsonData.data.length < MAX_CANDLES_PER_CALL) {
-      console.log(`ℹ️ [${pair}] Fewer than ${MAX_CANDLES_PER_CALL} => done.`);
+    if (arr.length < MAX_CANDLES_PER_CHUNK) {
+      // probably no more older data
+      console.log(`ℹ️ [${pair}] chunk #${chunkCount} => got <100 => done`);
       break;
     }
   }
 
-  // Sort ascending 
-  allCandles.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-  return allCandles;
+  // final sort ascending
+  results.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  console.log(`➡️ [${pair}] total final new candles => ${results.length}`);
+  return results;
 }
 
-// ─────────────────────────────────────────────────────────────
-//  storeCandles(pair, candles)
-//    - Insert new rows into the DB
-// ─────────────────────────────────────────────────────────────
+// storeCandles => just do an insert
 async function storeCandles(pair: string, candles: any[]) {
   if (!candles.length) {
-    console.log(`ℹ️ [${pair}] No new candles to insert.`);
+    console.log(`ℹ️ [${pair}] => storeCandles => 0 => skipping`);
     return;
   }
   try {
     const { error } = await supabase
       .from("candles_1D")
       .insert(candles);
-
     if (error) {
-      console.error(`❌ [${pair}] Insert error:`, error);
+      console.error(`❌ [${pair}] insert error =>`, error);
     } else {
-      console.log(`✅ [${pair}] Inserted ${candles.length} new candles.`);
+      console.log(`✅ [${pair}] Inserted ${candles.length} candles into DB`);
     }
   } catch (err) {
-    console.error(`❌ [${pair}] Unexpected insert error:`, err);
+    console.error(`❌ [${pair}] storeCandles =>`, err);
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  syncPair(pair)
-//    - orchestrates the process for one pair
-// ─────────────────────────────────────────────────────────────
-async function syncPair(pair: string): Promise<number> {
-  const lastTS = await getLastStoredTimestamp(pair);
-  console.log(`▶ [${pair}] last stored => ${new Date(lastTS).toISOString()}`);
-
-  const fetched = await fetchAllCandles(pair, lastTS);
-  if (!fetched.length) {
-    await storeCandles(pair, []); // will log "No new candles"
-    return 0;
-  }
-  await storeCandles(pair, fetched);
-  return fetched.length;
-}
-
-// ─────────────────────────────────────────────────────────────
-//  sendEmailReport(inserted, failedPairs, errorMsg?)
-// ─────────────────────────────────────────────────────────────
-async function sendEmailReport(
-  inserted: number, 
-  failedPairs: string[],
-  errorMsg = ""
-) {
-  const nowIso = new Date().toISOString();
-  const textBody = `
-    ✅ Candle Sync @ ${nowIso}
-    => Inserted: ${inserted}
-    => Failed: ${failedPairs.length}
-    ${failedPairs.length ? "🔴 " + failedPairs.join(", ") : ""}
-    ${errorMsg ? `\n⚠️  Errors: ${errorMsg}` : ""}
-  `;
+// sendEmailReport => minimal
+async function sendEmailReport(inserted: number, failed: string[], errorMsg = "") {
+  const now = new Date().toISOString();
+  const text = `
+Daily Candle Sync
+Time: ${now}
+Inserted: ${inserted}
+Failed pairs: ${failed.length ? failed.join(", ") : "none"}
+${errorMsg ? "ERROR: " + errorMsg : ""}
+`;
   try {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
       method: "POST",
@@ -318,14 +306,14 @@ async function sendEmailReport(
       },
       body: JSON.stringify({
         to: EMAIL_RECIPIENT,
-        subject: "📊 Daily Candle Sync Results",
-        text: textBody
+        subject: "OKX Candle Sync Results",
+        text
       })
     });
     if (!resp.ok) {
-      console.warn("⚠️ Email function responded non-200:", resp.status);
+      console.warn(`⚠️ sendEmailReport => non-200 => ${resp.status}`);
     }
   } catch (err) {
-    console.error("❌ Error sending email:", err);
+    console.error("❌ sendEmailReport =>", err);
   }
 }
