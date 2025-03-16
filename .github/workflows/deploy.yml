@@ -1,4 +1,4 @@
-name: Manual Deploy Supabase Edge Function
+name: Manual Deploy Supabase Edge Function (No JWT)
 
 on:
   workflow_dispatch:  # Only deploy when manually triggered
@@ -20,5 +20,5 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy Supabase Edge Function
-        run: supabase functions deploy fetch_daily_candles --project-ref $PROJECT_ID
+      - name: Deploy Supabase Edge Function with No JWT
+        run: supabase functions deploy fetch_daily_candles --project-ref $PROJECT_ID --no-verify-jwt
