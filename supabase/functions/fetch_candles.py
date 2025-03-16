@@ -107,11 +107,15 @@ def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
 
     filtered_candles = []
     for candle in raw_candles:
-        # Convert Unix timestamp (milliseconds) to ISO format
         timestamp_iso = datetime.utcfromtimestamp(int(candle[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S')
 
         if timestamp_iso not in existing_timestamps:
             filtered_candles.append(candle)
+
+    print(f"Fetched {len(raw_candles)} candles for {pair}, after filtering: {len(filtered_candles)}")  # 🔥 Add logging
+
+    return filtered_candles  # 🔥 Fix: Ensure function returns data
+
 
 def insert_candles(pair, candles):
     """Insert candles into Supabase, handling duplicates properly."""
@@ -172,24 +176,34 @@ def main():
     request_count = {OKX_CANDLES_URL: 0, OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
 
+    print(f"Starting process for {len(pairs)} trading pairs...")  # 🔥 Log the number of pairs
+
     for pair in pairs:
         try:
+            print(f"Processing {pair}...")  # 🔥 Log which pair is being processed
+
             last_timestamp = fetch_latest_timestamp(pair)
             oldest_timestamp = fetch_oldest_timestamp(pair)
 
             # Fetch latest candles using /market/candles
             candles = fetch_candles(pair, OKX_CANDLES_URL, after_timestamp=last_timestamp)
             if candles:
-                total_inserted += insert_candles(pair, candles)
+                inserted = insert_candles(pair, candles)
+                total_inserted += inserted
+                print(f"Inserted {inserted} new candles for {pair}")  # 🔥 Log inserts
 
             # Fetch older candles using /market/history-candles
             while oldest_timestamp:
                 candles = fetch_candles(pair, OKX_HISTORY_CANDLES_URL, before_timestamp=oldest_timestamp)
                 if not candles:
+                    print(f"No more historical candles found for {pair}")  # 🔥 Log missing data
                     break
 
-                total_missing_fixed += insert_candles(pair, candles)
-                oldest_timestamp = datetime.strptime(candles[-1][0], "%Y-%m-%d %H:%M:%S")
+                inserted = insert_candles(pair, candles)
+                total_missing_fixed += inserted
+                print(f"Inserted {inserted} missing candles for {pair}")  # 🔥 Log inserts
+
+                oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)  # 🔥 Fix timestamp parsing
 
                 # Enforce separate rate limits
                 request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
