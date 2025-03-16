@@ -105,12 +105,13 @@ def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
         .data
     )
 
-    filtered_candles = [
-        candle for candle in raw_candles if time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(candle[0]) / 1000)) not in existing_timestamps
-    ]
+    filtered_candles = []
+    for candle in raw_candles:
+        # Convert Unix timestamp (milliseconds) to ISO format
+        timestamp_iso = datetime.utcfromtimestamp(int(candle[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S')
 
-    return filtered_candles
-
+        if timestamp_iso not in existing_timestamps:
+            filtered_candles.append(candle)
 
 def insert_candles(pair, candles):
     """Insert candles into Supabase, handling duplicates properly."""
