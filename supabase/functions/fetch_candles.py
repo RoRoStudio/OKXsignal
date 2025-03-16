@@ -20,11 +20,9 @@ SMTP_PORT = 587
 
 # OKX API Endpoints
 OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
-OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"
 OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 
-# Rate Limit Handling (Separate limits for each endpoint)
-CANDLES_RATE_LIMIT = 40  # /market/candles → 40 requests per 2 seconds
+# Rate Limit Handling 
 HISTORY_CANDLES_RATE_LIMIT = 20  # /market/history-candles → 20 requests per 2 seconds
 BATCH_INTERVAL = 2  # seconds
 
@@ -84,18 +82,23 @@ def enforce_rate_limit(endpoint, request_count, start_time):
     return request_count, start_time
 
 
-def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
-    """Fetch daily candles from OKX, filtering out existing ones."""
-    params = {"instId": pair, "bar": "1D", "limit": 100}
+def fetch_candles(pair, before_timestamp=None, after_timestamp=None):
+    """Fetch daily candles from OKX, ensuring both missing and latest candles are retrieved."""
+    params = {"instId": pair, "bar": "1D", "limit": 100}  # Max 100 candles per call
 
     if before_timestamp:
-        params["before"] = str(int(before_timestamp.timestamp() * 1000))
+        params["before"] = str(int(before_timestamp.timestamp() * 1000))  # Fetch older candles
     if after_timestamp:
-        params["after"] = str(int(after_timestamp.timestamp() * 1000))
+        params["after"] = str(int(after_timestamp.timestamp() * 1000))  # Fetch newer candles
 
-    response = requests.get(endpoint, params=params)
+    response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
     raw_candles = response.json().get("data", [])
 
+    if not raw_candles:
+        print(f"❌ No candles received from OKX for {pair}, skipping...")
+        return []
+
+    # Convert existing timestamps from Supabase to a set for quick lookup
     existing_timestamps = set(
         row["timestamp"]
         for row in supabase.table("candles_1D")
@@ -112,9 +115,8 @@ def fetch_candles(pair, endpoint, before_timestamp=None, after_timestamp=None):
         if timestamp_iso not in existing_timestamps:
             filtered_candles.append(candle)
 
-    print(f"Fetched {len(raw_candles)} candles for {pair}, after filtering: {len(filtered_candles)}")  # 🔥 Add logging
-
-    return filtered_candles  # 🔥 Fix: Ensure function returns data
+    print(f"📌 Fetched {len(raw_candles)} candles for {pair}, after filtering: {len(filtered_candles)}")
+    return filtered_candles
 
 
 def insert_candles(pair, candles):
@@ -139,9 +141,20 @@ def insert_candles(pair, candles):
             }
         )
 
+    if not rows:
+        print(f"❌ No data to insert for {pair}, skipping...")
+        return 0
+
+    print(f"📌 Attempting to insert {len(rows)} rows for {pair}...")  # 🔥 Log actual insert attempts
+
     response = supabase.table("candles_1D") \
         .upsert(rows, on_conflict="pair,timestamp") \
         .execute()
+
+    if response.get("status_code") != 200:
+        print(f"❌ Insert failed for {pair}: {response}")  # 🔥 Log failed insert attempts
+    else:
+        print(f"✅ Successfully inserted {len(rows)} rows for {pair}")
 
     return len(rows)
 
@@ -173,37 +186,39 @@ def main():
     total_missing_fixed = 0
     failed_pairs = []
 
-    request_count = {OKX_CANDLES_URL: 0, OKX_HISTORY_CANDLES_URL: 0}
+    request_count = {OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
 
-    print(f"Starting process for {len(pairs)} trading pairs...")  # 🔥 Log the number of pairs
+    print(f"Starting process for {len(pairs)} trading pairs...")
 
     for pair in pairs:
         try:
-            print(f"Processing {pair}...")  # 🔥 Log which pair is being processed
+            print(f"Processing {pair}...")
 
-            last_timestamp = fetch_latest_timestamp(pair)
-            oldest_timestamp = fetch_oldest_timestamp(pair)
+            last_timestamp = fetch_latest_timestamp(pair)  # Get latest stored candle timestamp
+            oldest_timestamp = fetch_oldest_timestamp(pair)  # Get the earliest stored candle timestamp
 
-            # Fetch latest candles using /market/candles
-            candles = fetch_candles(pair, OKX_CANDLES_URL, after_timestamp=last_timestamp)
-            if candles:
-                inserted = insert_candles(pair, candles)
-                total_inserted += inserted
-                print(f"Inserted {inserted} new candles for {pair}")  # 🔥 Log inserts
+            # Fetch latest daily candle using history-candles
+            if last_timestamp:
+                candles = fetch_candles(pair, after_timestamp=last_timestamp)
+                if candles:
+                    inserted = insert_candles(pair, candles)
+                    total_inserted += inserted
+                    print(f"Inserted {inserted} new candles for {pair}")
 
-            # Fetch older candles using /market/history-candles
+            # Fetch missing historical candles using history-candles
             while oldest_timestamp:
-                candles = fetch_candles(pair, OKX_HISTORY_CANDLES_URL, before_timestamp=oldest_timestamp)
-                if not candles:
-                    print(f"No more historical candles found for {pair}")  # 🔥 Log missing data
+                candles = fetch_candles(pair, before_timestamp=oldest_timestamp)
+                if not candles or len(candles) < 100:  # Stop if no data or <100 candles (indicates end)
+                    print(f"No more historical candles found for {pair}")
                     break
 
                 inserted = insert_candles(pair, candles)
                 total_missing_fixed += inserted
-                print(f"Inserted {inserted} missing candles for {pair}")  # 🔥 Log inserts
+                print(f"Inserted {inserted} missing candles for {pair}")
 
-                oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)  # 🔥 Fix timestamp parsing
+                # Update oldest timestamp for next batch
+                oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)
 
                 # Enforce separate rate limits
                 request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
