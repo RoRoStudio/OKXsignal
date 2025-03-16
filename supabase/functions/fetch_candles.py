@@ -147,12 +147,12 @@ def insert_candles(pair, candles):
 
     print(f"📌 Attempting to insert {len(rows)} rows for {pair}...")  # 🔥 Log actual insert attempts
 
-    response = supabase.table("candles_1D") \
-        .upsert(rows, on_conflict="pair,timestamp") \
-        .execute()
+    response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp").execute()
 
-    if response.get("status_code") != 200:
-        print(f"❌ Insert failed for {pair}: {response}")  # 🔥 Log failed insert attempts
+    # Correctly check for errors
+    if response.error:
+        print(f"❌ Insert failed for {pair}: {response.error}")  # 🔥 Log failed insert attempts
+        return 0
     else:
         print(f"✅ Successfully inserted {len(rows)} rows for {pair}")
 
