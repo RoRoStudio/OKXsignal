@@ -55,7 +55,7 @@ def fetch_timestamps(pair):
     oldest_response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
-        .order("timestamp") \ 
+        .order("timestamp") \
         .limit(1) \
         .execute()
 
