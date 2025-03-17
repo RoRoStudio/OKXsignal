@@ -185,7 +185,7 @@ def main():
     request_count = {OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
 
-    print(f"🚀 Starting process for {len(pairs)} trading pairs...")
+    print(f"🚀 Starting sync for {len(pairs)} trading pairs...")
 
     for index, pair in enumerate(pairs, start=1):
         try:
@@ -194,7 +194,7 @@ def main():
             pair_inserted = 0
             pair_missing_fixed = 0
 
-            # Fetch new candles
+            # Fetch new candles (latest first)
             if last_timestamp:
                 candles = fetch_candles(pair, after_timestamp=last_timestamp)
                 if candles:
@@ -202,7 +202,7 @@ def main():
                     total_inserted += inserted
                     pair_inserted += inserted
 
-            # Fetch historical candles (going backward in time)
+            # Fetch historical candles (earliest first)
             while oldest_timestamp:
                 candles = fetch_candles(pair, after_timestamp=oldest_timestamp)
                 if not candles or len(candles) < 100:
@@ -216,22 +216,25 @@ def main():
                     request_count[OKX_HISTORY_CANDLES_URL], start_time
                 )
 
-            # Log only every 10 pairs processed
-            if index % 10 == 0 or pair_inserted > 0 or pair_missing_fixed > 0:
-                print(f"📊 Processed {index}/{len(pairs)} pairs - New: {pair_inserted}, Fixed: {pair_missing_fixed}")
+            # ✅ Print progress only every 50 pairs
+            if index % 50 == 0:
+                print(f"📊 Progress: {index}/{len(pairs)} pairs processed...")
 
         except Exception as e:
-            print(f"⚠️ Failed for {pair}: {str(e)}")
+            print(f"⚠️ Error with {pair}: {str(e)}")
             failed_pairs.append(pair)
 
-    # 📌 Summary logging
+    # 📌 Final summary logging
     print("\n✅ Sync complete.")
-    print(f"🚀 Pairs Processed: {len(pairs)}")
+    print(f"🔄 Pairs Processed: {len(pairs)}")
     print(f"📈 New Candles Inserted: {total_inserted}")
-    print(f"🔄 Missing Candles Fixed: {total_missing_fixed}")
+    print(f"📉 Missing Candles Fixed: {total_missing_fixed}")
     print(f"❌ Failed Pairs: {len(failed_pairs)} ({', '.join(failed_pairs) if failed_pairs else 'None'})")
+    
+    # 📌 NEW FINAL SUMMARY LINE
+    print(f"📝 Full Summary → Processed: {len(pairs)}, Inserted: {total_inserted}, Fixed: {total_missing_fixed}, Failed: {len(failed_pairs)}")
 
-    # 📧 Send email only if candles were inserted or fixed
+    # 📧 Email handling with explicit logging
     if total_inserted > 0 or total_missing_fixed > 0:
         email_subject = "Daily OKX Candle Sync Report"
         email_body = (
@@ -241,8 +244,9 @@ def main():
             f"Failed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
         )
         send_email(email_subject, email_body)
+        print(f"📧 Email sent successfully to {EMAIL_RECIPIENT}")
     else:
-        print("📌 No new data inserted, skipping email notification.")
+        print("📌 No new data inserted. Skipping email notification.")
 
 
 if __name__ == "__main__":
