@@ -81,10 +81,10 @@ def fetch_candles(pair, after_timestamp=None):
     if after_timestamp:
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
-    print(f"🔍 Fetching {pair} candles with: {params}")  # DEBUGGING
+    print(f"🔍 Fetching {pair} candles with: {params}")  # ✅ Debugging
 
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-    print(f"✅ Raw API Response for {pair}: {response.text}")  # DEBUGGING
+    print(f"✅ Raw API Response for {pair}: {response.text}")  # ✅ Debugging
 
     try:
         data = response.json()
@@ -104,13 +104,14 @@ def insert_candles(pair, candles):
         "taker_buy_quote": float(c[8])
     } for c in candles]
 
+    print(f"📌 Attempting to insert {len(rows)} rows for {pair}")  # ✅ Debugging
+
     if not rows:
+        print(f"⚠️ No valid rows to insert for {pair}, skipping...")
         return 0
 
-    print(f"📌 Attempting to insert {len(rows)} rows into candles_1H")  # DEBUGGING
-
     response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp").execute()
-    print(f"🔍 Supabase Insert Response: {response}")  # DEBUGGING
+    print(f"🔍 Supabase Insert Response: {response}")  # ✅ Debugging
 
     return len(response.data) if response.data else 0
     
