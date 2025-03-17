@@ -152,7 +152,7 @@ def insert_candles(pair, candles):
 def send_email(subject, body):
     """Send an email notification with a report."""
     if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        print("Error: Missing email credentials. Skipping email notification.")
+        print("⚠️ Error: Missing email credentials. Skipping email notification.")
         return
 
     msg = EmailMessage()
@@ -164,10 +164,16 @@ def send_email(subject, body):
     try:
         context = ssl.create_default_context()
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
             server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
             server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
+        print(f"✅ Email sent successfully to {EMAIL_RECIPIENT}")
+    except smtplib.SMTPAuthenticationError:
+        print("❌ SMTP Authentication Error: Check your email credentials.")
+    except smtplib.SMTPException as e:
+        print(f"❌ SMTP Error: {e}")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"❌ Unknown Error sending email: {e}")
 
 
 def main():
@@ -179,13 +185,14 @@ def main():
     request_count = {OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
 
-    print(f"Starting process for {len(pairs)} trading pairs...")
+    print(f"🚀 Starting process for {len(pairs)} trading pairs...")
 
-    for pair in pairs:
+    for index, pair in enumerate(pairs, start=1):
         try:
-            print(f"Processing {pair}...")
             last_timestamp = fetch_latest_timestamp(pair)
             oldest_timestamp = fetch_oldest_timestamp(pair)
+            pair_inserted = 0
+            pair_missing_fixed = 0
 
             # Fetch new candles
             if last_timestamp:
@@ -193,6 +200,7 @@ def main():
                 if candles:
                     inserted = insert_candles(pair, candles)
                     total_inserted += inserted
+                    pair_inserted += inserted
 
             # Fetch historical candles (going backward in time)
             while oldest_timestamp:
@@ -201,25 +209,40 @@ def main():
                     break
                 inserted = insert_candles(pair, candles)
                 total_missing_fixed += inserted
+                pair_missing_fixed += inserted
                 oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)
 
                 request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
                     request_count[OKX_HISTORY_CANDLES_URL], start_time
                 )
 
+            # Log only every 10 pairs processed
+            if index % 10 == 0 or pair_inserted > 0 or pair_missing_fixed > 0:
+                print(f"📊 Processed {index}/{len(pairs)} pairs - New: {pair_inserted}, Fixed: {pair_missing_fixed}")
+
         except Exception as e:
-            print(f"Failed for {pair}: {str(e)}")
+            print(f"⚠️ Failed for {pair}: {str(e)}")
             failed_pairs.append(pair)
 
-    email_subject = "Daily OKX Candle Sync Report"
-    email_body = (
-        f"Pairs Processed: {len(pairs)}\n"
-        f"New Candles Inserted: {total_inserted}\n"
-        f"Missing Candles Fixed: {total_missing_fixed}\n"
-        f"Failed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
-    )
-    send_email(email_subject, email_body)
-    print("Sync complete. Summary email sent.")
+    # 📌 Summary logging
+    print("\n✅ Sync complete.")
+    print(f"🚀 Pairs Processed: {len(pairs)}")
+    print(f"📈 New Candles Inserted: {total_inserted}")
+    print(f"🔄 Missing Candles Fixed: {total_missing_fixed}")
+    print(f"❌ Failed Pairs: {len(failed_pairs)} ({', '.join(failed_pairs) if failed_pairs else 'None'})")
+
+    # 📧 Send email only if candles were inserted or fixed
+    if total_inserted > 0 or total_missing_fixed > 0:
+        email_subject = "Daily OKX Candle Sync Report"
+        email_body = (
+            f"Pairs Processed: {len(pairs)}\n"
+            f"New Candles Inserted: {total_inserted}\n"
+            f"Missing Candles Fixed: {total_missing_fixed}\n"
+            f"Failed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
+        )
+        send_email(email_subject, email_body)
+    else:
+        print("📌 No new data inserted, skipping email notification.")
 
 
 if __name__ == "__main__":
