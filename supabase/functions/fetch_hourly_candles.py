@@ -6,7 +6,7 @@ import smtplib
 import ssl
 from dateutil import parser
 from email.message import EmailMessage
-from datetime import datetime
+from datetime import datetime, timedelta
 from supabase import create_client, Client
 
 # Environment Variables
@@ -26,6 +26,9 @@ OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 # Rate Limit Settings
 HISTORY_CANDLES_RATE_LIMIT = 20
 BATCH_INTERVAL = 2
+
+# Define how far back to fetch if table is empty
+INITIAL_HISTORICAL_LOOKBACK_DAYS = 30
 
 # Supabase Client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
@@ -73,7 +76,7 @@ def fetch_candles(pair, after_timestamp=None, before_timestamp=None):
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
     try:
         data = response.json()
-        print(f"✅ API Response for {pair}: {data}", flush=True)  # DEBUG API OUTPUT
+        print(f"✅ API Response for {pair}: {len(data.get('data', []))} candles", flush=True)  # ✅ Debugging output
         return data.get("data", [])
     except Exception as e:
         print(f"❌ Error parsing JSON response for {pair}: {e}", flush=True)
@@ -108,27 +111,6 @@ def insert_candles(pair, candles):
     return len(response.data) if response.data else 0
 
 
-def send_email(subject, body):
-    """Send an email notification with a report."""
-    if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        print("⚠️ Missing email credentials. Skipping email notification.", flush=True)
-        return
-
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_USERNAME
-    msg["To"] = EMAIL_RECIPIENT
-
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
-    except smtplib.SMTPException as e:
-        print(f"❌ SMTP Error: {e}", flush=True)
-
-
 def main():
     pairs = fetch_active_pairs()
     total_inserted = 0
@@ -148,21 +130,28 @@ def main():
 
             pair_inserted, pair_fixed = 0, 0
 
+            # 🟢 **Handle completely empty table**
+            if latest_timestamp is None and oldest_timestamp is None:
+                historical_start = datetime.utcnow() - timedelta(days=INITIAL_HISTORICAL_LOOKBACK_DAYS)
+                print(f"🟡 {pair} → No data found. Fetching from {historical_start}...", flush=True)
+                candles = fetch_candles(pair, before_timestamp=historical_start)
+                inserted = insert_candles(pair, candles)
+                total_inserted += inserted
+                pair_inserted += inserted
+
             # 🔍 Fetch new candles (latest first)
             if latest_timestamp:
                 candles = fetch_candles(pair, after_timestamp=latest_timestamp)
-                if candles:
-                    inserted = insert_candles(pair, candles)
-                    total_inserted += inserted
-                    pair_inserted += inserted
+                inserted = insert_candles(pair, candles)
+                total_inserted += inserted
+                pair_inserted += inserted
 
             # 🔍 Quick backfill check (fetch 1 batch before the oldest timestamp)
             if oldest_timestamp:
                 backfill_candles = fetch_candles(pair, before_timestamp=oldest_timestamp)
-                if backfill_candles:
-                    fixed = insert_candles(pair, backfill_candles)
-                    total_fixed += fixed
-                    pair_fixed += fixed
+                fixed = insert_candles(pair, backfill_candles)
+                total_fixed += fixed
+                pair_fixed += fixed
 
             # ✅ Log every 50 pairs or 2 minutes
             if index % 50 == 0 or time.time() - last_log_time > 120:
@@ -175,9 +164,6 @@ def main():
 
     # ✅ Final summary
     print(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Fixed={total_fixed}, Failed={len(failed_pairs)}", flush=True)
-
-    if total_inserted > 0 or total_fixed > 0:
-        send_email("Hourly OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFixed: {total_fixed}\nFailed: {len(failed_pairs)}")
 
 
 if __name__ == "__main__":
