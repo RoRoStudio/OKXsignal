@@ -76,23 +76,23 @@ def enforce_rate_limit(request_count, start_time):
 
 
 def fetch_candles(pair, after_timestamp=None):
+def fetch_candles(pair, after_timestamp=None):
     """Fetch historical candles efficiently for the 1H timeframe."""
     params = {"instId": pair, "bar": "1H", "limit": 100}
     if after_timestamp:
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
-    print(f"🔍 Fetching {pair} candles with: {params}")  # DEBUGGING PRINT
+    print(f"🔍 Fetching {pair} candles with: {params}")  # DEBUGGING
 
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-    
+    print(f"✅ Raw API Response for {pair}: {response.text}")  # DEBUGGING
+
     try:
         data = response.json()
-        print(f"✅ API Response: {data}")  # DEBUGGING PRINT
         return data.get("data", [])
     except Exception as e:
-        print(f"❌ Error decoding JSON response for {pair}: {e}")
+        print(f"❌ Error parsing JSON response for {pair}: {e}")
         return []
-
 
 def insert_candles(pair, candles):
     """Insert new candle data into Supabase and return the actual inserted count."""
@@ -108,14 +108,13 @@ def insert_candles(pair, candles):
     if not rows:
         return 0
 
-    print(f"📌 Attempting to insert {len(rows)} rows into candles_1H")  # DEBUGGING PRINT
+    print(f"📌 Attempting to insert {len(rows)} rows into candles_1H")  # DEBUGGING
 
     response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp").execute()
-
-    print(f"🔍 Insert Response: {response}")  # DEBUGGING PRINT
+    print(f"🔍 Supabase Insert Response: {response}")  # DEBUGGING
 
     return len(response.data) if response.data else 0
-
+    
 def send_email(subject, body):
     """Send an email notification with a report."""
     if not EMAIL_USERNAME or not EMAIL_PASSWORD:
