@@ -1,7 +1,6 @@
 import requests
 import os
 import time
-import sys
 import smtplib
 import ssl
 from dateutil import parser
@@ -31,34 +30,25 @@ BATCH_INTERVAL = 2
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 
-def log_debug(message):
-    """Print debug messages and flush output to ensure instant visibility."""
-    print(message)
-    sys.stdout.flush()
-
-
 def fetch_active_pairs():
     """Fetch active trading pairs with USDT or USDC."""
     response = requests.get(OKX_INSTRUMENTS_URL)
     data = response.json()
-    pairs = [
+    return [
         inst["instId"]
         for inst in data.get("data", [])
         if inst["quoteCcy"] in {"USDT", "USDC"} and inst["state"] == "live"
     ]
-    log_debug(f"✅ Found {len(pairs)} active pairs.")
-    return pairs
 
 
 def fetch_timestamps(pair):
     """Fetch both the latest and oldest timestamps in a single query."""
     latest_response = supabase.table("candles_1H").select("timestamp").eq("pair", pair).order("timestamp", desc=True).limit(1).execute()
-    latest_timestamp = parser.isoparse(latest_response.data[0]['timestamp']) if latest_response.data else None
-
     oldest_response = supabase.table("candles_1H").select("timestamp").eq("pair", pair).order("timestamp").limit(1).execute()
+
+    latest_timestamp = parser.isoparse(latest_response.data[0]['timestamp']) if latest_response.data else None
     oldest_timestamp = parser.isoparse(oldest_response.data[0]['timestamp']) if oldest_response.data else None
 
-    log_debug(f"⏳ {pair} → Latest: {latest_timestamp}, Oldest: {oldest_timestamp}")
     return latest_timestamp, oldest_timestamp
 
 
@@ -73,62 +63,44 @@ def enforce_rate_limit(request_count, start_time):
     return request_count, start_time
 
 
-def fetch_candles(pair, after_timestamp=None):
+def fetch_candles(pair, after_timestamp=None, before_timestamp=None):
     """Fetch historical candles efficiently for the 1H timeframe."""
     params = {"instId": pair, "bar": "1H", "limit": 100}
     if after_timestamp:
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
+    if before_timestamp:
+        params["before"] = str(int(before_timestamp.timestamp() * 1000))
 
-    log_debug(f"🔍 Fetching candles for {pair} → Params: {params}")
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-
     try:
-        data = response.json()
-        candles = data.get("data", [])
-        if candles:
-            log_debug(f"✅ {pair}: Received {len(candles)} candles")
-        else:
-            log_debug(f"⚠️ {pair}: No candles found")
-        return candles
+        return response.json().get("data", [])
     except Exception as e:
-        log_debug(f"❌ {pair}: Error parsing JSON response: {e}")
+        print(f"❌ Error parsing JSON response for {pair}: {e}")
         return []
 
 
 def insert_candles(pair, candles):
     """Insert new candle data into Supabase and return the actual inserted count."""
-    rows = []
-    for c in candles:
-        try:
-            timestamp = datetime.utcfromtimestamp(int(c[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S')
-            rows.append({
-                "timestamp": timestamp,
-                "pair": pair,
-                "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
-                "close": float(c[4]), "volume": float(c[5]),
-                "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
-                "taker_buy_quote": float(c[8])
-            })
-        except Exception as e:
-            log_debug(f"❌ Error processing candle {c} for {pair}: {e}")
-
-    log_debug(f"📌 {pair}: Attempting to insert {len(rows)} rows into candles_1H")
+    rows = [{
+        "timestamp": datetime.utcfromtimestamp(int(c[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+        "pair": pair,
+        "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
+        "close": float(c[4]), "volume": float(c[5]),
+        "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
+        "taker_buy_quote": float(c[8])
+    } for c in candles]
 
     if not rows:
-        log_debug(f"⚠️ {pair}: No valid rows to insert, skipping...")
         return 0
 
     response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp").execute()
-    inserted_count = len(response.data) if response.data else 0
-    log_debug(f"🔍 {pair}: Inserted {inserted_count} rows into Supabase")
-    
-    return inserted_count
+    return len(response.data) if response.data else 0
 
 
 def send_email(subject, body):
     """Send an email notification with a report."""
     if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        log_debug("⚠️ Error: Missing email credentials. Skipping email notification.")
+        print("⚠️ Missing email credentials. Skipping email notification.")
         return
 
     msg = EmailMessage()
@@ -142,45 +114,56 @@ def send_email(subject, body):
             server.starttls()
             server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
             server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
-        log_debug(f"📧 Email sent successfully to {EMAIL_RECIPIENT}")
     except smtplib.SMTPException as e:
-        log_debug(f"❌ SMTP Error: {e}")
+        print(f"❌ SMTP Error: {e}")
 
 
 def main():
     pairs = fetch_active_pairs()
     total_inserted = 0
+    total_fixed = 0
     failed_pairs = []
-
     request_count = {OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
+    last_log_time = time.time()
 
-    log_debug(f"🚀 Syncing {len(pairs)} trading pairs for 1H candles...")
+    print(f"✅ Found {len(pairs)} active pairs.")
+    print(f"🚀 Syncing {len(pairs)} trading pairs for 1H candles...")
 
     for index, pair in enumerate(pairs, start=1):
         try:
-            latest_timestamp, _ = fetch_timestamps(pair)
+            latest_timestamp, oldest_timestamp = fetch_timestamps(pair)
+            pair_inserted, pair_fixed = 0, 0
 
-            # Fetch new candles (latest first)
+            # 🔍 Fetch new candles (latest first)
             if latest_timestamp:
-                log_debug(f"🔄 Fetching new candles for {pair} after {latest_timestamp}...")
                 candles = fetch_candles(pair, after_timestamp=latest_timestamp)
-
                 inserted = insert_candles(pair, candles)
                 total_inserted += inserted
-                log_debug(f"📌 {pair}: Inserted {inserted} new candles")
+                pair_inserted += inserted
 
-            # Log **every single pair**
-            log_debug(f"📊 Progress: {index}/{len(pairs)} pairs processed... Inserted: {total_inserted}")
+            # 🔍 Quick backfill check (fetch 1 batch before the oldest timestamp)
+            if oldest_timestamp:
+                backfill_candles = fetch_candles(pair, before_timestamp=oldest_timestamp)
+                if backfill_candles:
+                    fixed = insert_candles(pair, backfill_candles)
+                    total_fixed += fixed
+                    pair_fixed += fixed
+
+            # ✅ Logging every 50 pairs or 2 minutes
+            if index % 50 == 0 or time.time() - last_log_time > 120:
+                print(f"📊 Progress: {index}/{len(pairs)} | Inserted: {total_inserted} | Fixed: {total_fixed}")
+                last_log_time = time.time()
 
         except Exception as e:
-            log_debug(f"⚠️ Error with {pair}: {str(e)}")
+            print(f"⚠️ Error with {pair}: {e}")
             failed_pairs.append(pair)
 
-    log_debug(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Failed={len(failed_pairs)}")
+    # ✅ Final summary
+    print(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
 
-    if total_inserted > 0:
-        send_email("Hourly OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFailed: {len(failed_pairs)}")
+    if total_inserted > 0 or total_fixed > 0:
+        send_email("Hourly OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFixed: {total_fixed}\nFailed: {len(failed_pairs)}")
 
 
 if __name__ == "__main__":
