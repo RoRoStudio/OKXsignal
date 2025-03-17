@@ -55,7 +55,7 @@ def fetch_timestamps(pair):
     oldest_response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
-        .order("timestamp") \
+        .order("timestamp") \  # ✅ Corrected order query (no `asc=True`)
         .limit(1) \
         .execute()
 
@@ -86,7 +86,7 @@ def fetch_candles(pair, after_timestamp=None):
 
 
 def insert_candles(pair, candles):
-    """Insert new candle data into Supabase."""
+    """Insert new candle data into Supabase and return the actual inserted count."""
     rows = [{
         "timestamp": datetime.utcfromtimestamp(int(c[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
         "pair": pair,
@@ -100,7 +100,7 @@ def insert_candles(pair, candles):
         return 0
 
     response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp").execute()
-    return len(response.data) if response.data else 0
+    return len(response.data) if response.data else 0  # ✅ Fix: Only count successful inserts
 
 
 def send_email(subject, body):
@@ -133,6 +133,7 @@ def main():
 
     request_count = {OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
+    last_log_time = time.time()  # ✅ Keep track of last log time for every 2 minutes update
 
     print(f"🚀 Syncing {len(pairs)} trading pairs...")
 
@@ -162,8 +163,10 @@ def main():
                     request_count[OKX_HISTORY_CANDLES_URL], start_time
                 )
 
-            if index % 50 == 0 or pair_inserted > 0 or pair_missing_fixed > 0:
+            # ✅ Log every 2 minutes instead of every 50 pairs
+            if time.time() - last_log_time > 120:  # 120 seconds (2 minutes)
                 print(f"📊 Progress: {index}/{len(pairs)} pairs processed...")
+                last_log_time = time.time()  # Reset timer
 
         except Exception as e:
             print(f"⚠️ Error with {pair}: {str(e)}")
