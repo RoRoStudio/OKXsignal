@@ -1,0 +1,32 @@
+name: Fetch Hourly Candles
+
+on:
+  workflow_dispatch:  # Manually triggered only
+
+jobs:
+  fetch_and_store:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          pip install requests supabase
+        working-directory: ./supabase/functions  # Ensure correct path
+
+      - name: Run script
+        run: |
+          python fetch_hourly_candles.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        working-directory: ./supabase/functions  # Ensure correct path
