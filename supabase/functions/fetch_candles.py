@@ -8,6 +8,7 @@ from email.message import EmailMessage
 from datetime import datetime, timedelta
 from supabase import create_client, Client
 
+# Environment Variables
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
@@ -17,16 +18,20 @@ EMAIL_RECIPIENT = "robert@rorostudio.com"
 SMTP_SERVER = "smtp-relay.brevo.com"
 SMTP_PORT = 587
 
+# OKX API URLs
 OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
 OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 
+# Rate Limit Settings
 HISTORY_CANDLES_RATE_LIMIT = 20
 BATCH_INTERVAL = 2
 
+# Supabase Client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 
 def fetch_active_pairs():
+    """Fetch active trading pairs with USDT or USDC."""
     response = requests.get(OKX_INSTRUMENTS_URL)
     data = response.json()
     return [
@@ -37,6 +42,7 @@ def fetch_active_pairs():
 
 
 def fetch_latest_timestamp(pair):
+    """Fetch the latest available timestamp from Supabase."""
     response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
@@ -50,6 +56,7 @@ def fetch_latest_timestamp(pair):
 
 
 def fetch_oldest_timestamp(pair):
+    """Fetch the oldest available timestamp from Supabase."""
     response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
@@ -63,6 +70,7 @@ def fetch_oldest_timestamp(pair):
 
 
 def enforce_rate_limit(request_count, start_time):
+    """Ensure API rate limits are respected."""
     request_count += 1
     if request_count >= HISTORY_CANDLES_RATE_LIMIT:
         elapsed = time.time() - start_time
@@ -72,10 +80,11 @@ def enforce_rate_limit(request_count, start_time):
     return request_count, start_time
 
 
-def fetch_candles(pair, before_timestamp=None, after_timestamp=None):
+def fetch_candles(pair, after_timestamp=None):
+    """
+    Fetch historical candles using 'after' for correct pagination.
+    """
     params = {"instId": pair, "bar": "1D", "limit": 100}
-    if before_timestamp:
-        params["before"] = str(int(before_timestamp.timestamp() * 1000))
     if after_timestamp:
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
@@ -105,6 +114,7 @@ def fetch_candles(pair, before_timestamp=None, after_timestamp=None):
 
 
 def insert_candles(pair, candles):
+    """Insert new candle data into Supabase."""
     rows = []
     for candle in candles:
         ts, open_, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote = (
@@ -140,6 +150,7 @@ def insert_candles(pair, candles):
 
 
 def send_email(subject, body):
+    """Send an email notification with a report."""
     if not EMAIL_USERNAME or not EMAIL_PASSWORD:
         print("Error: Missing email credentials. Skipping email notification.")
         return
@@ -176,21 +187,20 @@ def main():
             last_timestamp = fetch_latest_timestamp(pair)
             oldest_timestamp = fetch_oldest_timestamp(pair)
 
+            # Fetch new candles
             if last_timestamp:
                 candles = fetch_candles(pair, after_timestamp=last_timestamp)
                 if candles:
                     inserted = insert_candles(pair, candles)
                     total_inserted += inserted
-                    print(f"Inserted {inserted} new candles for {pair}")
 
+            # Fetch historical candles (going backward in time)
             while oldest_timestamp:
-                candles = fetch_candles(pair, before_timestamp=oldest_timestamp)
+                candles = fetch_candles(pair, after_timestamp=oldest_timestamp)
                 if not candles or len(candles) < 100:
-                    print(f"No more historical candles found for {pair}")
                     break
                 inserted = insert_candles(pair, candles)
                 total_missing_fixed += inserted
-                print(f"Inserted {inserted} missing candles for {pair}")
                 oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)
 
                 request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
