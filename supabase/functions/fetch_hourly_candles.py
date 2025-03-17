@@ -81,8 +81,17 @@ def fetch_candles(pair, after_timestamp=None):
     if after_timestamp:
         params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
+    print(f"🔍 Fetching {pair} candles with: {params}")  # DEBUGGING PRINT
+
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-    return response.json().get("data", [])
+    
+    try:
+        data = response.json()
+        print(f"✅ API Response: {data}")  # DEBUGGING PRINT
+        return data.get("data", [])
+    except Exception as e:
+        print(f"❌ Error decoding JSON response for {pair}: {e}")
+        return []
 
 
 def insert_candles(pair, candles):
@@ -99,9 +108,13 @@ def insert_candles(pair, candles):
     if not rows:
         return 0
 
-    response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp").execute()
-    return len(response.data) if response.data else 0  # ✅ Fix: Only count successful inserts
+    print(f"📌 Attempting to insert {len(rows)} rows into candles_1H")  # DEBUGGING PRINT
 
+    response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp").execute()
+
+    print(f"🔍 Insert Response: {response}")  # DEBUGGING PRINT
+
+    return len(response.data) if response.data else 0
 
 def send_email(subject, body):
     """Send an email notification with a report."""
