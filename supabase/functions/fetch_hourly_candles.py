@@ -76,7 +76,6 @@ def enforce_rate_limit(request_count, start_time):
 
 
 def fetch_candles(pair, after_timestamp=None):
-def fetch_candles(pair, after_timestamp=None):
     """Fetch historical candles efficiently for the 1H timeframe."""
     params = {"instId": pair, "bar": "1H", "limit": 100}
     if after_timestamp:
