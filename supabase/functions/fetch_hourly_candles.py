@@ -153,29 +153,44 @@ def main():
             latest_timestamp, oldest_timestamp = fetch_timestamps(pair)
             pair_inserted, pair_missing_fixed = 0, 0
 
-            # Fetch new candles (latest first)
+            # 🔍 Fetch new candles (latest first)
             if latest_timestamp:
+                print(f"🔄 Fetching new candles for {pair} after {latest_timestamp}...")
                 candles = fetch_candles(pair, after_timestamp=latest_timestamp)
+                
+                if candles:
+                    print(f"✅ API returned {len(candles)} candles for {pair}")  # 🔍 Immediate logging
+                else:
+                    print(f"⚠️ No new candles found for {pair}")
+
                 inserted = insert_candles(pair, candles)
                 total_inserted += inserted
                 pair_inserted += inserted
 
-            # Fetch historical candles (earliest first)
+                print(f"📌 Inserted {inserted} new candles for {pair}")  # 🔍 Immediate logging
+
+            # 🔍 Fetch historical candles (earliest first)
             while oldest_timestamp:
+                print(f"🔄 Fetching older candles for {pair} before {oldest_timestamp}...")
                 candles = fetch_candles(pair, after_timestamp=oldest_timestamp)
+
                 if not candles or len(candles) < 100:
+                    print(f"⏳ No more historical candles found for {pair}, stopping fetch.")
                     break
+
                 inserted = insert_candles(pair, candles)
                 total_missing_fixed += inserted
                 pair_missing_fixed += inserted
                 oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)
 
+                print(f"📌 Inserted {inserted} missing candles for {pair}")  # 🔍 Immediate logging
+
                 request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
                     request_count[OKX_HISTORY_CANDLES_URL], start_time
                 )
 
-            # ✅ Log every 2 minutes
-            if time.time() - last_log_time > 120:
+            # ✅ Log every 10 pairs, so you can stop early if needed
+            if index % 10 == 0 or time.time() - last_log_time > 120:
                 print(f"📊 Progress: {index}/{len(pairs)} pairs processed... Inserted: {total_inserted}, Fixed: {total_missing_fixed}, Failed: {len(failed_pairs)}")
                 last_log_time = time.time()
 
@@ -187,7 +202,6 @@ def main():
 
     if total_inserted > 0 or total_missing_fixed > 0:
         send_email("Hourly OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFixed: {total_missing_fixed}\nFailed: {len(failed_pairs)}")
-
 
 if __name__ == "__main__":
     main()
