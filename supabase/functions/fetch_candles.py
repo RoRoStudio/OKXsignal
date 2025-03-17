@@ -8,7 +8,6 @@ from email.message import EmailMessage
 from datetime import datetime, timedelta
 from supabase import create_client, Client
 
-# Load environment variables
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
@@ -18,20 +17,16 @@ EMAIL_RECIPIENT = "robert@rorostudio.com"
 SMTP_SERVER = "smtp-relay.brevo.com"
 SMTP_PORT = 587
 
-# OKX API Endpoints
 OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
 OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 
-# Rate Limit Handling 
-HISTORY_CANDLES_RATE_LIMIT = 20  # /market/history-candles → 20 requests per 2 seconds
-BATCH_INTERVAL = 2  # seconds
+HISTORY_CANDLES_RATE_LIMIT = 20
+BATCH_INTERVAL = 2
 
-# Initialize Supabase Client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 
 def fetch_active_pairs():
-    """Fetch all live USDT/USDC spot trading pairs."""
     response = requests.get(OKX_INSTRUMENTS_URL)
     data = response.json()
     return [
@@ -42,7 +37,6 @@ def fetch_active_pairs():
 
 
 def fetch_latest_timestamp(pair):
-    """Get the most recent timestamp stored in Supabase for the given pair."""
     response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
@@ -51,12 +45,11 @@ def fetch_latest_timestamp(pair):
         .execute()
 
     if response.data:
-        return parser.isoparse(response.data[0]['timestamp'])  # Auto-detects ISO format
+        return parser.isoparse(response.data[0]['timestamp'])
     return None
 
 
 def fetch_oldest_timestamp(pair):
-    """Get the oldest timestamp stored in Supabase for the given pair."""
     response = supabase.table("candles_1D") \
         .select("timestamp") \
         .eq("pair", pair) \
@@ -65,42 +58,35 @@ def fetch_oldest_timestamp(pair):
         .execute()
 
     if response.data:
-        return parser.isoparse(response.data[0]['timestamp'])  # Auto-detects ISO format
+        return parser.isoparse(response.data[0]['timestamp'])
     return None
 
-def enforce_rate_limit(endpoint, request_count, start_time):
-    """Handles rate limit enforcement for different OKX endpoints."""
-    rate_limit = CANDLES_RATE_LIMIT if endpoint == OKX_CANDLES_URL else HISTORY_CANDLES_RATE_LIMIT
 
+def enforce_rate_limit(request_count, start_time):
     request_count += 1
-    if request_count >= rate_limit:
+    if request_count >= HISTORY_CANDLES_RATE_LIMIT:
         elapsed = time.time() - start_time
         if elapsed < BATCH_INTERVAL:
             time.sleep(BATCH_INTERVAL - elapsed)
         return 0, time.time()
-    
     return request_count, start_time
 
 
 def fetch_candles(pair, before_timestamp=None, after_timestamp=None):
-    """Fetch daily candles from OKX, ensuring both missing and latest candles are retrieved."""
-    params = {"instId": pair, "bar": "1D", "limit": 100}  # Max 100 candles per call
-
+    params = {"instId": pair, "bar": "1D", "limit": 100}
     if before_timestamp:
-        params["before"] = str(int(before_timestamp.timestamp() * 1000))  # Fetch older candles
+        params["before"] = str(int(before_timestamp.timestamp() * 1000))
     if after_timestamp:
-        params["after"] = str(int(after_timestamp.timestamp() * 1000))  # Fetch newer candles
+        params["after"] = str(int(after_timestamp.timestamp() * 1000))
 
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
     raw_candles = response.json().get("data", [])
-
     if not raw_candles:
         print(f"❌ No candles received from OKX for {pair}, skipping...")
         return []
 
-    # Convert existing timestamps from Supabase to a set for quick lookup
     existing_timestamps = set(
-        row["timestamp"]
+        parser.isoparse(row["timestamp"]).replace(tzinfo=None).strftime('%Y-%m-%d %H:%M:%S')
         for row in supabase.table("candles_1D")
         .select("timestamp")
         .eq("pair", pair)
@@ -111,7 +97,6 @@ def fetch_candles(pair, before_timestamp=None, after_timestamp=None):
     filtered_candles = []
     for candle in raw_candles:
         timestamp_iso = datetime.utcfromtimestamp(int(candle[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S')
-
         if timestamp_iso not in existing_timestamps:
             filtered_candles.append(candle)
 
@@ -120,11 +105,10 @@ def fetch_candles(pair, before_timestamp=None, after_timestamp=None):
 
 
 def insert_candles(pair, candles):
-    """Insert candles into Supabase, handling duplicates properly."""
     rows = []
     for candle in candles:
         ts, open_, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote = (
-            candle + ["0"] * (9 - len(candle))  # Handle missing fields
+            candle + ["0"] * (9 - len(candle))
         )
         rows.append(
             {
@@ -146,9 +130,7 @@ def insert_candles(pair, candles):
         return 0
 
     print(f"📌 Attempting to insert {len(rows)} rows for {pair}...")
-
     response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp").execute()
-
     if response.data:
         print(f"✅ Successfully inserted {len(response.data)} rows for {pair}")
         return len(response.data)
@@ -158,7 +140,6 @@ def insert_candles(pair, candles):
 
 
 def send_email(subject, body):
-    """Send an email summary after execution."""
     if not EMAIL_USERNAME or not EMAIL_PASSWORD:
         print("Error: Missing email credentials. Skipping email notification.")
         return
@@ -192,11 +173,9 @@ def main():
     for pair in pairs:
         try:
             print(f"Processing {pair}...")
+            last_timestamp = fetch_latest_timestamp(pair)
+            oldest_timestamp = fetch_oldest_timestamp(pair)
 
-            last_timestamp = fetch_latest_timestamp(pair)  # Get latest stored candle timestamp
-            oldest_timestamp = fetch_oldest_timestamp(pair)  # Get the earliest stored candle timestamp
-
-            # Fetch latest daily candle using history-candles
             if last_timestamp:
                 candles = fetch_candles(pair, after_timestamp=last_timestamp)
                 if candles:
@@ -204,34 +183,32 @@ def main():
                     total_inserted += inserted
                     print(f"Inserted {inserted} new candles for {pair}")
 
-            # Fetch missing historical candles using history-candles
             while oldest_timestamp:
                 candles = fetch_candles(pair, before_timestamp=oldest_timestamp)
-                if not candles or len(candles) < 100:  # Stop if no data or <100 candles (indicates end)
+                if not candles or len(candles) < 100:
                     print(f"No more historical candles found for {pair}")
                     break
-
                 inserted = insert_candles(pair, candles)
                 total_missing_fixed += inserted
                 print(f"Inserted {inserted} missing candles for {pair}")
-
-                # Update oldest timestamp for next batch
                 oldest_timestamp = datetime.utcfromtimestamp(int(candles[-1][0]) / 1000)
 
-                # Enforce separate rate limits
                 request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
-                    OKX_HISTORY_CANDLES_URL, request_count[OKX_HISTORY_CANDLES_URL], start_time
+                    request_count[OKX_HISTORY_CANDLES_URL], start_time
                 )
 
         except Exception as e:
             print(f"Failed for {pair}: {str(e)}")
             failed_pairs.append(pair)
 
-    # Send summary email
     email_subject = "Daily OKX Candle Sync Report"
-    email_body = f"Pairs Processed: {len(pairs)}\nNew Candles Inserted: {total_inserted}\nMissing Candles Fixed: {total_missing_fixed}\nFailed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
+    email_body = (
+        f"Pairs Processed: {len(pairs)}\n"
+        f"New Candles Inserted: {total_inserted}\n"
+        f"Missing Candles Fixed: {total_missing_fixed}\n"
+        f"Failed Pairs: {', '.join(failed_pairs) if failed_pairs else 'None'}\n"
+    )
     send_email(email_subject, email_body)
-
     print("Sync complete. Summary email sent.")
 
 
