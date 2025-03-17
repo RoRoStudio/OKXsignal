@@ -1,6 +1,7 @@
 import requests
 import os
 import time
+import sys  # Needed for stdout flushing
 import smtplib
 import ssl
 from dateutil import parser
@@ -34,11 +35,7 @@ def fetch_active_pairs():
     """Fetch active trading pairs with USDT or USDC."""
     response = requests.get(OKX_INSTRUMENTS_URL)
     data = response.json()
-    return [
-        inst["instId"]
-        for inst in data.get("data", [])
-        if inst["quoteCcy"] in {"USDT", "USDC"} and inst["state"] == "live"
-    ]
+    return [inst["instId"] for inst in data.get("data", []) if inst["quoteCcy"] in {"USDT", "USDC"} and inst["state"] == "live"]
 
 
 def fetch_timestamps(pair):
@@ -71,36 +68,50 @@ def fetch_candles(pair, after_timestamp=None, before_timestamp=None):
     if before_timestamp:
         params["before"] = str(int(before_timestamp.timestamp() * 1000))
 
+    print(f"🔍 Fetching {pair} candles with: {params}", flush=True)
+
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
     try:
-        return response.json().get("data", [])
+        data = response.json()
+        print(f"✅ API Response for {pair}: {data}", flush=True)  # DEBUG API OUTPUT
+        return data.get("data", [])
     except Exception as e:
-        print(f"❌ Error parsing JSON response for {pair}: {e}")
+        print(f"❌ Error parsing JSON response for {pair}: {e}", flush=True)
         return []
 
 
 def insert_candles(pair, candles):
     """Insert new candle data into Supabase and return the actual inserted count."""
-    rows = [{
-        "timestamp": datetime.utcfromtimestamp(int(c[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-        "pair": pair,
-        "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
-        "close": float(c[4]), "volume": float(c[5]),
-        "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
-        "taker_buy_quote": float(c[8])
-    } for c in candles]
+    rows = []
+    for c in candles:
+        try:
+            ts = datetime.utcfromtimestamp(int(c[0]) / 1000).strftime('%Y-%m-%d %H:%M:%S')
+            rows.append({
+                "timestamp": ts,
+                "pair": pair,
+                "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
+                "close": float(c[4]), "volume": float(c[5]),
+                "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
+                "taker_buy_quote": float(c[8])
+            })
+        except Exception as e:
+            print(f"⚠️ Error processing candle data for {pair}: {e}", flush=True)
 
     if not rows:
+        print(f"⚠️ No valid rows to insert for {pair}, skipping...", flush=True)
         return 0
 
+    print(f"📌 Attempting to insert {len(rows)} rows for {pair}", flush=True)
     response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp").execute()
+    print(f"🔍 Supabase Insert Response for {pair}: {response}", flush=True)
+
     return len(response.data) if response.data else 0
 
 
 def send_email(subject, body):
     """Send an email notification with a report."""
     if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        print("⚠️ Missing email credentials. Skipping email notification.")
+        print("⚠️ Missing email credentials. Skipping email notification.", flush=True)
         return
 
     msg = EmailMessage()
@@ -115,7 +126,7 @@ def send_email(subject, body):
             server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
             server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
     except smtplib.SMTPException as e:
-        print(f"❌ SMTP Error: {e}")
+        print(f"❌ SMTP Error: {e}", flush=True)
 
 
 def main():
@@ -127,20 +138,23 @@ def main():
     start_time = time.time()
     last_log_time = time.time()
 
-    print(f"✅ Found {len(pairs)} active pairs.")
-    print(f"🚀 Syncing {len(pairs)} trading pairs for 1H candles...")
+    print(f"✅ Found {len(pairs)} active pairs.", flush=True)
+    print(f"🚀 Syncing {len(pairs)} trading pairs for 1H candles...", flush=True)
 
     for index, pair in enumerate(pairs, start=1):
         try:
             latest_timestamp, oldest_timestamp = fetch_timestamps(pair)
+            print(f"⏳ {pair} → Latest: {latest_timestamp}, Oldest: {oldest_timestamp}", flush=True)
+
             pair_inserted, pair_fixed = 0, 0
 
             # 🔍 Fetch new candles (latest first)
             if latest_timestamp:
                 candles = fetch_candles(pair, after_timestamp=latest_timestamp)
-                inserted = insert_candles(pair, candles)
-                total_inserted += inserted
-                pair_inserted += inserted
+                if candles:
+                    inserted = insert_candles(pair, candles)
+                    total_inserted += inserted
+                    pair_inserted += inserted
 
             # 🔍 Quick backfill check (fetch 1 batch before the oldest timestamp)
             if oldest_timestamp:
@@ -150,17 +164,17 @@ def main():
                     total_fixed += fixed
                     pair_fixed += fixed
 
-            # ✅ Logging every 50 pairs or 2 minutes
+            # ✅ Log every 50 pairs or 2 minutes
             if index % 50 == 0 or time.time() - last_log_time > 120:
-                print(f"📊 Progress: {index}/{len(pairs)} | Inserted: {total_inserted} | Fixed: {total_fixed}")
+                print(f"📊 Progress: {index}/{len(pairs)} | Inserted: {total_inserted} | Fixed: {total_fixed}", flush=True)
                 last_log_time = time.time()
 
         except Exception as e:
-            print(f"⚠️ Error with {pair}: {e}")
+            print(f"⚠️ Error with {pair}: {e}", flush=True)
             failed_pairs.append(pair)
 
     # ✅ Final summary
-    print(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
+    print(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Fixed={total_fixed}, Failed={len(failed_pairs)}", flush=True)
 
     if total_inserted > 0 or total_fixed > 0:
         send_email("Hourly OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFixed: {total_fixed}\nFailed: {len(failed_pairs)}")
