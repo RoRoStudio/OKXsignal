@@ -7,6 +7,12 @@ from dateutil import parser
 from email.message import EmailMessage
 from datetime import datetime
 from supabase import create_client, Client
+from dotenv import load_dotenv
+
+# Load .env only if running locally (not in GitHub Actions)
+if not os.getenv("GITHUB_ACTIONS"):
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    load_dotenv(env_path)
 
 # Environment Variables
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -37,7 +43,7 @@ def fetch_active_pairs():
     return [
         inst["instId"]
         for inst in data.get("data", [])
-        if inst["quoteCcy"] in {"USDT", "USDC"} and inst["state"] == "live"
+        if inst["quoteCcy"] in {"USDT"} and inst["state"] == "live"
     ]
 
 
@@ -118,7 +124,7 @@ def main():
     request_count = {OKX_CANDLES_URL: 0}
     start_time = time.time()
 
-    print(f"✅ Found {len(pairs)} active pairs.")
+    print(f"✅ Found {len(pairs)} active USDT pairs.")
     print(f"🚀 Fetching new 1H candles...")
 
     for index, pair in enumerate(pairs, start=1):

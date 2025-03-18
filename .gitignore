@@ -2,6 +2,9 @@
 backend/config/credentials.env
 backend/config/settings.py
 
+# 🔹 Ignore Local Environment Files
+supabase/functions/.env
+
 # 🔹 Ignore Python Cache
 __pycache__/
 *.pyc
