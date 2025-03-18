@@ -1,4 +1,4 @@
-name: Fetch Daily Candles
+name: Fetch New 1D Candles
 
 on:
   schedule:
@@ -25,7 +25,7 @@ jobs:
 
       - name: Run script
         run: |
-          python fetch_candles.py
+          python fetch_new_1d_candles.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
