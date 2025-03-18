@@ -13,12 +13,21 @@ Assumes you have the following environment variables or direct config:
 import os
 import pandas as pd
 from supabase import create_client, Client
+from dotenv import load_dotenv
+from config.config_loader import load_config
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "<your-supabase-url>")
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "<your-anon-key>")
+# Load environment variables from credentials.env in config/
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config", "credentials.env"))
+load_dotenv(env_path)
+
+# Load Supabase URL from config.ini
+config = load_config()
+
+SUPABASE_URL = config["SUPABASE_URL"]
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 if not SUPABASE_URL or not SUPABASE_ANON_KEY:
-    raise ValueError("Supabase credentials missing. Set SUPABASE_URL and SUPABASE_ANON_KEY.")
+    raise ValueError("❌ Supabase credentials missing. Check config/config.ini and config/credentials.env.")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 

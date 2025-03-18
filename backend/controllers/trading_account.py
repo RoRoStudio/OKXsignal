@@ -4,6 +4,12 @@ Retrieves account-related information like balances, trade fee, positions, etc.
 """
 
 from okx_api.rest_client import OKXRestClient
+from config.config_loader import load_config
+
+config = load_config()
+simulated_trading = config["SIMULATED_TRADING"]
+
+client = OKXRestClient(simulated_trading=simulated_trading)
 
 def get_balance_info():
     """

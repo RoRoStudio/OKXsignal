@@ -1,4 +1,3 @@
-# Handles authentication for OKX API
 """
 auth.py
 Handles authentication for OKX API using HMAC SHA256 signatures.
@@ -11,24 +10,17 @@ import datetime
 import os
 from dotenv import load_dotenv
 
-# Force-load .env file from the exact path
-env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "config", "credentials.env"))
-if not os.path.exists(env_path):
-    raise FileNotFoundError(f"❌ credentials.env file not found at {env_path}")
+# Load environment variables from credentials.env in config/
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "config", "credentials.env"))
+load_dotenv(env_path)
 
-loaded = load_dotenv(env_path)
-if not loaded:
-    raise ValueError(f"❌ Failed to load environment variables from {env_path}")
-
-
-
+# Retrieve credentials from environment variables
 API_KEY = os.getenv("OKX_API_KEY", "").strip()
 SECRET_KEY = os.getenv("OKX_SECRET_KEY", "").strip()
 PASSPHRASE = os.getenv("OKX_PASSPHRASE", "").strip()
 
 if not API_KEY or not SECRET_KEY or not PASSPHRASE:
-    raise ValueError(f"❌ Missing API credentials.\nLoaded Values:\n"
-                     f"OKX_API_KEY='{API_KEY}'\nOKX_SECRET_KEY='{SECRET_KEY}'\nOKX_PASSPHRASE='{PASSPHRASE}'")
+    raise ValueError("❌ Missing OKX API credentials. Check config/credentials.env.")
 
 def get_timestamp() -> str:
     return datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + "Z"
@@ -53,4 +45,3 @@ def get_headers(timestamp: str, method: str, path: str, body: str = "", simulate
     if simulated:
         headers["x-simulated-trading"] = "1"
     return headers
-

@@ -32,6 +32,7 @@ EXCLUDED_PATHS = {
     os.path.join(ROOT_DIR, "frontend", "grafana"),
     os.path.join(ROOT_DIR, "package-lock.json"),
     os.path.join(ROOT_DIR, "supabase"),
+    os.path.join(ROOT_DIR, "credentials.env"),
 }
 
 def is_excluded(path):
@@ -269,189 +270,623 @@ print('\n===== Test Completed =====')
 
 ```
 
-## `backend\config\settings.py`
+## `backend\config\config_loader.py`
 
 ```python
 # General configuration settings
+"""
+config_loader.py
+Loads configuration settings from config.ini.
+"""
+
+import os
+import configparser
+
+# Locate config.ini in project root
+CONFIG_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config.ini"))
+
+def load_config():
+    """
+    Reads config.ini and returns a dictionary of relevant info.
+    """
+    if not os.path.exists(CONFIG_FILE):
+        raise FileNotFoundError(f"❌ Config file not found: {CONFIG_FILE}")
+
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+
+    settings = {
+        "SIMULATED_TRADING": config["OKX"].getboolean("SIMULATED_TRADING", fallback=False),
+
+        "SUPABASE_URL": config["SUPABASE"]["SUPABASE_URL"],
+
+        "DEFAULT_PAIR": config["GENERAL"]["DEFAULT_PAIR"],
+        "DEFAULT_TIMEFRAME": config["GENERAL"]["DEFAULT_TIMEFRAME"],
+        "ORDER_SIZE_LIMIT": config["GENERAL"].getint("ORDER_SIZE_LIMIT", fallback=5),
+        "LOG_LEVEL": config["GENERAL"]["LOG_LEVEL"]
+    }
+    return settings
 
 ```
 
 ## `backend\controllers\data_retrieval.py`
 
 ```python
+"""
+data_retrieval.py
+Handles supabase table retrieval for the 1H and 1D candles.
+
+Requires:
+  pip install supabase-py
+
+Assumes you have the following environment variables or direct config:
+    SUPABASE_URL
+    SUPABASE_ANON_KEY
+"""
+
+import os
+import pandas as pd
+from supabase import create_client, Client
+from dotenv import load_dotenv
+from backend.config.config_loader import load_config
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "<your-supabase-url>")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "<your-anon-key>")
+
+if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+    raise ValueError("Supabase credentials missing. Set SUPABASE_URL and SUPABASE_ANON_KEY.")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+def get_candles_1H(pair: str, limit: int = 1000) -> pd.DataFrame:
+    """
+    Fetch candle data from the 'candles_1H' table for a given pair.
+    :param pair: e.g. "BTC-USDT"
+    :param limit: how many recent rows to fetch
+    :return: pandas DataFrame with columns:
+        [pair, timestamp_ms, open, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote]
+    """
+    response = supabase.table("candles_1H") \
+        .select("*") \
+        .eq("pair", pair) \
+        .order("timestamp_ms", desc=True) \
+        .limit(limit).execute()
+
+    data = response.data  # list of dict
+    if not data:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(data)
+    df = df.sort_values("timestamp_ms", ascending=True).reset_index(drop=True)
+    return df
+
+def get_candles_1D(pair: str, limit: int = 1000) -> pd.DataFrame:
+    """
+    Fetch candle data from the 'candles_1D' table for a given pair.
+    :param pair: e.g. "BTC-USDT"
+    :param limit: how many recent rows to fetch
+    :return: pandas DataFrame with columns:
+        [pair, timestamp_ms, open, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote]
+    """
+    response = supabase.table("candles_1D") \
+        .select("*") \
+        .eq("pair", pair) \
+        .order("timestamp_ms", desc=True) \
+        .limit(limit).execute()
+
+    data = response.data
+    if not data:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(data)
+    df = df.sort_values("timestamp_ms", ascending=True).reset_index(drop=True)
+    return df
+
+
+def get_recent_candles(pair: str, timeframe: str = "1H", limit: int = 1000) -> pd.DataFrame:
+    """
+    Simple wrapper to fetch either 1H or 1D from a single function.
+    """
+    if timeframe == "1H":
+        return get_candles_1H(pair, limit)
+    elif timeframe == "1D":
+        return get_candles_1D(pair, limit)
+    else:
+        raise ValueError("Unsupported timeframe. Use '1H' or '1D'.")
+
+# Optional: You can add more specialized queries for date ranges, e.g. timestamp_ms >= ...
+# For example:
+
+def get_candles_by_range(pair: str, timeframe: str, start_ts: int, end_ts: int) -> pd.DataFrame:
+    """
+    Fetch candles within a specific timestamp range (inclusive).
+    :param start_ts: earliest timestamp in ms
+    :param end_ts: latest timestamp in ms
+    """
+    table_name = "candles_1H" if timeframe == "1H" else "candles_1D"
+    response = supabase.table(table_name) \
+        .select("*") \
+        .eq("pair", pair) \
+        .gte("timestamp_ms", start_ts) \
+        .lte("timestamp_ms", end_ts) \
+        .order("timestamp_ms", desc=False).execute()
+
+    data = response.data
+    if not data:
+        return pd.DataFrame()
+
+    return pd.DataFrame(data)
+
+
+if __name__ == "__main__":
+    # Simple test
+    df_1h = get_candles_1H("BTC-USDT", limit=5)
+    print("=== Last 5 of 1H ===")
+    print(df_1h)
+
+    df_1d = get_candles_1D("BTC-USDT", limit=5)
+    print("=== Last 5 of 1D ===")
+    print(df_1d)
 
 ```
 
 ## `backend\controllers\order_execution.py`
 
 ```python
+"""
+order_execution.py
+Handles placing, amending, and canceling orders via the OKX V5 API endpoints.
+"""
+
+from okx_api.rest_client import OKXRestClient
+
+def place_spot_order(inst_id: str, side: str, ord_type: str, qty: float, price: float = None):
+    """
+    Places a SPOT order on OKX.
+    :param inst_id: e.g. 'BTC-USDT'
+    :param side: 'buy' or 'sell'
+    :param ord_type: 'limit', 'market', 'post_only', 'fok', 'ioc', ...
+    :param qty: the size of the trade, in base or quote currency depending on the ord_type
+    :param price: required if it's a 'limit' or 'post_only' or 'fok' order
+    """
+    client = OKXRestClient()
+
+    data = {
+        "instId": inst_id,
+        "tdMode": "cash",    # spot trading
+        "side": side,
+        "ordType": ord_type,
+        "sz": str(qty),      # must be string
+    }
+    if price and ord_type in ["limit", "post_only", "fok", "ioc"]:
+        data["px"] = str(price)
+
+    endpoint = "/api/v5/trade/order"
+    response = client._request("POST", endpoint, data=data)
+    return response
+
+def cancel_spot_order(inst_id: str, ord_id: str = None, cl_ord_id: str = None):
+    """
+    Cancel an open SPOT order by either 'ordId' or 'clOrdId' (client ID).
+    instId is required. If both ord_id & cl_ord_id are passed, ord_id is used.
+    """
+    client = OKXRestClient()
+    endpoint = "/api/v5/trade/cancel-order"
+
+    data = {
+        "instId": inst_id
+    }
+    if ord_id:
+        data["ordId"] = ord_id
+    elif cl_ord_id:
+        data["clOrdId"] = cl_ord_id
+
+    response = client._request("POST", endpoint, data=data)
+    return response
+
+def amend_spot_order(inst_id: str, new_qty: float = None, new_px: float = None, ord_id: str = None, cl_ord_id: str = None):
+    """
+    Amend a pending SPOT order. E.g., modify the price or size (unfilled portion).
+    The order ID or client order ID must be specified.
+    """
+    client = OKXRestClient()
+    endpoint = "/api/v5/trade/amend-order"
+
+    data = {
+        "instId": inst_id
+    }
+    if ord_id:
+        data["ordId"] = ord_id
+    elif cl_ord_id:
+        data["clOrdId"] = cl_ord_id
+
+    if new_qty:
+        data["newSz"] = str(new_qty)
+    if new_px:
+        data["newPx"] = str(new_px)
+
+    response = client._request("POST", endpoint, data=data)
+    return response
 
 ```
 
 ## `backend\controllers\trading_account.py`
 
 ```python
-
-```
-
-## `backend\execution\api.py`
-
-```python
-﻿# api.py
-# FastAPI backend for triggering Python scripts from Grafana
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Backend API is working!"}
-
-```
-
-## `backend\execution\async_requests.py`
-
-```python
-# Handles asynchronous batch API requests
-
-```
-
-## `backend\execution\fetch_market.py`
-
-```python
 """
-fetch_market.py
-Fetches historical market data (candlesticks) for all USDT spot pairs on OKX.
-Designed to be triggered by Streamlit.
+trading_account.py
+Retrieves account-related information like balances, trade fee, positions, etc.
 """
 
-import asyncio
-import time
-import random
-import pandas as pd
-import streamlit as st
-from tqdm.asyncio import tqdm  # Async progress bar
 from okx_api.rest_client import OKXRestClient
+from backend.config.config_loader import load_config
 
-CANDLE_LIMIT = 100  # OKX API max per request
-TOTAL_CANDLES = 1000  # Number of daily candles we want
-TIMEFRAME = "1D"  # 1-day timeframe
-MAX_CONCURRENT_REQUESTS = 20  # ✅ Rate-limiting
+config = load_config()
+simulated_trading = config["SIMULATED_TRADING"]
 
-async def fetch_usdt_pairs():
-    """Fetches active USDT spot trading pairs from OKX."""
+client = OKXRestClient(simulated_trading=simulated_trading)
+
+def get_balance_info():
+    """
+    Returns account balances from /api/v5/account/balance
+    """
     client = OKXRestClient()
-    response = client.get_instruments(instType="SPOT")
+    resp = client.get_balance()
+    return resp
 
-    raw_pairs = [x["instId"] for x in response["data"] if x["instId"].endswith("-USDT") and x["state"] == "live"]
-
-    valid_pairs = []
-    batch_size = 10
-    for i in range(0, len(raw_pairs), batch_size):
-        batch = raw_pairs[i : i + batch_size]
-
-        for pair in batch:
-            test_response = client.get_ticker(pair)
-            if "code" in test_response and test_response["code"] == "51001":
-                st.warning(f"🛑 Skipping non-existent pair: {pair}")
-            else:
-                valid_pairs.append(pair)
-
-        time.sleep(1)  # ✅ Add delay to avoid rate-limiting
-
-    st.success(f"✅ Found {len(valid_pairs)} valid USDT trading pairs.")
-    return valid_pairs
-
-async def fetch_candles(pair, semaphore, progress_bar):
-    """Fetches historical candlestick data for a trading pair."""
+def get_positions_info():
+    """
+    Returns positions info from /api/v5/account/positions
+    (Applicable if you're using margin/Futures/Swap.)
+    """
     client = OKXRestClient()
-    all_data = []
+    resp = client.get_positions()
+    return resp
 
-    async with semaphore:
-        while len(all_data) < TOTAL_CANDLES:
-            response = client.get_candlesticks(instId=pair, bar=TIMEFRAME, limit=CANDLE_LIMIT)
+def get_account_config():
+    """
+    Returns the account configuration from /api/v5/account/config
+    e.g. position mode, risk settings.
+    """
+    client = OKXRestClient()
+    resp = client.get_account_config()
+    return resp
 
-            if "code" in response and response["code"] == "50011":
-                st.warning(f"⚠️ Rate limited. Retrying {pair}...")
-                await asyncio.sleep(random.uniform(3, 5))  
-                continue  
+def get_trade_fee(inst_type: str = "SPOT", inst_id: str = None):
+    """
+    Returns fee rate (maker & taker) from /api/v5/account/trade-fee
+    :param inst_type: 'SPOT', 'FUTURES', 'SWAP', etc.
+    :param inst_id: specific pair e.g. 'BTC-USDT' if you want a more precise fee
+    """
+    client = OKXRestClient()
+    endpoint = "/api/v5/account/trade-fee"
+    params = {
+        "instType": inst_type
+    }
+    if inst_id:
+        params["instId"] = inst_id
 
-            if "data" not in response or len(response["data"]) == 0:
-                return pair, pd.DataFrame()
-
-            all_data.extend(response["data"])
-            await asyncio.sleep(random.uniform(0.2, 0.5))  # ✅ Avoid hammering API
-
-    df = pd.DataFrame(all_data, columns=["timestamp", "open", "high", "low", "close", "volume"])
-    df["timestamp"] = pd.to_datetime(pd.to_numeric(df["timestamp"], errors="coerce"), unit="ms")
-    df[["open", "high", "low", "close", "volume"]] = df[["open", "high", "low", "close", "volume"]].apply(pd.to_numeric, errors="coerce")
-
-    progress_bar.update(1)
-    return pair, df[:TOTAL_CANDLES]
-
-async def fetch_all_pairs():
-    """Fetches market data for all USDT trading pairs."""
-    pairs = await fetch_usdt_pairs()
-    semaphore = asyncio.Semaphore(MAX_CONCURRENT_REQUESTS)
-
-    progress_bar = st.progress(0)
-    total_pairs = len(pairs)
-
-    async def limited_fetch(pair):
-        return await fetch_candles(pair, semaphore, progress_bar)
-
-    tasks = [limited_fetch(pair) for pair in pairs]
-    results = await asyncio.gather(*tasks)
-
-    progress_bar.empty()
-    return {pair: df for pair, df in results}
-
-def main():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    return loop.run_until_complete(fetch_all_pairs())
-
-
-```
-
-## `backend\execution\fetch_portfolio.py`
-
-```python
-# Fetches user portfolio balances from OKX API
+    resp = client._request("GET", endpoint, params=params)
+    return resp
 
 ```
 
 ## `backend\indicators\atr.py`
 
 ```python
-# For volatility-based sizing
+"""
+atr.py
+Calculates the Average True Range (ATR), a measure of volatility.
+
+Usage:
+    df = compute_atr(df, period=14, fillna=True)
+    # df now has a new column "ATR"
+
+Notes:
+    - For OKXsignal, ATR helps size positions in a volatile market or to set dynamic stop-loss distances.
+"""
+
+import pandas as pd
+import numpy as np
+
+def compute_atr(
+    df: pd.DataFrame,
+    period: int = 14,
+    fillna: bool = False,
+    column_name: str = "ATR"
+) -> pd.DataFrame:
+    """
+    Adds a new column with ATR values.
+
+    ATR is computed by:
+      TR = max( (high - low), abs(high - previous_close), abs(low - previous_close) )
+      Then we take an EMA or SMA of TR over 'period' bars. Here we default to an SMA.
+
+    :param df: DataFrame with columns ['high', 'low', 'close'].
+               Must have multiple rows for a valid ATR.
+    :param period: the lookback period for ATR, typically 14.
+    :param fillna: if True, fill NaN with last valid value.
+    :param column_name: the name of the new column for ATR.
+    :return: the original DataFrame with an 'ATR' column appended.
+    """
+
+    df = df.copy()
+
+    # 1) True Range calculation
+    df["prev_close"] = df["close"].shift(1)
+    df["high_low"] = df["high"] - df["low"]
+    df["high_pc"] = (df["high"] - df["prev_close"]).abs()
+    df["low_pc"] = (df["low"] - df["prev_close"]).abs()
+
+    df["TR"] = df[["high_low", "high_pc", "low_pc"]].max(axis=1)
+
+    # 2) Average True Range: simple moving average of TR
+    df[column_name] = df["TR"].rolling(window=period, min_periods=period).mean()
+
+    # Optional: fill NaN
+    if fillna:
+        df[column_name].fillna(method="ffill", inplace=True)
+
+    # Cleanup intermediate columns
+    df.drop(["prev_close", "high_low", "high_pc", "low_pc", "TR"], axis=1, inplace=True)
+
+    return df
+
 ```
 
 ## `backend\indicators\bollinger.py`
 
 ```python
-# Computes Bollinger Bands indicator
+"""
+bollinger.py
+Computes Bollinger Bands (Middle, Upper, Lower) based on a moving average 
+and a standard deviation multiplier.
+
+Usage:
+    df = compute_bollinger_bands(df, period=20, std_multiplier=2.0, fillna=False)
+    # Produces columns: BB_Middle, BB_Upper, BB_Lower
+
+Notes:
+    - For OKXsignal, Bollinger Bands help identify volatility expansions/contractions 
+      and potential breakouts in highly liquid pairs.
+"""
+
+import pandas as pd
+
+def compute_bollinger_bands(
+    df: pd.DataFrame,
+    period: int = 20,
+    std_multiplier: float = 2.0,
+    fillna: bool = False,
+    col_prefix: str = "BB"
+) -> pd.DataFrame:
+    """
+    Adds Bollinger Band columns to the DataFrame:
+      - <prefix>_Middle
+      - <prefix>_Upper
+      - <prefix>_Lower
+
+    :param df: DataFrame with 'close' column.
+    :param period: lookback period for the moving average (often 20).
+    :param std_multiplier: standard deviation factor (often 2.0).
+    :param fillna: if True, forward fill NaN values.
+    :param col_prefix: prefix for the new columns.
+    :return: the original DataFrame with Bollinger columns appended.
+    """
+
+    df = df.copy()
+
+    # Middle Band = SMA of the close
+    middle_col = f"{col_prefix}_Middle"
+    upper_col = f"{col_prefix}_Upper"
+    lower_col = f"{col_prefix}_Lower"
+
+    df[middle_col] = df["close"].rolling(period, min_periods=period).mean()
+
+    # rolling std
+    rolling_std = df["close"].rolling(period, min_periods=period).std()
+
+    df[upper_col] = df[middle_col] + (std_multiplier * rolling_std)
+    df[lower_col] = df[middle_col] - (std_multiplier * rolling_std)
+
+    if fillna:
+        df[middle_col].fillna(method="ffill", inplace=True)
+        df[upper_col].fillna(method="ffill", inplace=True)
+        df[lower_col].fillna(method="ffill", inplace=True)
+
+    return df
 
 ```
 
 ## `backend\indicators\macd.py`
 
 ```python
-# Computes MACD indicator
+"""
+macd.py
+Computes the Moving Average Convergence Divergence (MACD) indicator.
+
+Usage:
+    df = compute_macd(df, fast=12, slow=26, signal=9, col_prefix="MACD")
+    # Produces columns: MACD_Line, MACD_Signal, MACD_Hist
+
+Notes:
+    - For OKXsignal, MACD is a powerful momentum/trend indicator, 
+      especially relevant for volatile pairs with strong directional moves.
+"""
+
+import pandas as pd
+
+def compute_macd(
+    df: pd.DataFrame,
+    fast: int = 12,
+    slow: int = 26,
+    signal: int = 9,
+    col_prefix: str = "MACD"
+) -> pd.DataFrame:
+    """
+    Adds columns: 
+      - {prefix}_Line: The MACD line (fast EMA - slow EMA)
+      - {prefix}_Signal: Signal line (EMA of MACD line)
+      - {prefix}_Hist: MACD Histogram (MACD line - Signal line)
+
+    :param df: DataFrame with a 'close' column.
+    :param fast: period for the "fast" EMA.
+    :param slow: period for the "slow" EMA.
+    :param signal: period for the signal EMA of the MACD line.
+    :param col_prefix: prefix for the columns. 
+    :return: DataFrame with the 3 columns appended.
+    """
+
+    df = df.copy()
+
+    # Exponential Moving Averages (EMAs)
+    # By default, pandas .ewm() uses adjust=False for typical EMA if we want.
+    fast_ema = df["close"].ewm(span=fast, adjust=False).mean()
+    slow_ema = df["close"].ewm(span=slow, adjust=False).mean()
+
+    macd_line = fast_ema - slow_ema
+    signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+    hist_line = macd_line - signal_line
+
+    df[f"{col_prefix}_Line"] = macd_line
+    df[f"{col_prefix}_Signal"] = signal_line
+    df[f"{col_prefix}_Hist"] = hist_line
+
+    return df
 
 ```
 
 ## `backend\indicators\rsi.py`
 
 ```python
-# Computes RSI indicator
+"""
+rsi.py
+Computes the Relative Strength Index (RSI), a momentum oscillator.
+
+Usage:
+    df = compute_rsi(df, period=14, col_name="RSI")
+    # Creates an RSI column in the DataFrame.
+
+Notes:
+    - RSI is extremely popular for "overbought" (above 70) and "oversold" (below 30) signals.
+    - With cryptos, you might see frequent extremes; 
+      adapt your thresholds or period accordingly for OKXsignal.
+"""
+
+import pandas as pd
+import numpy as np
+
+def compute_rsi(
+    df: pd.DataFrame,
+    period: int = 14,
+    col_name: str = "RSI"
+) -> pd.DataFrame:
+    """
+    Adds an RSI column based on the 'close' column.
+
+    The typical formula for RSI uses the smoothed average of up moves vs. down moves.
+
+    :param df: DataFrame with 'close' column.
+    :param period: RSI lookback period (14 is typical).
+    :param col_name: name of the new RSI column.
+    :return: DataFrame with the RSI appended.
+    """
+    df = df.copy()
+
+    delta = df["close"].diff()
+    # Gains/losses
+    up = delta.clip(lower=0)
+    down = -1 * delta.clip(upper=0)
+
+    # Use exponential weighting or simple weighting:
+    # Here we use a "Wilders" smoothing recommended for RSI. 
+    # Essentially an EMA with alpha = 1/period
+    roll_up = up.ewm(alpha=1/period, adjust=False).mean()
+    roll_down = down.ewm(alpha=1/period, adjust=False).mean()
+
+    rs = roll_up / roll_down
+    rsi = 100.0 - (100.0 / (1.0 + rs))
+
+    df[col_name] = rsi
+
+    return df
 
 ```
 
 ## `backend\indicators\stoch_rsi.py`
 
 ```python
-# recommended for “wild swings” 
+"""
+stoch_rsi.py
+Computes the Stochastic RSI, giving a more responsive oscillator for 
+"wild swings" typical in crypto markets.
+
+Usage:
+    df = compute_stoch_rsi(df, rsi_period=14, stoch_period=14, smoothK=3, smoothD=3)
+    # Produces columns "StochRSI_K" and "StochRSI_D"
+
+Notes:
+    - 0 to 1 range. Over 0.8 often considered overbought, under 0.2 oversold. 
+    - More sensitive than standard RSI.
+"""
+
+import pandas as pd
+import numpy as np
+
+from backend.indicators.rsi import compute_rsi  # if you want to reuse your RSI function
+# OR you could compute a standard RSI inline.
+
+def compute_stoch_rsi(
+    df: pd.DataFrame,
+    rsi_period: int = 14,
+    stoch_period: int = 14,
+    smoothK: int = 3,
+    smoothD: int = 3,
+    col_prefix: str = "StochRSI"
+) -> pd.DataFrame:
+    """
+    Calculate Stochastic RSI:
+      1) RSI (standard) over 'rsi_period'
+      2) Stoch of that RSI over 'stoch_period'
+      3) Then smooth the %K line with 'smoothK' 
+         and create %D line by smoothing %K again with 'smoothD'.
+
+    Returns DataFrame with:
+      {prefix}_K  and {prefix}_D
+
+    :param df: DataFrame with 'close' column.
+    :param rsi_period: period for computing RSI
+    :param stoch_period: lookback for stoch. Typically same as RSI period.
+    :param smoothK: smoothing factor for %K line.
+    :param smoothD: smoothing factor for %D line.
+    :param col_prefix: e.g. "StochRSI" 
+    :return: df with new columns appended.
+    """
+    df = df.copy()
+
+    # 1) Compute RSI
+    df = compute_rsi(df, period=rsi_period, col_name="temp_rsi")
+
+    # 2) Stoch of RSI => (RSI - min(RSI)) / (max(RSI) - min(RSI))
+    min_rsi = df["temp_rsi"].rolling(window=stoch_period, min_periods=1).min()
+    max_rsi = df["temp_rsi"].rolling(window=stoch_period, min_periods=1).max()
+
+    stoch_rsi = (df["temp_rsi"] - min_rsi) / (max_rsi - min_rsi)
+    stoch_rsi.fillna(0, inplace=True)  # in case of zeros in denominator
+
+    # 3) Smooth %K via an EMA or SMA
+    # let's do SMA for simplicity here:
+    k_sma = stoch_rsi.rolling(window=smoothK, min_periods=1).mean()
+    d_sma = k_sma.rolling(window=smoothD, min_periods=1).mean()
+
+    df[f"{col_prefix}_K"] = k_sma
+    df[f"{col_prefix}_D"] = d_sma
+
+    # Cleanup
+    df.drop("temp_rsi", axis=1, inplace=True)
+
+    return df
+
 ```
 
 ## `backend\ml\model_trainer.py`
@@ -469,7 +904,97 @@ def main():
 ## `backend\signal_engine\strategy.py`
 
 ```python
-# Defines strategy for Buy/Sell/Hold recommendations
+"""
+strategy.py
+A simple example strategy for OKXsignal that:
+  1) Fetches candle data from Supabase (1H or 1D)
+  2) Computes RSI, Bollinger Bands, and MACD
+  3) Generates a naive "buy/sell/hold" recommendation
+
+Notes:
+    - This is purely illustrative. 
+    - Adjust thresholds or add more logic for real production usage.
+"""
+
+import pandas as pd
+from backend.controllers.data_retrieval import get_recent_candles
+from backend.indicators.rsi import compute_rsi
+from backend.indicators.macd import compute_macd
+from backend.indicators.bollinger import compute_bollinger_bands
+from backend.config.config_loader import load_config
+
+config = load_config()
+DEFAULT_PAIR = config["DEFAULT_PAIR"]
+DEFAULT_TIMEFRAME = config["DEFAULT_TIMEFRAME"]
+
+def generate_signal(
+    pair: str = "BTC-USDT", 
+    timeframe: str = "1H", 
+    limit: int = 100
+) -> dict:
+    """
+    Fetches candles, applies indicators, and decides on a naive action.
+
+    :param pair: e.g. "BTC-USDT"
+    :param timeframe: "1H" or "1D"
+    :param limit: how many rows of data to fetch
+    :return: dict with keys { "pair", "timeframe", "action", "reason" }
+             action can be "BUY", "SELL", "HOLD"
+             reason is a short string explaining the logic.
+    """
+
+    # 1) Retrieve Data from Supabase
+    df = get_recent_candles(pair, timeframe, limit)
+    if df.empty or len(df) < 20:
+        return {
+            "pair": pair,
+            "timeframe": timeframe,
+            "action": "HOLD",
+            "reason": "Insufficient candle data."
+        }
+
+    # 2) Compute Indicators
+    df_ind = df.copy()
+
+    # RSI
+    df_ind = compute_rsi(df_ind, period=14, col_name="RSI")
+    # MACD
+    df_ind = compute_macd(df_ind, fast=12, slow=26, signal=9, col_prefix="MACD")
+    # Bollinger
+    df_ind = compute_bollinger_bands(df_ind, period=20, std_multiplier=2.0, col_prefix="BB")
+
+    # 3) Check latest row
+    last_row = df_ind.iloc[-1]
+    rsi_val = last_row["RSI"]
+    macd_line = last_row["MACD_Line"]
+    macd_signal = last_row["MACD_Signal"]
+    close_price = last_row["close"]
+
+    # 4) Some naive logic
+    # If RSI < 30 and MACD_Line > MACD_Signal => "BUY"
+    if rsi_val < 30 and macd_line > macd_signal:
+        action = "BUY"
+        reason = f"RSI {rsi_val:.2f} < 30 and MACD crossing up."
+    # If RSI > 70 and MACD_Line < MACD_Signal => "SELL"
+    elif rsi_val > 70 and macd_line < macd_signal:
+        action = "SELL"
+        reason = f"RSI {rsi_val:.2f} > 70 and MACD crossing down."
+    else:
+        action = "HOLD"
+        reason = "No strong signal from RSI/MACD."
+
+    return {
+        "pair": pair,
+        "timeframe": timeframe,
+        "action": action,
+        "reason": reason,
+        "latest_close": close_price
+    }
+
+if __name__ == "__main__":
+    # Example usage
+    signal_info = generate_signal("BTC-USDT", "1H", 100)
+    print(signal_info)
 
 ```
 

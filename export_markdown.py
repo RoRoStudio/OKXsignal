@@ -9,9 +9,8 @@ ALLOWED_EXTENSIONS = {".py", ".json", ".md"}
 
 # Any file or directory you want to exclude completely
 EXCLUDED_PATHS = {
-    os.path.join(ROOT_DIR, "frontend", "grafana"),
-    os.path.join(ROOT_DIR, "package-lock.json"),
     os.path.join(ROOT_DIR, "supabase"),
+    os.path.join(ROOT_DIR, "credentials.env"),
 }
 
 def is_excluded(path):

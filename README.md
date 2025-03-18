@@ -4,17 +4,11 @@ OKXsignal
 ├─ (personal) commands.md
 ├─ backend
 │  ├─ config
+│  │  └─ config_loader.py
 │  ├─ controllers
 │  │  ├─ data_retrieval.py
 │  │  ├─ order_execution.py
 │  │  └─ trading_account.py
-│  ├─ execution
-│  │  ├─ api.py
-│  │  ├─ async_requests.py
-│  │  ├─ fetch_market.py
-│  │  ├─ fetch_portfolio.py
-│  │  ├─ grafana.ini
-│  │  └─ run_grafana.ps1
 │  ├─ indicators
 │  │  ├─ atr.py
 │  │  ├─ bollinger.py
@@ -29,6 +23,8 @@ OKXsignal
 │  │  └─ strategy.py
 │  ├─ test_rest_client.py
 │  └─ __init__.py
+├─ config.ini
+├─ credentials.env
 ├─ dashboard
 │  ├─ assets
 │  │  ├─ custom.css
@@ -82,7 +78,6 @@ OKXsignal
    │  └─ _current_branch
    ├─ .temp
    │  └─ cli-latest
-   ├─ config.toml
    └─ functions
       ├─ backfill_missing_1h_candles.py
       ├─ fetch_new_1d_candles.py
