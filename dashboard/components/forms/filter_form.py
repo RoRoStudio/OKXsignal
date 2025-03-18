@@ -1,0 +1,1 @@
+# filter_form.py\n# Common filtering widget for date ranges, pairs, timeframes.

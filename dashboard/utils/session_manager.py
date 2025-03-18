@@ -1,0 +1,1 @@
+# session_manager.py\n# Manages Streamlit session state (user data, caching, etc.).

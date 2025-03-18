@@ -1,0 +1,1 @@
+# base_page.py\n# A reusable page template or layout function for consistent look.

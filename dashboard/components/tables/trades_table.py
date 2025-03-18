@@ -1,0 +1,1 @@
+# trades_table.py\n# Displays past trades in a table with consistent formatting.

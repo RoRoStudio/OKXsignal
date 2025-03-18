@@ -1,0 +1,1 @@
+# portfolio_table.py\n# Shows holdings in a table with columns for PnL, cost basis, etc.

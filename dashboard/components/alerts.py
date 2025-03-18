@@ -1,0 +1,1 @@
+# alerts.py\n# For toast-style notifications, warnings, or info messages in the UI.
