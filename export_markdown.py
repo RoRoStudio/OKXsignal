@@ -16,10 +16,9 @@ INCLUDED_DIRS = {
     "backend\\indicators",
     "backend\\signal_engine",
     "backend\\utils",
-    "frontend",  # ✅ Explicitly forcing frontend to be included
-    "frontend\\dashboards",
-    "frontend\\loki",
+    "dashboard",
     "okx_api",
+    "main.py",
 }
 
 # ✅ Explicitly Exclude frontend/grafana
