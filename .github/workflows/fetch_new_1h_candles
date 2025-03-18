@@ -1,4 +1,4 @@
-name: Fetch Hourly Candles
+name: Fetch New 1H Candles
 
 on:
   workflow_dispatch:  # Manually triggered only
@@ -23,7 +23,7 @@ jobs:
 
       - name: Run script
         run: |
-          python fetch_hourly_candles.py
+          python fetch_new_1h_candles.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
