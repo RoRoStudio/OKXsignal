@@ -4,7 +4,6 @@ navigation.py
 """
 
 import streamlit as st
-from dashboard.utils.session_manager import toggle_theme
 
 def build_sidebar():
     """
@@ -16,17 +15,12 @@ def build_sidebar():
 
         pages = {
             "🏠 Home": "home",
-            "📈 Market Analysis": "market_overview",
-            "💰 Portfolio": "holdings",
+            "📈 Market Analysis": "market_analysis.overview",
+            "💰 Portfolio": "portfolio.holdings",
             "⚡ Trade Execution": "trade_execution",
-            "⚙️ Settings": "settings",
+            "⚙️ Settings": "settings.user_prefs",
         }
 
         selected_page = st.radio("Navigate to:", list(pages.keys()))
-
-        # Theme toggle button
-        if st.button("🌗 Toggle Dark Mode"):
-            toggle_theme()
-            st.rerun()  # Force re-render after toggling theme
 
         return pages[selected_page]
