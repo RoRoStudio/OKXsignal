@@ -68,7 +68,7 @@ def fetch_candles(pair, after_timestamp_ms=None):
     """Fetch new 1D candles using the OKX market API."""
     params = {"instId": pair, "bar": "1D", "limit": 100}
     if after_timestamp_ms:
-        params["after"] = str(after_timestamp_ms)  # ✅ Use milliseconds directly
+        params["before"] = str(after_timestamp_ms)  # ✅ Use milliseconds directly
 
     response = requests.get(OKX_CANDLES_URL, params=params)
     try:
