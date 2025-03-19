@@ -6,13 +6,14 @@ OKXsignal
 │  ├─ controllers
 │  │  ├─ data_retrieval.py
 │  │  ├─ order_execution.py
+│  │  ├─ strategy.py
 │  │  └─ trading_account.py
+│  ├─ indicators
 │  ├─ ml
 │  │  ├─ model_trainer.py
 │  │  └─ predictor.py
 │  ├─ requirements.txt
 │  ├─ signal_engine
-│  │  └─ strategy.py
 │  ├─ test_rest_client.py
 │  └─ __init__.py
 ├─ config
@@ -58,6 +59,7 @@ OKXsignal
 │  └─ utils
 │     ├─ data_loader.py
 │     └─ session_manager.py
+├─ exported_files.md
 ├─ export_markdown.py
 ├─ main.py
 ├─ okx_api

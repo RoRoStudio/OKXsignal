@@ -178,13 +178,12 @@ OKXsignal
 │  ├─ controllers
 │  │  ├─ data_retrieval.py
 │  │  ├─ order_execution.py
+│  │  ├─ strategy.py
 │  │  └─ trading_account.py
 │  ├─ ml
 │  │  ├─ model_trainer.py
 │  │  └─ predictor.py
 │  ├─ requirements.txt
-│  ├─ signal_engine
-│  │  └─ strategy.py
 │  ├─ test_rest_client.py
 │  └─ __init__.py
 ├─ config
@@ -330,126 +329,48 @@ print('\n===== Test Completed =====')
 ```python
 """
 data_retrieval.py
-Handles supabase table retrieval for the 1H and 1D candles.
-
-Requires:
-  pip install supabase-py
-
-Assumes you have the following environment variables or direct config:
-    SUPABASE_URL
-    SUPABASE_ANON_KEY
+Handles fetching price and indicator data from Supabase for the 1H and 1D candles.
 """
 
 import os
 import pandas as pd
 from supabase import create_client, Client
-from dotenv import load_dotenv
-from config.config_loader import load_config
 
-# Load environment variables from credentials.env in config/
-env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config", "credentials.env"))
-load_dotenv(env_path)
-
-# Load Supabase URL from config.ini
-config = load_config()
-
-SUPABASE_URL = config["SUPABASE_URL"]
+# Load Supabase credentials
+SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 if not SUPABASE_URL or not SUPABASE_ANON_KEY:
-    raise ValueError("❌ Supabase credentials missing. Check config/config.ini and config/credentials.env.")
+    raise ValueError("❌ Supabase credentials are missing.")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-def get_candles_1H(pair: str, limit: int = 1000) -> pd.DataFrame:
+def fetch_market_data(pair: str, timeframe: str = "1H", limit: int = 1000) -> pd.DataFrame:
     """
-    Fetch candle data from the 'candles_1H' table for a given pair.
-    :param pair: e.g. "BTC-USDT"
-    :param limit: how many recent rows to fetch
-    :return: pandas DataFrame with columns:
-        [pair, timestamp_ms, open, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote]
+    Fetch recent market data (candlesticks + indicators) from Supabase.
+
+    :param pair: Trading pair, e.g., "BTC-USDT".
+    :param timeframe: "1H" or "1D".
+    :param limit: Number of most recent rows to fetch.
+    :return: Pandas DataFrame containing market data with indicators.
     """
-    response = supabase.table("candles_1H") \
-        .select("*") \
-        .eq("pair", pair) \
-        .order("timestamp_ms", desc=True) \
-        .limit(limit).execute()
+    table_name = f"candles_{timeframe}"
 
-    data = response.data  # list of dict
-    if not data:
-        return pd.DataFrame()
-
-    df = pd.DataFrame(data)
-    df = df.sort_values("timestamp_ms", ascending=True).reset_index(drop=True)
-    return df
-
-def get_candles_1D(pair: str, limit: int = 1000) -> pd.DataFrame:
-    """
-    Fetch candle data from the 'candles_1D' table for a given pair.
-    :param pair: e.g. "BTC-USDT"
-    :param limit: how many recent rows to fetch
-    :return: pandas DataFrame with columns:
-        [pair, timestamp_ms, open, high, low, close, volume, quote_volume, taker_buy_base, taker_buy_quote]
-    """
-    response = supabase.table("candles_1D") \
-        .select("*") \
-        .eq("pair", pair) \
-        .order("timestamp_ms", desc=True) \
-        .limit(limit).execute()
-
-    data = response.data
-    if not data:
-        return pd.DataFrame()
-
-    df = pd.DataFrame(data)
-    df = df.sort_values("timestamp_ms", ascending=True).reset_index(drop=True)
-    return df
-
-
-def get_recent_candles(pair: str, timeframe: str = "1H", limit: int = 1000) -> pd.DataFrame:
-    """
-    Simple wrapper to fetch either 1H or 1D from a single function.
-    """
-    if timeframe == "1H":
-        return get_candles_1H(pair, limit)
-    elif timeframe == "1D":
-        return get_candles_1D(pair, limit)
-    else:
-        raise ValueError("Unsupported timeframe. Use '1H' or '1D'.")
-
-# Optional: You can add more specialized queries for date ranges, e.g. timestamp_ms >= ...
-# For example:
-
-def get_candles_by_range(pair: str, timeframe: str, start_ts: int, end_ts: int) -> pd.DataFrame:
-    """
-    Fetch candles within a specific timestamp range (inclusive).
-    :param start_ts: earliest timestamp in ms
-    :param end_ts: latest timestamp in ms
-    """
-    table_name = "candles_1H" if timeframe == "1H" else "candles_1D"
     response = supabase.table(table_name) \
-        .select("*") \
+        .select("pair", "timestamp_ms", "open", "high", "low", "close", "volume",
+                "rsi", "macd_line", "macd_signal", "macd_hist",
+                "bollinger_middle", "bollinger_upper", "bollinger_lower",
+                "atr", "stoch_rsi_k", "stoch_rsi_d") \
         .eq("pair", pair) \
-        .gte("timestamp_ms", start_ts) \
-        .lte("timestamp_ms", end_ts) \
-        .order("timestamp_ms", desc=False).execute()
+        .order("timestamp_ms", desc=True) \
+        .limit(limit).execute()
 
     data = response.data
-    if not data:
-        return pd.DataFrame()
-
-    return pd.DataFrame(data)
-
+    return pd.DataFrame(data) if data else pd.DataFrame()
 
 if __name__ == "__main__":
-    # Simple test
-    df_1h = get_candles_1H("BTC-USDT", limit=5)
-    print("=== Last 5 of 1H ===")
-    print(df_1h)
-
-    df_1d = get_candles_1D("BTC-USDT", limit=5)
-    print("=== Last 5 of 1D ===")
-    print(df_1d)
+    df = fetch_market_data("BTC-USDT", "1H", 5)
+    print(df)
 
 ```
 
@@ -533,6 +454,80 @@ def amend_spot_order(inst_id: str, new_qty: float = None, new_px: float = None, 
 
 ```
 
+## `backend\controllers\strategy.py`
+
+```python
+"""
+strategy.py
+Fetches precomputed indicators from Supabase and generates a trading signal.
+"""
+
+from backend.controllers.data_retrieval import fetch_market_data
+
+def generate_signal(pair: str = "BTC-USDT", timeframe: str = "1H", limit: int = 100) -> dict:
+    """
+    Fetches precomputed indicators and generates a trading signal.
+    """
+    df = fetch_market_data(pair, timeframe, limit)
+
+    if df.empty or len(df) < 20:
+        return {
+            "pair": pair,
+            "timeframe": timeframe,
+            "action": "HOLD",
+            "reason": "Insufficient candle data."
+        }
+
+    # Retrieve indicators from the table
+    last_row = df.iloc[-1]
+    rsi = last_row["rsi"]
+    macd_line = last_row["macd_line"]
+    macd_signal = last_row["macd_signal"]
+    macd_hist = last_row["macd_hist"]
+    close_price = last_row["close"]
+    atr = last_row["atr"]
+    stoch_rsi_k = last_row["stoch_rsi_k"]
+    stoch_rsi_d = last_row["stoch_rsi_d"]
+    bollinger_upper = last_row["bollinger_upper"]
+    bollinger_middle = last_row["bollinger_middle"]
+    bollinger_lower = last_row["bollinger_lower"]
+
+    # Trading Logic (Updated)
+    if (
+        rsi < 30 and 
+        macd_line > macd_signal and 
+        stoch_rsi_k > 0.8 and 
+        close_price < bollinger_lower
+    ):
+        action = "BUY"
+        reason = f"RSI {rsi:.2f} < 30, MACD crossover, Stoch RSI K > 0.8, Price near lower Bollinger Band."
+    elif (
+        rsi > 70 and 
+        macd_line < macd_signal and 
+        stoch_rsi_k < 0.2 and 
+        close_price > bollinger_upper
+    ):
+        action = "SELL"
+        reason = f"RSI {rsi:.2f} > 70, MACD crossover, Stoch RSI K < 0.2, Price near upper Bollinger Band."
+    else:
+        action = "HOLD"
+        reason = "No strong signal."
+
+    return {
+        "pair": pair,
+        "timeframe": timeframe,
+        "action": action,
+        "reason": reason,
+        "latest_close": close_price
+    }
+
+if __name__ == "__main__":
+    # Example usage
+    signal_info = generate_signal("BTC-USDT", "1H", 100)
+    print(signal_info)
+
+```
+
 ## `backend\controllers\trading_account.py`
 
 ```python
@@ -604,102 +599,6 @@ def get_trade_fee(inst_type: str = "SPOT", inst_id: str = None):
 
 ```python
 # Possibly used at runtime for inference
-```
-
-## `backend\signal_engine\strategy.py`
-
-```python
-"""
-strategy.py
-A simple example strategy for OKXsignal that:
-  1) Fetches candle data from Supabase (1H or 1D)
-  2) Computes RSI, Bollinger Bands, and MACD
-  3) Generates a naive "buy/sell/hold" recommendation
-
-Notes:
-    - This is purely illustrative. 
-    - Adjust thresholds or add more logic for real production usage.
-"""
-
-from backend.controllers.data_retrieval import get_recent_candles
-from backend.indicators.rsi import compute_rsi
-from backend.indicators.macd import compute_macd
-from backend.indicators.bollinger import compute_bollinger_bands
-from config.config_loader import load_config
-
-config = load_config()
-DEFAULT_PAIR = config["DEFAULT_PAIR"]
-DEFAULT_TIMEFRAME = config["DEFAULT_TIMEFRAME"]
-
-def generate_signal(
-    pair: str = "BTC-USDT", 
-    timeframe: str = "1H", 
-    limit: int = 100
-) -> dict:
-    """
-    Fetches candles, applies indicators, and decides on a naive action.
-
-    :param pair: e.g. "BTC-USDT"
-    :param timeframe: "1H" or "1D"
-    :param limit: how many rows of data to fetch
-    :return: dict with keys { "pair", "timeframe", "action", "reason" }
-             action can be "BUY", "SELL", "HOLD"
-             reason is a short string explaining the logic.
-    """
-
-    # 1) Retrieve Data from Supabase
-    df = get_recent_candles(pair, timeframe, limit)
-    if df.empty or len(df) < 20:
-        return {
-            "pair": pair,
-            "timeframe": timeframe,
-            "action": "HOLD",
-            "reason": "Insufficient candle data."
-        }
-
-    # 2) Compute Indicators
-    df_ind = df.copy()
-
-    # RSI
-    df_ind = compute_rsi(df_ind, period=14, col_name="RSI")
-    # MACD
-    df_ind = compute_macd(df_ind, fast=12, slow=26, signal=9, col_prefix="MACD")
-    # Bollinger
-    df_ind = compute_bollinger_bands(df_ind, period=20, std_multiplier=2.0, col_prefix="BB")
-
-    # 3) Check latest row
-    last_row = df_ind.iloc[-1]
-    rsi_val = last_row["RSI"]
-    macd_line = last_row["MACD_Line"]
-    macd_signal = last_row["MACD_Signal"]
-    close_price = last_row["close"]
-
-    # 4) Some naive logic
-    # If RSI < 30 and MACD_Line > MACD_Signal => "BUY"
-    if rsi_val < 30 and macd_line > macd_signal:
-        action = "BUY"
-        reason = f"RSI {rsi_val:.2f} < 30 and MACD crossing up."
-    # If RSI > 70 and MACD_Line < MACD_Signal => "SELL"
-    elif rsi_val > 70 and macd_line < macd_signal:
-        action = "SELL"
-        reason = f"RSI {rsi_val:.2f} > 70 and MACD crossing down."
-    else:
-        action = "HOLD"
-        reason = "No strong signal from RSI/MACD."
-
-    return {
-        "pair": pair,
-        "timeframe": timeframe,
-        "action": action,
-        "reason": reason,
-        "latest_close": close_price
-    }
-
-if __name__ == "__main__":
-    # Example usage
-    signal_info = generate_signal("BTC-USDT", "1H", 100)
-    print(signal_info)
-
 ```
 
 ## `config\config_loader.py`
