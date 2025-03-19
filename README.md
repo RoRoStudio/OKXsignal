@@ -3,18 +3,10 @@
 OKXsignal
 ├─ (personal) commands.md
 ├─ backend
-│  ├─ config
-│  │  └─ config_loader.py
 │  ├─ controllers
 │  │  ├─ data_retrieval.py
 │  │  ├─ order_execution.py
 │  │  └─ trading_account.py
-│  ├─ indicators
-│  │  ├─ atr.py
-│  │  ├─ bollinger.py
-│  │  ├─ macd.py
-│  │  ├─ rsi.py
-│  │  └─ stoch_rsi.py
 │  ├─ ml
 │  │  ├─ model_trainer.py
 │  │  └─ predictor.py
@@ -23,8 +15,10 @@ OKXsignal
 │  │  └─ strategy.py
 │  ├─ test_rest_client.py
 │  └─ __init__.py
-├─ config.ini
-├─ credentials.env
+├─ config
+│  ├─ config.ini
+│  ├─ config_loader.py
+│  └─ credentials.env
 ├─ dashboard
 │  ├─ assets
 │  │  ├─ custom.css
@@ -64,7 +58,6 @@ OKXsignal
 │  └─ utils
 │     ├─ data_loader.py
 │     └─ session_manager.py
-├─ exported_files.md
 ├─ export_markdown.py
 ├─ main.py
 ├─ okx_api
