@@ -1,7 +1,9 @@
-name: Fetch Hourly Candles
+name: Fetch New 1D Candles
 
 on:
-  workflow_dispatch:  # Manually triggered only
+  schedule:
+    - cron: "30 1 * * *"  # Runs daily at 01:30 AM UTC
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   fetch_and_store:
@@ -18,12 +20,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests supabase
+          pip install requests supabase python-dotenv
         working-directory: ./supabase/functions  # Ensure correct path
 
       - name: Run script
         run: |
-          python fetch_hourly_candles.py
+          python fetch_new_1d_candles.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
