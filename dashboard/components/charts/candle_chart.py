@@ -1,1 +1,0 @@
-# candle_chart.py\n# Functions to render candlestick charts (e.g., Plotly, Matplotlib).

@@ -3,6 +3,11 @@ filter_form.py
 🔍 Provides filtering options (pair, timeframe, date range) for market data.
 """
 
+"""
+filter_form.py
+🔍 Provides filtering options (pair, timeframe, date range) for market data.
+"""
+
 import streamlit as st
 import datetime
 from dashboard.utils.data_loader import fetch_trading_pairs
@@ -12,33 +17,24 @@ def filter_form():
     
     with st.container():
         st.markdown("### 🔍 Filter Data")
-        
+
         # Fetch available trading pairs
-        trading_pairs = fetch_trading_pairs()  # Ensure this fetches all 310 pairs!
-        
+        trading_pairs = fetch_trading_pairs()  
+
         # Select Trading Pair
-        st.selectbox(
-            "Trading Pair",
-            trading_pairs,
-            key="selected_pair"
-        )
+        st.selectbox("Trading Pair", trading_pairs, key="selected_pair")
 
         # Select Timeframe
-        st.radio(
-            "Timeframe",
-            ["1H", "1D"],
-            key="selected_timeframe",
-            horizontal=True
-        )
+        st.radio("Timeframe", ["1H", "1D"], key="selected_timeframe", horizontal=True)
 
         # Select Date Range
-        st.date_input(
-            "Select Date Range",
-            [],
-            key="selected_date_range"
-        )
+        date_range = st.date_input("Select Date Range", [], key="selected_date_range")
 
-# Initialize session state variables if they don't exist
+        # ✅ Apply Filters Button (Now required to trigger updates)
+        if st.button("Apply Filters"):
+            st.session_state["filters_applied"] = True  # ✅ Force refresh table & chart
+
+# ✅ Ensure session state variables are initialized
 if "selected_pair" not in st.session_state:
     st.session_state["selected_pair"] = "BTC-USDT"
 if "selected_timeframe" not in st.session_state:

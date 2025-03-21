@@ -20,13 +20,18 @@ def load_config():
     config.read(CONFIG_FILE)
 
     settings = {
+        # ✅ Trading configuration
         "SIMULATED_TRADING": config["OKX"].getboolean("SIMULATED_TRADING", fallback=False),
 
-        "SUPABASE_URL": config["SUPABASE"]["SUPABASE_URL"],
-
+        # ✅ Default trading settings
         "DEFAULT_PAIR": config["GENERAL"]["DEFAULT_PAIR"],
         "DEFAULT_TIMEFRAME": config["GENERAL"]["DEFAULT_TIMEFRAME"],
         "ORDER_SIZE_LIMIT": config["GENERAL"].getint("ORDER_SIZE_LIMIT", fallback=5),
-        "LOG_LEVEL": config["GENERAL"]["LOG_LEVEL"]
+        "LOG_LEVEL": config["GENERAL"]["LOG_LEVEL"],
+
+        # ✅ Database connection details
+        "DB_HOST": config["DATABASE"]["DB_HOST"],
+        "DB_PORT": config["DATABASE"]["DB_PORT"],
+        "DB_NAME": config["DATABASE"]["DB_NAME"],
     }
     return settings

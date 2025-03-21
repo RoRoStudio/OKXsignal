@@ -9,7 +9,7 @@ ALLOWED_EXTENSIONS = {".py", ".json", ".md"}
 
 # Any file or directory you want to exclude completely
 EXCLUDED_PATHS = {
-    os.path.join(ROOT_DIR, "supabase"),
+
     os.path.join(ROOT_DIR, "config\\credentials.env"),
 }
 
