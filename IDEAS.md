@@ -1,0 +1,1 @@
+1. Use Unnest to improve insert speeds for postgresql (with timescaledb)
