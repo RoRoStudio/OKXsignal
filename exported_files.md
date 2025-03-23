@@ -1,17 +1,5 @@
 # Exported Code Files
 
-## `(personal) commands.md`
-
-```python
-cd E:\Programming\OKXsignal
-conda activate okxsignal
-python backend/main.py
-
-
-Restart-Service postgresql-x64-17
-
-```
-
 ## `exported_files.md`
 
 ```python
@@ -97,12 +85,6 @@ if __name__ == "__main__":
 
 ```
 
-## `IDEAS.md`
-
-```python
-1. Use Unnest to improve insert speeds for postgresql (with timescaledb)
-```
-
 ## `main.py`
 
 ```python
@@ -169,6 +151,175 @@ else:
 ```python
 
 ```
+OKXsignal
+├─ .streamlit
+│  └─ config.toml
+├─ backend
+│  ├─ backtesting
+│  │  ├─ metrics.py
+│  │  ├─ portfolio_simulator.py
+│  │  ├─ run_backtest.py
+│  │  ├─ strategy_wrapper.py
+│  │  ├─ trade_logger.py
+│  │  └─ __init__.py
+│  ├─ live-feed
+│  │  └─ websocket_subscriptions.py
+│  ├─ models
+│  │  ├─ signal_model.py
+│  │  ├─ slippage_model.py
+│  │  └─ __init__.py
+│  ├─ post_model
+│  │  ├─ market_filter.py
+│  │  ├─ signal_filtering.py
+│  │  ├─ slippage_adjustment.py
+│  │  ├─ slippage_guard.py
+│  │  ├─ throttle_logic.py
+│  │  ├─ trade_sizing.py
+│  │  └─ __init__.py
+│  ├─ trading
+│  │  ├─ account.py
+│  │  ├─ executor.py
+│  │  ├─ portfolio.py
+│  │  ├─ recorder.py
+│  │  └─ __init__.py
+│  ├─ training
+│  │  ├─ dataloader.py
+│  │  ├─ features.py
+│  │  ├─ signal
+│  │  │  └─ train_signal_model.py
+│  │  └─ slippage
+│  │     └─ train_slippage_model.py
+│  └─ __init__.py
+├─ config
+│  ├─ config.ini
+│  ├─ config_loader.py
+│  └─ __init__.py
+├─ dashboard
+│  ├─ assets
+│  │  └─ custom.css
+│  ├─ components
+│  │  ├─ alerts.py
+│  │  ├─ charts
+│  │  │  ├─ macd_plot.py
+│  │  │  ├─ master_chart.py
+│  │  │  └─ rsi_plot.py
+│  │  ├─ forms
+│  │  │  ├─ filter_form.py
+│  │  │  └─ order_form.py
+│  │  ├─ metrics.py
+│  │  └─ tables
+│  │     ├─ candle_table.py
+│  │     ├─ portfolio_table.py
+│  │     └─ trades_table.py
+│  ├─ layout
+│  │  ├─ base_page.py
+│  │  ├─ navigation.py
+│  │  └─ theme.py
+│  ├─ pages
+│  │  ├─ home.py
+│  │  ├─ market_analysis
+│  │  │  ├─ advanced_charts.py
+│  │  │  ├─ overview.py
+│  │  │  └─ signals.py
+│  │  ├─ portfolio
+│  │  │  ├─ fees.py
+│  │  │  ├─ holdings.py
+│  │  │  └─ order_history.py
+│  │  ├─ settings
+│  │  │  ├─ risk_config.py
+│  │  │  └─ user_prefs.py
+│  │  ├─ trade_execution.py
+│  │  └─ __init__.py
+│  └─ utils
+│     ├─ data_loader.py
+│     └─ session_manager.py
+├─ database
+│  ├─ db.py
+│  ├─ fetching
+│  │  ├─ .env
+│  │  ├─ backfill_missing_1h_candles.py
+│  │  ├─ fetch_new_1h_candles.py
+│  │  ├─ fetch_old_1h_candles.py
+│  │  ├─ fetch_trade_history.py
+│  │  └─ __init__.py
+│  ├─ processing
+│  │  └─ compute_candles.py
+│  └─ __init__.py
+├─ documentation
+│  ├─ (personal) commands.md
+│  ├─ IDEAS.md
+│  └─ trainable_features.md
+├─ export_markdown.py
+├─ main.py
+├─ okx_api
+│  ├─ auth.py
+│  ├─ rest_client.py
+│  └─ __init__.py
+├─ README.md
+├─ requirements.txt
+├─ run_hourly_pipeline.py
+└─ __init__.py
+
+```
+```
+
+## `run_hourly_pipeline.py`
+
+```python
+"""
+run_hourly_pipeline.py
+Runs fetch + compute pipeline and logs individual + total durations.
+This script ensures the AI doesn't trade until data is fresh.
+"""
+
+import subprocess
+import time
+from datetime import datetime
+import os
+
+LOG_DIR = "P:/OKXsignal/logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+DURATION_LOG_PATH = os.path.join(LOG_DIR, "process_durations.log")
+
+def log_duration(process_name, duration):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(DURATION_LOG_PATH, "a") as f:
+        f.write(f"[{now}] {process_name:<30} {duration:.2f} seconds\n")
+
+def run_and_time(script_path):
+    start = time.time()
+    subprocess.run(
+        ["python", script_path],
+        check=True,
+        cwd="P:/OKXsignal",
+        env={**os.environ, "PYTHONPATH": "P:/OKXsignal"}
+    )
+    return time.time() - start
+
+def main():
+    print("🚀 Starting hourly pipeline...")
+    
+    total_start = time.time()
+
+    try:
+        fetch_duration = run_and_time("database/fetching/fetch_new_1h_candles.py")
+        log_duration("fetch_new_1h_candles.py", fetch_duration)
+
+        compute_duration = run_and_time("database/processing/compute_candles.py")
+        log_duration("compute_candles.py", compute_duration)
+
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error during script execution: {e}")
+        return
+
+    total_duration = time.time() - total_start
+    log_duration("total_hourly_pipeline", total_duration)
+    print(f"✅ Hourly pipeline completed in {total_duration:.2f} seconds")
+
+if __name__ == "__main__":
+    main()
+
+```
 
 ## `__init__.py`
 
@@ -185,7 +336,52 @@ else:
 ## `backend\backtesting\metrics.py`
 
 ```python
+#metrics.py
+#After simulation:
 
+#Calculates:
+
+#Net profit / return
+
+#Max drawdown
+
+#Sharpe ratio
+
+#Win rate
+
+#Trade frequency
+
+#Average holding duration
+
+#Prints and stores results (JSON or CSV).
+```
+
+## `backend\backtesting\portfolio_simulator.py`
+
+```python
+#portfolio_simulator.py
+#Handles capital, slippage, position tracking:
+
+#Starting capital (STARTING_CAPITAL = 2000)
+
+#Tracks position size and USDT balance
+
+#Applies slippage, fees, and max position size
+
+#Checks constraints (e.g. cooldown, daily trade limit)
+
+#It emits structured logs like:
+
+{
+  "timestamp": "2023-01-01 12:00",
+  "pair": "ETH-USDT",
+  "action": "BUY",
+  "price": 1324.55,
+  "size_usdt": 300,
+  "slippage_pct": 0.06,
+  "fees": 0.1,
+  "new_balance": 1700.0,
+}
 ```
 
 ## `backend\backtesting\run_backtest.py`
@@ -210,11 +406,64 @@ else:
 #Set source = 'live'
 
 #Optionally tag model_version if you’re deploying updated models regularly
+
+# ----------------------
+
+#NEW
+#run_backtest.py (entry point)
+#Loads historical candles (filtered by dates, pairs)
+
+#Loads model predictions (future returns or classes)
+
+#Passes it to the strategy
+
+#Passes signals to the simulator
+
+#Logs trades and returns metrics
+
+#➡️ You'll be able to run it like:
+
+#bash
+#Kopiëren
+#Bewerken
+#python backend/backtesting/run_backtest.py --start 2023-01-01 --capital 2000 --pair BTC-USDT
+
 ```
 
 ## `backend\backtesting\strategy_wrapper.py`
 
 ```python
+#strategy_wrapper.py
+#Supports plug-and-play strategies:
+
+#Rule-based (e.g. momentum, MA cross)
+
+#Model-driven (load predictions from DB or .csv)
+
+#Enhanced logic (e.g. no trade if slippage risk is high, throttle trades)
+
+#Each strategy returns:
+
+{
+  "timestamp": ...,
+  "pair": "BTC-USDT",
+  "signal": "BUY",  # or "SELL", "HOLD"
+  "confidence": 0.92,
+  "expected_return_1h": 0.045,
+  "risk_score": 0.3,
+}
+```
+
+## `backend\backtesting\trade_logger.py`
+
+```python
+#trade_logger.py
+#Appends trades to a PostgreSQL table
+
+
+
+#Use this data in your dashboard or training datasets later
+
 
 ```
 
@@ -373,26 +622,6 @@ else:
 
 ```
 
-## `backend\training\slippage\fetch_trade_history.py`
-
-```python
-# GET /api/v5/market/history-trades
-
-#Purpose: Returns individual trade-level data (price, size, direction) for last 3 months
-#Backfill range: ❗Only last 3 months
-#Pagination: via tradeId (type=1) or ts (type=2)
-
-#Use:
-
-#Train the slippage model
-
-#Label high-slippage conditions per candle (e.g. price impact)
-
-#Detect microstructure patterns pre-trade
-
-#➡️ Add to training/slippage/fetch_trade_history.py
-```
-
 ## `backend\training\slippage\train_slippage_model.py`
 
 ```python
@@ -439,6 +668,12 @@ def load_config():
         "DB_NAME": config["DATABASE"]["DB_NAME"],
     }
     return settings
+
+```
+
+## `config\__init__.py`
+
+```python
 
 ```
 
@@ -1462,9 +1697,10 @@ if __name__ == "__main__":
 ```python
 """
 fetch_new_1h_candles.py
-Fetches all historical 1-hour candles from OKX API and inserts them into PostgreSQL.
+Fetches new 1-hour candles from OKX API and inserts only unseen rows into PostgreSQL.
 """
 
+import os
 import requests
 import time
 from datetime import datetime, timezone, timedelta
@@ -1478,121 +1714,133 @@ OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"
 CANDLES_RATE_LIMIT = 40
 BATCH_INTERVAL = 2
 
-def fetch_active_pairs():
-    OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
-    response = requests.get(OKX_INSTRUMENTS_URL)
-    data = response.json()
-    if "data" in data:
-        return [
-            inst["instId"]
-            for inst in data["data"]
-            if inst["quoteCcy"] == "USDT" and inst["state"] == "live"
-        ]
-    return []
+def get_known_timestamps(pair):
+    query = "SELECT timestamp_utc FROM candles_1h WHERE pair = %s;"
+    return set(row["timestamp_utc"] for row in fetch_data(query, (pair,)))
 
-def fetch_candles(pair, before_timestamp_utc=None):
+def fetch_active_pairs():
+    response = requests.get("https://www.okx.com/api/v5/public/instruments?instType=SPOT")
+    data = response.json()
+    return [
+        inst["instId"]
+        for inst in data.get("data", [])
+        if inst["quoteCcy"] == "USDT" and inst["state"] == "live"
+    ]
+
+def fetch_candles(pair, direction, ref_ts=None):
     params = {
         "instId": pair,
         "bar": "1H",
         "limit": 100
     }
-    if before_timestamp_utc:
-        params["after"] = str(int(before_timestamp_utc.timestamp() * 1000))
+    if direction == "before":
+        print(f"📤 Fetching latest candles using BEFORE for {pair}")
+    elif direction == "after" and ref_ts:
+        params["after"] = str(int(ref_ts.timestamp() * 1000))
+        print(f"📤 Fetching older candles using AFTER={ref_ts} for {pair}")
+    else:
+        raise ValueError("Invalid fetch direction")
 
     response = requests.get(OKX_CANDLES_URL, params=params)
-    try:
-        return response.json().get("data", [])
-    except Exception as e:
-        print(f"❌ Error fetching {pair}: {e}")
-        return []
+    response.raise_for_status()
+    return response.json().get("data", [])
 
-def insert_candles(pair, candles):
+def insert_candles(pair, candles, known_ts):
     query = """
-    INSERT INTO public.candles_1h 
-    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    INSERT INTO public.candles_1h
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h,
+     volume_1h, quote_volume_1h, taker_buy_base_1h)
     VALUES %s
     ON CONFLICT (pair, timestamp_utc) DO NOTHING;
     """
     rows = []
     for c in candles:
         try:
-            # OKX timestamps are in ms, HK-time-aligned → subtract 8h to convert to UTC
             utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)
+            if utc_ts in known_ts:
+                continue  # skip already-known
             row = (
-                pair,
-                utc_ts,
-                float(c[1]),
-                float(c[2]),
-                float(c[3]),
-                float(c[4]),
-                float(c[5]),
-                float(c[6]),
-                float(c[7]),
+                pair, utc_ts, float(c[1]), float(c[2]), float(c[3]), float(c[4]),
+                float(c[5]), float(c[6]), float(c[7])
             )
             rows.append(row)
         except Exception as e:
-            print(f"⚠️ Malformed row for {pair}: {e} | Raw: {c}")
+            print(f"⚠️ Skipping malformed row: {e} | Raw: {c}")
 
-    if rows:
-        conn = get_connection()
-        cursor = conn.cursor()
-        try:
-            execute_values(cursor, query, rows)
-            conn.commit()
-            print(f"✅ Inserted {len(rows)} candles for {pair} | {rows[-1][1]} → {rows[0][1]}")
-            return rows[-1][1]  # Return earliest timestamp in this batch
-        except Exception as e:
-            print(f"❌ Insert failed for {pair}: {e}")
-            conn.rollback()
-        finally:
-            cursor.close()
-            conn.close()
-    return None
+    if not rows:
+        return None, 0
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        execute_values(cursor, query, rows)
+        conn.commit()
+        print(f"✅ Inserted {len(rows)} new candles for {pair} | {rows[-1][1]} → {rows[0][1]}")
+        return rows[-1][1], len(rows)
+    except Exception as e:
+        print(f"❌ Insert failed for {pair}: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return None, 0
 
 def enforce_rate_limit(request_count, start_time):
     request_count += 1
     if request_count >= CANDLES_RATE_LIMIT:
         elapsed = time.time() - start_time
         if elapsed < BATCH_INTERVAL:
-            print(f"⏳ Sleeping for {BATCH_INTERVAL - elapsed:.2f}s (rate limit)")
+            print(f"⏳ Sleeping {BATCH_INTERVAL - elapsed:.2f}s to honor rate limit")
             time.sleep(BATCH_INTERVAL - elapsed)
         return 0, time.time()
     return request_count, start_time
 
 def main():
-    print("🚀 Backfilling full 1H candle history from OKX...")
-
+    print("🚀 Fetching latest 1H candles from OKX...\n")
     pairs = fetch_active_pairs()
-    print(f"✅ {len(pairs)} active USDT spot pairs found")
+    print(f"✅ {len(pairs)} pairs found\n")
 
     request_count = {OKX_CANDLES_URL: 0}
     start_time = time.time()
 
-    for index, pair in enumerate(pairs, start=1):
+    for pair in pairs:
         print(f"\n🔁 Processing {pair}")
-        before = None
-        total_rows = 0
-        earliest = None
+        known_ts = get_known_timestamps(pair)
 
+        # Initial call → latest candles (newest to oldest)
+        candles = fetch_candles(pair, direction="before")
+        if not candles:
+            print(f"⛔ No candles returned for {pair}")
+            continue
+
+        after_ts = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+        inserted_ts, inserted = insert_candles(pair, candles, known_ts)
+
+        total_inserted = inserted
+        if inserted == 0:
+            print(f"🛑 No new data for {pair}. Skipping pagination.")
+            continue
+
+        # Paginate backward using AFTER
         while True:
-            candles = fetch_candles(pair, before)
+            candles = fetch_candles(pair, direction="after", ref_ts=after_ts)
             if not candles:
-                print(f"⛔ No more candles for {pair}. Total inserted: {total_rows}")
                 break
 
-            before = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
-            inserted_timestamp = insert_candles(pair, candles)
-            if not inserted_timestamp:
-                break
+            after_ts = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+            inserted_ts, inserted = insert_candles(pair, candles, known_ts)
+            total_inserted += inserted
 
-            earliest = inserted_timestamp
-            total_rows += len(candles)
+            if inserted == 0:
+                print(f"🛑 Reached known data for {pair}")
+                break
 
             request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(
                 request_count[OKX_CANDLES_URL], start_time
             )
 
-        print(f"📦 Finished {pair}: {total_rows} candles (oldest = {earliest})")
+        print(f"📦 Finished {pair}: {total_inserted} candles inserted")
 
 if __name__ == "__main__":
     main()
@@ -1750,6 +1998,168 @@ if __name__ == "__main__":
 
 ```
 
+## `database\fetching\fetch_trade_history.py`
+
+```python
+# GET /api/v5/market/history-trades
+
+#Purpose: Returns individual trade-level data (price, size, direction) for last 3 months
+#Backfill range: ❗Only last 3 months
+#Pagination: via tradeId (type=1) or ts (type=2)
+
+#Use:
+
+#Train the slippage model
+
+#Label high-slippage conditions per candle (e.g. price impact)
+
+#Detect microstructure patterns pre-trade
+
+"""
+fetch_trade_history.py
+Fetches recent trade-level data (last 3 months) from OKX API for all USDT spot pairs.
+Inserts new records into `slippage_training_data`, avoiding duplicates by tradeId.
+"""
+
+import requests
+import time
+from datetime import datetime
+from config.config_loader import load_config
+from database.db import fetch_data, get_connection
+from psycopg2.extras import execute_values
+
+config = load_config()
+CANDLES_RATE_LIMIT = 20
+BATCH_INTERVAL = 2
+HISTORY_TRADES_URL = "https://www.okx.com/api/v5/market/history-trades"
+INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
+
+
+def fetch_active_usdt_pairs():
+    response = requests.get(INSTRUMENTS_URL)
+    data = response.json()
+    if "data" not in data:
+        return []
+    return [
+        inst["instId"]
+        for inst in data["data"]
+        if inst["quoteCcy"] == "USDT" and inst["state"] == "live"
+    ]
+
+
+def fetch_existing_trade_ids(pair):
+    query = "SELECT trade_id FROM slippage_training_data WHERE pair = %s;"
+    result = fetch_data(query, (pair,))
+    return set(row["trade_id"] for row in result)
+
+
+def fetch_trades(pair, before_trade_id=None):
+    params = {
+        "instId": pair,
+        "limit": 100,
+    }
+    if before_trade_id:
+        params["after"] = before_trade_id
+
+    response = requests.get(HISTORY_TRADES_URL, params=params)
+    try:
+        return response.json().get("data", [])
+    except Exception as e:
+        print(f"❌ Error fetching trades for {pair}: {e}")
+        return []
+
+
+def insert_trades(pair, trades, existing_ids):
+    query = """
+    INSERT INTO raw_trades
+    (pair, trade_id, price, quantity, side, timestamp_utc)
+    VALUES %s
+    ON CONFLICT DO NOTHING;
+    """
+    rows = []
+    for t in trades:
+        try:
+            if t["tradeId"] in existing_ids:
+                continue
+            row = (
+                pair,
+                t["tradeId"],
+                float(t["px"]),
+                float(t["sz"]),
+                t["side"],
+                datetime.utcfromtimestamp(int(t["ts"]) / 1000),
+            )
+            rows.append(row)
+        except Exception as e:
+            print(f"⚠️ Skipped malformed trade: {t} | {e}")
+
+    if rows:
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            execute_values(cursor, query, rows)
+            conn.commit()
+            print(f"✅ Inserted {len(rows)} trades for {pair}")
+        except Exception as e:
+            print(f"❌ Insert failed for {pair}: {e}")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
+
+
+def enforce_rate_limit(request_count, start_time):
+    request_count += 1
+    if request_count >= CANDLES_RATE_LIMIT:
+        elapsed = time.time() - start_time
+        if elapsed < BATCH_INTERVAL:
+            time.sleep(BATCH_INTERVAL - elapsed)
+        return 0, time.time()
+    return request_count, start_time
+
+
+def main():
+    print("🚀 Fetching recent trade-level data for slippage training...")
+    pairs = fetch_active_usdt_pairs()
+    print(f"✅ {len(pairs)} USDT pairs found.")
+
+    request_count = {HISTORY_TRADES_URL: 0}
+    start_time = time.time()
+
+    for index, pair in enumerate(pairs, start=1):
+        print(f"\n🔁 {index}/{len(pairs)} | Fetching trades for {pair}")
+        existing_ids = fetch_existing_trade_ids(pair)
+        print(f"🧠 Existing trade IDs: {len(existing_ids)}")
+
+        before = None
+        total_inserted = 0
+
+        while True:
+            trades = fetch_trades(pair, before_trade_id=before)
+
+            if not trades:
+                break
+
+            insert_trades(pair, trades, existing_ids)
+            total_inserted += len(trades)
+
+            before = trades[-1]["tradeId"]
+            request_count[HISTORY_TRADES_URL], start_time = enforce_rate_limit(
+                request_count[HISTORY_TRADES_URL], start_time
+            )
+
+            if total_inserted >= 1000:  # Limit daily run
+                print(f"🛑 Reached daily fetch limit for {pair}")
+                break
+
+    print("✅ Done fetching slippage trades!")
+
+
+if __name__ == "__main__":
+    main()
+
+```
+
 ## `database\fetching\__init__.py`
 
 ```python
@@ -1760,7 +2170,7 @@ if __name__ == "__main__":
 
 ```python
 """
-OKXsignal - compute.py
+OKXsignal - compute_candles.py
 Efficient, production-grade feature and label computation for candles_1h.
 Supports incremental and full backfill modes.
 Includes multi-timeframe (4h, 1d) indicators and cross-pair intelligence.
@@ -1781,6 +2191,10 @@ from concurrent.futures import ProcessPoolExecutor
 from psycopg2.extras import execute_batch
 from datetime import datetime
 import logging
+#from sqlalchemy import create_engine
+
+#engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+#df = pd.read_sql("SELECT ...", engine)
 
 # ---------------------------
 # Load Configuration
@@ -1793,8 +2207,9 @@ config.read(CONFIG_PATH)
 load_dotenv(dotenv_path=CREDENTIALS_PATH)
 
 DB = config['DATABASE']
-MODE = config['GENERAL'].get('COMPUTE_MODE', 'incremental').lower()
+MODE = config['GENERAL'].get('COMPUTE_MODE', 'rolling_update').lower()
 LOG_LEVEL = config['GENERAL'].get('LOG_LEVEL', 'INFO').upper()
+ROLLING_WINDOW = config['GENERAL'].getint('ROLLING_WINDOW', fallback=128)
 
 # ---------------------------
 # Setup Logging
@@ -1812,6 +2227,8 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger("compute")
+RUNTIME_LOG_PATH = os.path.join("logs", "runtime_compute.log")
+start_time_global = datetime.now()
 
 # ---------------------------
 # Database Connection
@@ -1857,7 +2274,9 @@ def compute_1h_features(df: pd.DataFrame) -> pd.DataFrame:
     df['bid_ask_spread_1h'] = df['close_1h'] - df['open_1h']
     df['hour_of_day'] = df['timestamp_utc'].dt.hour
     df['day_of_week'] = df['timestamp_utc'].dt.weekday
-    df['quote_volume_1h'] = df['close_1h'] * df['volume_1h']
+    df['was_profitable_12h'] = (df['close_1h'].shift(-12) > df['close_1h']).astype(int)
+    df['prev_close_change_pct'] = df['close_1h'].pct_change()
+    df['prev_volume_rank'] = df['volume_1h'].rank(pct=True).shift(1) * 100
 
     return df
 
@@ -1905,7 +2324,14 @@ def compute_labels(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values('timestamp_utc')
     for horizon, shift in [('1h', 1), ('4h', 4), ('12h', 12), ('1d', 24), ('3d', 72), ('1w', 168), ('2w', 336)]:
         df[f'future_return_{horizon}_pct'] = (df['close_1h'].shift(-shift) - df['close_1h']) / df['close_1h']
+        
+    df['future_max_return_24h_pct'] = (df['high_1h'].rolling(window=24).max() - df['close_1h']) / df['close_1h']
+
+    rolling_low = df['low_1h'].shift(-1).rolling(12).min()
+    df['future_max_drawdown_12h_pct'] = (rolling_low - df['close_1h']) / df['close_1h']
+
     df['targets_computed'] = True
+    
     return df
 
 # ---------------------------
@@ -1928,35 +2354,51 @@ def compute_cross_pair_features(latest_df: pd.DataFrame) -> pd.DataFrame:
 # Entry Point
 # ---------------------------
 if __name__ == '__main__':
-    logger.info(f"Starting compute.py in {MODE.upper()} mode")
+    logger.info(f"Starting compute_candles.py in {MODE.upper()} mode")
     conn = get_connection()
-    all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
-    latest_rows = []
-    for pair in all_pairs:
-        df = pd.read_sql("SELECT * FROM candles_1h WHERE pair = %s ORDER BY timestamp_utc DESC LIMIT 1;", conn, params=(pair,))
-        if not df.empty:
-            latest_rows.append(df.iloc[0])
-    latest_df = pd.DataFrame(latest_rows)
-    if not latest_df.empty:
-        latest_df = compute_cross_pair_features(latest_df)
-    conn.close()
-    logger.info("Cross-pair features computed. Starting per-pair computation...")
 
-    def process_pair(pair: str):
-        try:
-            conn = get_connection()
-            query = "SELECT * FROM candles_1h WHERE pair = %s ORDER BY timestamp_utc DESC LIMIT 1050;"
-            df = pd.read_sql(query, conn, params=(pair,))
-            if df.empty:
-                return
-            df = compute_1h_features(df)
-            df = compute_labels(df)
-            df = compute_multi_tf_features(df, '4h', '4H')
-            df = compute_multi_tf_features(df, '1d', '1D')
-            df['features_computed'] = True
-            latest_row = df.iloc[-1]
-            with conn.cursor() as cur:
-                update_query = """
+    logger.info("Connected to DB... loading pair list")
+
+    all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+    logger.info(f"Found {len(all_pairs)} pairs")
+
+    if not all_pairs:
+        logger.warning("No pairs found in candles_1h. Exiting early.")
+        exit()
+
+    if MODE == "rolling_update":
+        conn = get_connection()
+        logger.info("Connected to DB for rolling update")
+        all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+        logger.info(f"Found {len(all_pairs)} pairs for rolling update")
+        conn.close()
+        logger.info(f"Rolling update mode: computing last {ROLLING_WINDOW} rows per pair")
+
+        def process_pair_rolling(pair: str):
+            logger.info(f"🔁 Computing features for {pair}")
+            try:
+                conn = get_connection()
+                query = f"""
+                    SELECT * FROM candles_1h
+                    WHERE pair = %s
+                    ORDER BY timestamp_utc DESC
+                    LIMIT {ROLLING_WINDOW}
+                """
+                df = pd.read_sql(query, conn, params=(pair,))
+                if df.empty or len(df) < ROLLING_WINDOW // 2:
+                    logger.warning(f"Not enough data for {pair}")
+                    return
+
+                df = compute_1h_features(df)
+                df = compute_labels(df)
+                df = compute_multi_tf_features(df, '4h', '4H')
+                df = compute_multi_tf_features(df, '1d', '1D')
+                df['features_computed'] = True
+                df['targets_computed'] = True
+
+                with conn.cursor() as cur:
+                    for _, row in df.iterrows():
+                        update_query = """
                     UPDATE candles_1h SET
                         rsi_1h = %s,
                         rsi_slope_1h = %s,
@@ -1999,34 +2441,18 @@ if __name__ == '__main__':
                         performance_rank_btc_1h = %s,
                         performance_rank_eth_1h = %s,
                         volume_rank_1h = %s,
-                        volatility_rank_1h = %s
-                        row.get('performance_rank_btc_1h'),
-                        row.get('performance_rank_eth_1h'),
-                        row.get('volume_rank_1h'),
-                        row.get('volatility_rank_1h'),
+                        volatility_rank_1h = %s,
+                        was_profitable_12h = %s,
+                        prev_close_change_pct = %s,
+                        prev_volume_rank = %s,
+                        future_max_return_24h_pct = %s,
+                        future_max_drawdown_12h_pct = %s,
                         features_computed = TRUE,
                         targets_computed = TRUE
                     WHERE pair = %s AND timestamp_utc = %s;
                 """
 
-                # Ensure no critical NaNs before writing
-                required_columns = [
-                    'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
-                    'bollinger_width_1h', 'donchian_channel_width_1h', 'parabolic_sar_1h',
-                    'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
-                    'estimated_slippage_1h', 'bid_ask_spread_1h',
-                    'rsi_4h', 'rsi_slope_4h', 'macd_slope_4h', 'macd_hist_slope_4h', 'atr_4h',
-                    'bollinger_width_4h', 'donchian_channel_width_4h', 'money_flow_index_4h',
-                    'obv_slope_4h', 'volume_change_pct_4h',
-                    'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
-                    'bollinger_width_1d', 'donchian_channel_width_1d', 'money_flow_index_1d',
-                    'obv_slope_1d', 'volume_change_pct_1d'
-                ]
-                if latest_row[required_columns].isnull().any():
-                    logger.warning(f"Skipping update for {pair} at {latest_row['timestamp_utc']} due to NaNs.")
-                    return
-
-                values = [latest_row.get(col) for col in [
+                values = [row.get(col) for col in [
                     'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
                     'bollinger_width_1h', 'donchian_channel_width_1h', 'supertrend_direction_1h',
                     'parabolic_sar_1h', 'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
@@ -2036,23 +2462,216 @@ if __name__ == '__main__':
                     'money_flow_index_4h', 'obv_slope_4h', 'volume_change_pct_4h',
                     'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
                     'bollinger_width_1d', 'donchian_channel_width_1d', 'supertrend_direction_1d',
-                    'money_flow_index_1d', 'obv_slope_1d', 'volume_change_pct_1d',
-                    'pair', 'timestamp_utc'
+                    'money_flow_index_1d', 'obv_slope_1d', 'volume_change_pct_1d', 'was_profitable_12h', 
+                    'prev_close_change_pct', 'prev_volume_rank', 'future_max_return_24h_pct',
+                    'future_max_drawdown_12h_pct', 'pair', 'timestamp_utc'
                 ]]
-
-                execute_batch(cur, update_query, [tuple(values)])
+                cur.execute(update_query, values)
                 conn.commit()
 
-        except Exception as e:
-            logger.error(f"Error processing {pair}: {e}")
-        finally:
+            except Exception as e:
+                logger.error(f"Error processing {pair}: {e}")
+            finally:
+                conn.close()
+
+        with ProcessPoolExecutor() as executor:
+            executor.map(process_pair_rolling, all_pairs)
+
+        logger.info("✅ Rolling update mode completed.")
+
+    elif MODE == "full_backfill":
+        logger.info("Full backfill mode: fetching all candles per pair and computing everything...")
+
+        from database.db import execute_copy_update
+
+        all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+        conn.close()
+
+        all_rows = []
+
+        columns_for_update = [
+            'pair', 'timestamp_utc',
+            'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
+            'bollinger_width_1h', 'donchian_channel_width_1h', 'supertrend_direction_1h',
+            'parabolic_sar_1h', 'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
+            'estimated_slippage_1h', 'bid_ask_spread_1h', 'hour_of_day', 'day_of_week',
+            'rsi_4h', 'rsi_slope_4h', 'macd_slope_4h', 'macd_hist_slope_4h', 'atr_4h',
+            'bollinger_width_4h', 'donchian_channel_width_4h', 'supertrend_direction_4h',
+            'money_flow_index_4h', 'obv_slope_4h', 'volume_change_pct_4h',
+            'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
+            'bollinger_width_1d', 'donchian_channel_width_1d', 'supertrend_direction_1d',
+            'money_flow_index_1d', 'obv_slope_1d', 'volume_change_pct_1d',
+            'performance_rank_btc_1h', 'performance_rank_eth_1h',
+            'volume_rank_1h', 'volatility_rank_1h',
+            'was_profitable_12h', 'prev_close_change_pct', 'prev_volume_rank',
+            'future_max_return_24h_pct', 'future_max_drawdown_12h_pct'
+        ]
+
+        for pair in all_pairs:
+            conn = get_connection()
+            df = pd.read_sql("SELECT * FROM candles_1h WHERE pair = %s ORDER BY timestamp_utc ASC;", conn, params=(pair,))
             conn.close()
+            if df.empty or len(df) < 100:
+                logger.warning(f"Skipping {pair} due to insufficient candles.")
+                continue
 
-    with ProcessPoolExecutor() as executor:
-        executor.map(process_pair, all_pairs)
+            df = compute_1h_features(df)
+            df = compute_labels(df)
+            df = compute_multi_tf_features(df, '4h', '4H')
+            df = compute_multi_tf_features(df, '1d', '1D')
+            df['features_computed'] = True
+            df['targets_computed'] = True
 
-    logger.info("Feature + target computation completed!")
+            latest = compute_cross_pair_features(df.tail(ROLLING_WINDOW))
+            df = df.merge(latest[['pair', 'timestamp_utc',
+                                  'performance_rank_btc_1h', 'performance_rank_eth_1h',
+                                  'volume_rank_1h', 'volatility_rank_1h']],
+                          on=['pair', 'timestamp_utc'], how='left')
 
+            for _, row in df.iterrows():
+                row_values = [row.get(col) for col in columns_for_update]
+                all_rows.append(row_values)
+
+        update_query = """
+        UPDATE candles_1h AS c SET
+        """ + ",\n".join([
+            f"{col} = t.{col}" for col in columns_for_update[2:]
+        ]) + """
+        , features_computed = TRUE,
+          targets_computed = TRUE
+        FROM {temp_table} t
+        WHERE c.pair = t.pair AND c.timestamp_utc = t.timestamp_utc;
+        """
+
+        execute_copy_update(
+            temp_table_name="temp_full_backfill",
+            column_names=columns_for_update,
+            values=all_rows,
+            update_query=update_query
+        )
+
+        logger.info("✅ Full backfill completed successfully.")
+
+
+    # Runtime logging
+    end_time = datetime.now()
+    duration = (end_time - start_time_global).total_seconds()
+    with open(RUNTIME_LOG_PATH, "a") as f:
+        f.write(f"[{end_time}] compute_candles.py (rolling_update) completed in {duration:.2f} seconds\n")
+
+```
+
+## `documentation\(personal) commands.md`
+
+```python
+cd E:\Programming\OKXsignal
+conda activate okxsignal
+python backend/main.py
+
+
+Restart-Service postgresql-x64-17
+
+```
+
+## `documentation\IDEAS.md`
+
+```python
+1. Use Unnest to improve insert speeds for postgresql (with timescaledb)
+```
+
+## `documentation\trainable_features.md`
+
+```python
+# 🧠 OKXsignal — Trainable Features Overview
+
+This file documents the features and labels used for training OKXsignal's deep learning models. Features are grouped into three main categories: **primary features**, **auxiliary features**, and **labels**.
+
+---
+
+## ✅ Primary Features
+
+These are the **core input features** used by the model to learn market behavior. They represent technical indicators, statistical patterns, and market structure extracted from raw candle data.
+
+| Feature | Description |
+|--------|-------------|
+| `rsi_1h` | Relative Strength Index (14) on 1h close prices |
+| `rsi_slope_1h` | Short-term slope of RSI over past 3 hours |
+| `macd_slope_1h` | Rate of change of MACD line (trend momentum) |
+| `macd_hist_slope_1h` | Rate of change of MACD histogram (trend strength) |
+| `atr_1h` | Average True Range (volatility indicator) |
+| `bollinger_width_1h` | Width of Bollinger Bands (volatility + squeeze detection) |
+| `donchian_channel_width_1h` | Range of high/low over 20 periods (trend range) |
+| `parabolic_sar_1h` | Parabolic SAR (trend reversal detection) |
+| `money_flow_index_1h` | Volume-weighted RSI (detects overbought/oversold) |
+| `obv_slope_1h` | OBV slope: volume–price agreement |
+| `volume_change_pct_1h` | % change in volume from previous candle |
+| `estimated_slippage_1h` | High–low spread (used as proxy for slippage risk) |
+| `bid_ask_spread_1h` | Close – Open difference (used to estimate spread/skew) |
+| `hour_of_day` | Hour of the day (0–23, helps detect hourly seasonality) |
+| `day_of_week` | Weekday (0 = Monday, 6 = Sunday) |
+| `rsi_4h` | RSI on 4h timeframe |
+| `rsi_slope_4h` | Slope of RSI over past 3 x 4h candles |
+| `macd_slope_4h` | 4h MACD line delta |
+| `macd_hist_slope_4h` | 4h MACD histogram delta |
+| `atr_4h` | 4h Average True Range |
+| `bollinger_width_4h` | 4h Bollinger Band width |
+| `donchian_channel_width_4h` | 4h Donchian Channel range |
+| `money_flow_index_4h` | 4h MFI |
+| `obv_slope_4h` | 4h OBV slope |
+| `volume_change_pct_4h` | 4h volume % change |
+| `rsi_1d` | Daily RSI |
+| `rsi_slope_1d` | Daily RSI slope |
+| `macd_slope_1d` | Daily MACD slope |
+| `macd_hist_slope_1d` | Daily MACD histogram slope |
+| `atr_1d` | Daily ATR |
+| `bollinger_width_1d` | Daily Bollinger width |
+| `donchian_channel_width_1d` | Daily Donchian width |
+| `money_flow_index_1d` | Daily MFI |
+| `obv_slope_1d` | Daily OBV slope |
+| `volume_change_pct_1d` | Daily volume change percentage |
+| `volume_rank_1h` | Relative volume rank compared to other USDT pairs |
+| `volatility_rank_1h` | Relative ATR rank vs other pairs (cross-pair intelligence) |
+| `performance_rank_btc_1h` | Return vs BTC percentile |
+| `performance_rank_eth_1h` | Return vs ETH percentile |
+
+---
+
+## 🛠️ Auxiliary Features
+
+These are **contextual signals** used for analysis, feature engineering, or optional model branches. They may or may not be used for training depending on experiments.
+
+| Feature | Description |
+|--------|-------------|
+| `was_profitable_12h` | Binary label (1 if price after 12h > now, else 0) |
+| `prev_close_change_pct` | % price change compared to previous candle |
+| `prev_volume_rank` | Previous candle’s relative volume rank |
+| `future_max_return_24h_pct` | Best return (high vs close) within next 24 hours |
+
+---
+
+## 🎯 Labels (Targets)
+
+These are **what the model is trying to predict**. All are calculated based on future price changes. They are not used as inputs.
+
+| Label | Description |
+|-------|-------------|
+| `future_return_1h_pct` | Return after 1 hour (close-to-close) |
+| `future_return_4h_pct` | Return after 4 hours |
+| `future_return_12h_pct` | Return after 12 hours |
+| `future_return_1d_pct` | Return after 1 day |
+| `future_return_3d_pct` | Return after 3 days |
+| `future_return_1w_pct` | Return after 1 week |
+| `future_return_2w_pct` | Return after 2 weeks |
+| `future_max_drawdown_12h_pct` | Max drawdown from close over next 12h (risk label) |
+
+---
+
+📘 **Notes**:
+
+- All percentage returns are normalized: `(future_close - now_close) / now_close`
+- Timezone is UTC across all candles and calculations
+- Daily and 4h features are backfilled from 1h candles using proper aggregation
+- All cross-pair rankings are calculated at each hourly timestamp
 ```
 
 ## `okx_api\auth.py`

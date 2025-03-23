@@ -6,8 +6,10 @@ OKXsignal
 ├─ backend
 │  ├─ backtesting
 │  │  ├─ metrics.py
+│  │  ├─ portfolio_simulator.py
 │  │  ├─ run_backtest.py
 │  │  ├─ strategy_wrapper.py
+│  │  ├─ trade_logger.py
 │  │  └─ __init__.py
 │  ├─ live-feed
 │  │  └─ websocket_subscriptions.py
@@ -39,7 +41,8 @@ OKXsignal
 │  └─ __init__.py
 ├─ config
 │  ├─ config.ini
-│  └─ config_loader.py
+│  ├─ config_loader.py
+│  └─ __init__.py
 ├─ dashboard
 │  ├─ assets
 │  │  └─ custom.css
@@ -95,7 +98,6 @@ OKXsignal
 │  ├─ (personal) commands.md
 │  ├─ IDEAS.md
 │  └─ trainable_features.md
-├─ exported_files.md
 ├─ export_markdown.py
 ├─ main.py
 ├─ okx_api
@@ -104,6 +106,7 @@ OKXsignal
 │  └─ __init__.py
 ├─ README.md
 ├─ requirements.txt
+├─ run_hourly_pipeline.py
 └─ __init__.py
 
 ```

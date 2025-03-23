@@ -20,7 +20,12 @@ def log_duration(process_name, duration):
 
 def run_and_time(script_path):
     start = time.time()
-    subprocess.run(["python", script_path], check=True)
+    subprocess.run(
+        ["python", script_path],
+        check=True,
+        cwd="P:/OKXsignal",
+        env={**os.environ, "PYTHONPATH": "P:/OKXsignal"}
+    )
     return time.time() - start
 
 def main():

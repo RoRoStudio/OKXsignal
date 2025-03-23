@@ -1,5 +1,5 @@
 """
-OKXsignal - compute.py
+OKXsignal - compute_candles.py
 Efficient, production-grade feature and label computation for candles_1h.
 Supports incremental and full backfill modes.
 Includes multi-timeframe (4h, 1d) indicators and cross-pair intelligence.
@@ -20,6 +20,10 @@ from concurrent.futures import ProcessPoolExecutor
 from psycopg2.extras import execute_batch
 from datetime import datetime
 import logging
+#from sqlalchemy import create_engine
+
+#engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+#df = pd.read_sql("SELECT ...", engine)
 
 # ---------------------------
 # Load Configuration
@@ -179,15 +183,28 @@ def compute_cross_pair_features(latest_df: pd.DataFrame) -> pd.DataFrame:
 # Entry Point
 # ---------------------------
 if __name__ == '__main__':
-    logger.info(f"Starting compute.py in {MODE.upper()} mode")
+    logger.info(f"Starting compute_candles.py in {MODE.upper()} mode")
     conn = get_connection()
 
+    logger.info("Connected to DB... loading pair list")
+
+    all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+    logger.info(f"Found {len(all_pairs)} pairs")
+
+    if not all_pairs:
+        logger.warning("No pairs found in candles_1h. Exiting early.")
+        exit()
+
     if MODE == "rolling_update":
+        conn = get_connection()
+        logger.info("Connected to DB for rolling update")
         all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+        logger.info(f"Found {len(all_pairs)} pairs for rolling update")
         conn.close()
         logger.info(f"Rolling update mode: computing last {ROLLING_WINDOW} rows per pair")
 
         def process_pair_rolling(pair: str):
+            logger.info(f"🔁 Computing features for {pair}")
             try:
                 conn = get_connection()
                 query = f"""
