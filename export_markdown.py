@@ -1,7 +1,7 @@
 import os
 
 # Define root directory
-ROOT_DIR = r"E:\Programming\OKXsignal"
+ROOT_DIR = r"P:\OKXsignal"
 OUTPUT_FILE = os.path.join(ROOT_DIR, "exported_files.md")
 
 # Allowed file extensions (only source code files are included)

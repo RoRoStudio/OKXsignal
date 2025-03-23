@@ -1,93 +1,109 @@
 """
 backfill_missing_1h_candles.py
-Finds missing 1-hour candles and backfills them using OKX API, storing data in PostgreSQL.
+Finds and fills missing 1-hour candles in PostgreSQL using OKX API.
 """
 
 import requests
 import time
-from database.db import fetch_data, execute_batch
+from datetime import datetime, timezone, timedelta
 from config.config_loader import load_config
+from database.db import fetch_data, get_connection
+from psycopg2.extras import execute_values
 
-# ✅ Load configuration settings
 config = load_config()
-
-# ✅ OKX API Endpoint
 OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
-
-# ✅ Rate Limit Settings (20 requests per 2 seconds)
 CANDLES_RATE_LIMIT = 20
 BATCH_INTERVAL = 2
 
 
-def fetch_missing_pairs():
-    """Fetch pairs that exist in 1D but are missing from 1H using PostgreSQL."""
-    query = """
-    SELECT DISTINCT pair FROM public.candles_1h 
-    WHERE pair NOT IN (SELECT DISTINCT pair FROM public.candles_1h);
-    """
+def fetch_all_pairs():
+    query = "SELECT DISTINCT pair FROM public.candles_1h;"
     return [row["pair"] for row in fetch_data(query)]
 
 
-def fetch_latest_timestamp(pair):
-    """Fetch the most recent timestamp stored for a given pair in PostgreSQL."""
-    query = "SELECT MAX(timestamp_ms) FROM public.candles_1h WHERE pair = %s;"
-    result = fetch_data(query, (pair,))
-    return result[0]["max"] if result and result[0]["max"] else None
+def fetch_timestamps(pair):
+    query = """
+    SELECT timestamp_utc FROM public.candles_1h 
+    WHERE pair = %s ORDER BY timestamp_utc ASC;
+    """
+    return [row["timestamp_utc"] for row in fetch_data(query, (pair,))]
 
 
-def fetch_candles(pair, after_timestamp=None):
-    """Fetch 1H historical candles from OKX using `before` for pagination."""
+def find_gaps(timestamps):
+    gaps = []
+    expected_delta = timedelta(hours=1)
+    for i in range(1, len(timestamps)):
+        current = timestamps[i]
+        prev = timestamps[i - 1]
+        delta = current - prev
+        if delta > expected_delta:
+            missing_start = prev + expected_delta
+            while missing_start < current:
+                gaps.append(missing_start)
+                missing_start += expected_delta
+    return gaps
+
+
+def fetch_candles(pair, after_utc):
     params = {
         "instId": pair,
         "bar": "1H",
         "limit": 100,
+        "after": str(int(after_utc.timestamp() * 1000))
     }
-    if after_timestamp:
-        params["before"] = str(after_timestamp)  # ✅ Use `before` for correct pagination
-
-    print(f"📡 Sending request to OKX: {params}")  # Debugging output
 
     response = requests.get(OKX_CANDLES_URL, params=params)
     try:
-        data = response.json()
-        return data.get("data", [])
+        return response.json().get("data", [])
     except Exception as e:
-        print(f"❌ Error parsing JSON for {pair}: {e}")
-        return None
+        print(f"❌ Error fetching {pair} after {after_utc}: {e}")
+        return []
 
 
 def insert_candles(pair, candles):
-    """Insert fetched candles into PostgreSQL."""
     query = """
     INSERT INTO public.candles_1h 
-    (pair, timestamp_ms, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
     VALUES %s
-    ON CONFLICT (pair, timestamp_ms) DO NOTHING;
+    ON CONFLICT (pair, timestamp_utc) DO NOTHING;
     """
-
-    rows = [
-        (
-            pair,
-            int(c[0]),  # timestamp_ms
-            float(c[1]),  # open
-            float(c[2]),  # high
-            float(c[3]),  # low
-            float(c[4]),  # close
-            float(c[5]),  # volume
-            float(c[6]),  # quote volume
-            float(c[7]),  # taker buy base volume
-        )
-        for c in candles
-    ]
+    rows = []
+    for c in candles:
+        try:
+            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)
+            row = (
+                pair,
+                utc_ts,
+                float(c[1]),
+                float(c[2]),
+                float(c[3]),
+                float(c[4]),
+                float(c[5]),
+                float(c[6]),
+                float(c[7]),
+            )
+            rows.append(row)
+        except Exception as e:
+            print(f"⚠️ Malformed candle for {pair}: {e} | Raw: {c}")
 
     if rows:
-        execute_batch(query, rows)  # ✅ Efficient batch insert
-        return len(rows)
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            execute_values(cursor, query, rows)
+            conn.commit()
+            print(f"✅ Inserted {len(rows)} gap candles for {pair} | {rows[0][1]} → {rows[-1][1]}")
+            return len(rows)
+        except Exception as e:
+            print(f"❌ Insert failed for {pair}: {e}")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
     return 0
 
 
 def enforce_rate_limit(request_count, start_time):
-    """Ensure API rate limits are respected."""
     request_count += 1
     if request_count >= CANDLES_RATE_LIMIT:
         elapsed = time.time() - start_time
@@ -98,62 +114,42 @@ def enforce_rate_limit(request_count, start_time):
 
 
 def main():
-    """Find missing 1H candles and backfill them using OKX API."""
-    print("🚀 Script started: Backfilling missing 1H candles...")
+    print("🚀 Scanning for gaps in 1H candle history...")
 
-    missing_pairs = fetch_missing_pairs()
-    if not missing_pairs:
-        print("✅ No missing pairs found. Exiting.")
-        return
+    pairs = fetch_all_pairs()
+    print(f"✅ Found {len(pairs)} pairs with existing data")
 
-    print(f"🚀 Backfilling {len(missing_pairs)} missing 1H candles...")
-
-    total_fixed = 0
-    failed_pairs = []
+    total_inserted = 0
     request_count = {OKX_CANDLES_URL: 0}
     start_time = time.time()
 
-    for index, pair in enumerate(missing_pairs, start=1):
+    for index, pair in enumerate(pairs, start=1):
         try:
-            print(f"🔍 Fetching {pair} missing candles...")
+            print(f"\n🔁 Checking {pair}")
+            timestamps = fetch_timestamps(pair)
+            if len(timestamps) < 2:
+                print(f"⚠️ Not enough data to find gaps for {pair}")
+                continue
 
-            # ✅ Start from the latest known candle in PostgreSQL
-            latest_timestamp = fetch_latest_timestamp(pair)
+            gaps = find_gaps(timestamps)
+            print(f"🧩 Found {len(gaps)} missing 1H timestamps for {pair}")
 
-            # ✅ If no data, start from latest OKX candle
-            if latest_timestamp is None:
-                first_candle = fetch_candles(pair, after_timestamp=None)  # Get latest candle
-                if not first_candle:
-                    print(f"⚠️ {pair}: No candles found in OKX.")
-                    continue
-                latest_timestamp = int(first_candle[0][0])
-
-            # ✅ Backfill candles using `before=<timestamp>`
-            while True:
-                candles = fetch_candles(pair, after_timestamp=latest_timestamp)
-
-                if not candles:
-                    print(f"⏳ No more missing candles found for {pair}, stopping.")
-                    break
-
+            for gap_start in gaps:
+                candles = fetch_candles(pair, gap_start)
                 inserted = insert_candles(pair, candles)
-                total_fixed += inserted
+                total_inserted += inserted
 
-                # ✅ Use the earliest candle timestamp instead of the latest
-                latest_timestamp = int(candles[-1][0])  # ✅ Use oldest timestamp in batch for proper backfilling
-
-                print(f"📌 {pair} → Inserted {inserted} missing candles. Now fetching before {latest_timestamp}...")
-
-                request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_CANDLES_URL], start_time)
+                request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(
+                    request_count[OKX_CANDLES_URL], start_time
+                )
 
             if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(missing_pairs)} | Fixed: {total_fixed}")
+                print(f"📊 Progress: {index}/{len(pairs)} | Total inserted: {total_inserted}")
 
         except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
+            print(f"❌ Failed to process {pair}: {e}")
 
-    print(f"\n✅ Sync complete: Processed={len(missing_pairs)}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
+    print(f"\n✅ Backfill complete: Inserted {total_inserted} missing candles across {len(pairs)} pairs")
 
 
 if __name__ == "__main__":

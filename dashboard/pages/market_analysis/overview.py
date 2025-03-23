@@ -98,11 +98,11 @@ def show_filtered_data(data):
 
     # ✅ Apply Date Filtering (Only if Both Dates Exist)
     if start_timestamp and end_timestamp:
-        data = [d for d in data if start_timestamp <= d['timestamp_ms'] <= end_timestamp]
+        data = [d for d in data if start_timestamp <= d['timestamp_utc'] <= end_timestamp]
     elif start_timestamp:  # ✅ If only start date is selected, show from that date onward
-        data = [d for d in data if start_timestamp <= d['timestamp_ms']]
+        data = [d for d in data if start_timestamp <= d['timestamp_utc']]
     elif end_timestamp:  # ✅ If only end date is selected, show up to that date
-        data = [d for d in data if d['timestamp_ms'] <= end_timestamp]
+        data = [d for d in data if d['timestamp_utc'] <= end_timestamp]
 
     # ✅ Convert to DataFrame
     df = pd.DataFrame(data)

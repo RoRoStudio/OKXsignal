@@ -5,8 +5,10 @@ Finds and fetches older 1-hour candles from OKX API and stores them in PostgreSQ
 
 import requests
 import time
-from database.db import fetch_data, execute_batch
+from datetime import datetime, timezone, timedelta
 from config.config_loader import load_config
+from database.db import fetch_data, get_connection
+from psycopg2.extras import execute_values
 
 # ✅ Load configuration settings
 config = load_config()
@@ -15,16 +17,13 @@ config = load_config()
 OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
 OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 
-# ✅ Rate Limit Settings (20 requests per 2 seconds)
+# ✅ Rate Limit Settings
 HISTORY_CANDLES_RATE_LIMIT = 20
 BATCH_INTERVAL = 2
 
-
 def fetch_active_pairs():
-    """Fetch active USDT trading pairs from OKX API."""
     response = requests.get(OKX_INSTRUMENTS_URL)
     data = response.json()
-
     if "data" in data:
         return [
             inst["instId"]
@@ -33,67 +32,70 @@ def fetch_active_pairs():
         ]
     return []
 
-
 def fetch_oldest_timestamp(pair):
-    """Fetch the oldest available timestamp for a given pair in PostgreSQL."""
-    query = "SELECT MIN(timestamp_ms) FROM public.candles_1h WHERE pair = %s;"
+    query = "SELECT MIN(timestamp_utc) FROM public.candles_1h WHERE pair = %s;"
     result = fetch_data(query, (pair,))
     return result[0]["min"] if result and result[0]["min"] else None
 
-
-def fetch_candles(pair, after_timestamp_ms):
-    """Fetch older 1H candles from OKX using `after` for pagination."""
+def fetch_candles(pair, after_timestamp_utc):
     params = {
         "instId": pair,
         "bar": "1H",
         "limit": 100,
-        "after": str(int(after_timestamp_ms))
+        "after": str(int(after_timestamp_utc.timestamp() * 1000))
     }
 
-    print(f"🔍 Fetching {pair} older candles from {after_timestamp_ms}...")
-
     response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-
     try:
-        data = response.json()
-        return data.get("data", [])
+        return response.json().get("data", [])
     except Exception as e:
         print(f"❌ Error parsing JSON response for {pair}: {e}")
         return []
 
-
 def insert_candles(pair, candles):
-    """Insert older fetched 1H candles into PostgreSQL."""
     query = """
     INSERT INTO public.candles_1h 
-    (pair, timestamp_ms, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
     VALUES %s
-    ON CONFLICT (pair, timestamp_ms) DO NOTHING;
+    ON CONFLICT (pair, timestamp_utc) DO NOTHING;
     """
 
-    rows = [
-        (
-            pair,
-            int(c[0]),  # timestamp_ms
-            float(c[1]),  # open
-            float(c[2]),  # high
-            float(c[3]),  # low
-            float(c[4]),  # close
-            float(c[5]),  # volume
-            float(c[6]),  # quote volume
-            float(c[7]),  # taker buy base volume
-        )
-        for c in candles
-    ]
+    rows = []
+    for c in candles:
+        try:
+            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)  # HK → UTC
+            row = (
+                pair,
+                utc_ts,
+                float(c[1]),
+                float(c[2]),
+                float(c[3]),
+                float(c[4]),
+                float(c[5]),
+                float(c[6]),
+                float(c[7])
+            )
+            rows.append(row)
+        except Exception as e:
+            print(f"⚠️ Malformed candle for {pair}: {e} | Raw: {c}")
 
     if rows:
-        execute_batch(query, rows)  # ✅ Efficient batch insert
-        return len(rows)
-    return 0
-
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            execute_values(cursor, query, rows)
+            conn.commit()
+            print(f"✅ Inserted {len(rows)} historical candles for {pair} | {rows[0][1]} → {rows[-1][1]}")
+            return rows[-1][1]  # Return latest timestamp in batch
+        except Exception as e:
+            print(f"❌ Insert failed for {pair}: {e}")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
+    return None
 
 def enforce_rate_limit(request_count, start_time):
-    """Ensure API rate limits are respected."""
     request_count += 1
     if request_count >= HISTORY_CANDLES_RATE_LIMIT:
         elapsed = time.time() - start_time
@@ -102,58 +104,42 @@ def enforce_rate_limit(request_count, start_time):
         return 0, time.time()
     return request_count, start_time
 
-
 def main():
-    """Find and fetch older 1H candles using OKX API."""
-    print("🚀 Script started: Fetching older 1H candles...")
+    print("🚀 Fetching older 1H candles from OKX...")
 
     pairs = fetch_active_pairs()
-    if not pairs:
-        print("✅ No active pairs found. Exiting.")
-        return
+    print(f"✅ {len(pairs)} active USDT spot pairs found")
 
-    print(f"🚀 Fetching historical 1H candles for {len(pairs)} pairs...")
-
-    total_fixed = 0
-    failed_pairs = []
     request_count = {OKX_HISTORY_CANDLES_URL: 0}
     start_time = time.time()
 
     for index, pair in enumerate(pairs, start=1):
-        try:
-            oldest_timestamp_ms = fetch_oldest_timestamp(pair)
-            if oldest_timestamp_ms is None:
-                print(f"⚠️ No timestamp found for {pair}, skipping...")
-                continue
+        print(f"\n🔁 Processing {pair}")
+        after = fetch_oldest_timestamp(pair)
+        if after is None:
+            print(f"⚠️ No local data for {pair}, skipping.")
+            continue
 
-            print(f"⏳ {pair} → Fetching candles older than {oldest_timestamp_ms}")
+        total = 0
 
-            # ✅ Start from the oldest available timestamp and move forward
-            while True:
-                candles = fetch_candles(pair, after_timestamp_ms=oldest_timestamp_ms)
+        while True:
+            candles = fetch_candles(pair, after_timestamp_utc=after)
+            if not candles:
+                print(f"⛔ No more older candles for {pair}")
+                break
 
-                if not candles:
-                    print(f"⏳ No more older candles found for {pair}, stopping.")
-                    break
+            after = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+            inserted_timestamp = insert_candles(pair, candles)
+            if not inserted_timestamp:
+                break
 
-                inserted = insert_candles(pair, candles)
-                total_fixed += inserted
-                oldest_timestamp_ms = int(candles[-1][0])  # ✅ Move forward in time
+            total += len(candles)
 
-                print(f"📌 {pair} → Inserted {inserted} older candles.")
+            request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
+                request_count[OKX_HISTORY_CANDLES_URL], start_time
+            )
 
-                request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_HISTORY_CANDLES_URL], start_time)
-
-            # ✅ Log progress every 50 pairs
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(pairs)} | Fixed: {total_fixed}")
-
-        except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
-
-    print(f"\n✅ Sync complete: Processed={len(pairs)}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
-
+        print(f"📦 Finished {pair}: Inserted {total} older candles")
 
 if __name__ == "__main__":
     main()

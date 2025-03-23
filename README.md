@@ -1,31 +1,48 @@
 
 ```
 OKXsignal
-├─ (personal) commands.md
 ├─ .streamlit
 │  └─ config.toml
 ├─ backend
-│  ├─ controllers
-│  │  ├─ data_retrieval.py
-│  │  ├─ order_execution.py
-│  │  ├─ strategy.py
-│  │  └─ trading_account.py
-│  ├─ indicators
-│  ├─ ml
-│  │  ├─ model_trainer.py
-│  │  └─ predictor.py
-│  ├─ requirements.txt
-│  ├─ signal_engine
-│  ├─ test_rest_client.py
+│  ├─ backtesting
+│  │  ├─ metrics.py
+│  │  ├─ run_backtest.py
+│  │  ├─ strategy_wrapper.py
+│  │  └─ __init__.py
+│  ├─ live-feed
+│  │  └─ websocket_subscriptions.py
+│  ├─ models
+│  │  ├─ signal_model.py
+│  │  ├─ slippage_model.py
+│  │  └─ __init__.py
+│  ├─ post_model
+│  │  ├─ market_filter.py
+│  │  ├─ signal_filtering.py
+│  │  ├─ slippage_adjustment.py
+│  │  ├─ slippage_guard.py
+│  │  ├─ throttle_logic.py
+│  │  ├─ trade_sizing.py
+│  │  └─ __init__.py
+│  ├─ trading
+│  │  ├─ account.py
+│  │  ├─ executor.py
+│  │  ├─ portfolio.py
+│  │  ├─ recorder.py
+│  │  └─ __init__.py
+│  ├─ training
+│  │  ├─ dataloader.py
+│  │  ├─ features.py
+│  │  ├─ signal
+│  │  │  └─ train_signal_model.py
+│  │  └─ slippage
+│  │     └─ train_slippage_model.py
 │  └─ __init__.py
 ├─ config
 │  ├─ config.ini
-│  ├─ config_loader.py
-│  └─ credentials.env
+│  └─ config_loader.py
 ├─ dashboard
 │  ├─ assets
-│  │  ├─ custom.css
-│  │  └─ images
+│  │  └─ custom.css
 │  ├─ components
 │  │  ├─ alerts.py
 │  │  ├─ charts
@@ -68,8 +85,16 @@ OKXsignal
 │  │  ├─ .env
 │  │  ├─ backfill_missing_1h_candles.py
 │  │  ├─ fetch_new_1h_candles.py
-│  │  └─ fetch_old_1h_candles.py
+│  │  ├─ fetch_old_1h_candles.py
+│  │  ├─ fetch_trade_history.py
+│  │  └─ __init__.py
+│  ├─ processing
+│  │  └─ compute_candles.py
 │  └─ __init__.py
+├─ documentation
+│  ├─ (personal) commands.md
+│  ├─ IDEAS.md
+│  └─ trainable_features.md
 ├─ exported_files.md
 ├─ export_markdown.py
 ├─ main.py
@@ -78,6 +103,7 @@ OKXsignal
 │  ├─ rest_client.py
 │  └─ __init__.py
 ├─ README.md
-└─ requirements.txt
+├─ requirements.txt
+└─ __init__.py
 
 ```

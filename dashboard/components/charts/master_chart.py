@@ -42,17 +42,17 @@ def show_master_chart(data):
 
     # ✅ Convert timestamps to local time
     local_tz = pytz.timezone("Europe/Amsterdam")
-    df["timestamp_ms"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.tz_localize("UTC").dt.tz_convert(local_tz)
+    df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], unit="ms").dt.tz_localize("UTC").dt.tz_convert(local_tz)
 
     # ✅ Apply Date Filtering (Handles partial selections)
     if date_range and isinstance(date_range, list):
         if len(date_range) == 1:  # ✅ Only start date selected
             start_timestamp = int(pd.Timestamp(date_range[0]).timestamp() * 1000)
-            df = df[df["timestamp_ms"] >= start_timestamp]
+            df = df[df["timestamp_utc"] >= start_timestamp]
         elif len(date_range) == 2:  # ✅ Both start & end date selected
             start_timestamp = int(pd.Timestamp(date_range[0]).timestamp() * 1000)
             end_timestamp = int(pd.Timestamp(date_range[1]).timestamp() * 1000)
-            df = df[(df["timestamp_ms"] >= start_timestamp) & (df["timestamp_ms"] <= end_timestamp)]
+            df = df[(df["timestamp_utc"] >= start_timestamp) & (df["timestamp_utc"] <= end_timestamp)]
 
     # ✅ Auto-Adjust Zoom: Get min & max price for Y-axis
     min_price = df["low"].min() * 0.99
@@ -68,7 +68,7 @@ def show_master_chart(data):
 
     # 📈 **Candlestick Chart**
     fig.add_trace(go.Candlestick(
-        x=df["timestamp_ms"],
+        x=df["timestamp_utc"],
         open=df["open"],
         high=df["high"],
         low=df["low"],
@@ -80,7 +80,7 @@ def show_master_chart(data):
 
     # 📊 **Volume Bars**
     fig.add_trace(go.Bar(
-        x=df["timestamp_ms"],
+        x=df["timestamp_utc"],
         y=df["volume"],
         marker_color=VOLUME_COLOR,
         opacity=0.5,
@@ -89,22 +89,22 @@ def show_master_chart(data):
 
     # 🎚️ **Bollinger Bands**
     if indicators["Bollinger Bands"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["bollinger_upper"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Upper"))
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["bollinger_middle"], line=dict(color="gray", width=1, dash="dash"), name="Bollinger Middle"))
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["bollinger_lower"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Lower"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["bollinger_upper"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Upper"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["bollinger_middle"], line=dict(color="gray", width=1, dash="dash"), name="Bollinger Middle"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["bollinger_lower"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Lower"))
 
     # 📉 **MACD**
     if indicators["MACD"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["macd_line"], line=dict(color="blue", width=1), name="MACD Line"))
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["macd_signal"], line=dict(color="orange", width=1, dash="dot"), name="MACD Signal"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["macd_line"], line=dict(color="blue", width=1), name="MACD Line"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["macd_signal"], line=dict(color="orange", width=1, dash="dot"), name="MACD Signal"))
 
     # 📊 **RSI**
     if indicators["RSI"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["rsi"], line=dict(color="purple", width=1), name="RSI"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["rsi"], line=dict(color="purple", width=1), name="RSI"))
 
     # 📊 **ATR (Volatility Indicator)**
     if indicators["ATR"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["atr"], line=dict(color="red", width=1), name="ATR (Volatility)"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["atr"], line=dict(color="red", width=1), name="ATR (Volatility)"))
 
     # ✅ Chart Settings (Auto-Adjust Zoom & Secondary Y-Axis for Volume)
     fig.update_layout(

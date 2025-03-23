@@ -58,12 +58,12 @@ def fetch_market_data(pair: str, timeframe: str = "1H", limit: int = 1000):
 
     # Query Supabase
     response = supabase.table(table_name) \
-        .select("pair", "timestamp_ms", "open", "high", "low", "close", "volume",
+        .select("pair", "timestamp_utc", "open", "high", "low", "close", "volume",
                 "rsi", "macd_line", "macd_signal", "macd_hist",
                 "bollinger_middle", "bollinger_upper", "bollinger_lower",
                 "atr", "stoch_rsi_k", "stoch_rsi_d") \
         .eq("pair", pair) \
-        .order("timestamp_ms", desc=True) \
+        .order("timestamp_utc", desc=True) \
         .limit(limit).execute()
 
     return response.data if response.data else []

@@ -7,6 +7,9 @@ cd E:\Programming\OKXsignal
 conda activate okxsignal
 python backend/main.py
 
+
+Restart-Service postgresql-x64-17
+
 ```
 
 ## `exported_files.md`
@@ -21,7 +24,7 @@ python backend/main.py
 import os
 
 # Define root directory
-ROOT_DIR = r"E:\Programming\OKXsignal"
+ROOT_DIR = r"P:\OKXsignal"
 OUTPUT_FILE = os.path.join(ROOT_DIR, "exported_files.md")
 
 # Allowed file extensions (only source code files are included)
@@ -94,6 +97,12 @@ if __name__ == "__main__":
 
 ```
 
+## `IDEAS.md`
+
+```python
+1. Use Unnest to improve insert speeds for postgresql (with timescaledb)
+```
+
 ## `main.py`
 
 ```python
@@ -160,154 +169,10 @@ else:
 ```python
 
 ```
-OKXsignal
-├─ (personal) commands.md
-├─ .streamlit
-│  └─ config.toml
-├─ backend
-│  ├─ controllers
-│  │  ├─ data_retrieval.py
-│  │  ├─ order_execution.py
-│  │  ├─ strategy.py
-│  │  └─ trading_account.py
-│  ├─ indicators
-│  ├─ ml
-│  │  ├─ model_trainer.py
-│  │  └─ predictor.py
-│  ├─ requirements.txt
-│  ├─ signal_engine
-│  ├─ test_rest_client.py
-│  └─ __init__.py
-├─ config
-│  ├─ config.ini
-│  ├─ config_loader.py
-│  └─ credentials.env
-├─ dashboard
-│  ├─ assets
-│  │  ├─ custom.css
-│  │  └─ images
-│  ├─ components
-│  │  ├─ alerts.py
-│  │  ├─ charts
-│  │  │  ├─ macd_plot.py
-│  │  │  ├─ master_chart.py
-│  │  │  └─ rsi_plot.py
-│  │  ├─ forms
-│  │  │  ├─ filter_form.py
-│  │  │  └─ order_form.py
-│  │  ├─ metrics.py
-│  │  └─ tables
-│  │     ├─ candle_table.py
-│  │     ├─ portfolio_table.py
-│  │     └─ trades_table.py
-│  ├─ layout
-│  │  ├─ base_page.py
-│  │  ├─ navigation.py
-│  │  └─ theme.py
-│  ├─ pages
-│  │  ├─ home.py
-│  │  ├─ market_analysis
-│  │  │  ├─ advanced_charts.py
-│  │  │  ├─ overview.py
-│  │  │  └─ signals.py
-│  │  ├─ portfolio
-│  │  │  ├─ fees.py
-│  │  │  ├─ holdings.py
-│  │  │  └─ order_history.py
-│  │  ├─ settings
-│  │  │  ├─ risk_config.py
-│  │  │  └─ user_prefs.py
-│  │  ├─ trade_execution.py
-│  │  └─ __init__.py
-│  └─ utils
-│     ├─ data_loader.py
-│     └─ session_manager.py
-├─ export_markdown.py
-├─ main.py
-├─ okx_api
-│  ├─ auth.py
-│  ├─ rest_client.py
-│  └─ __init__.py
-├─ README.md
-├─ requirements.txt
-└─ supabase
-   ├─ .branches
-   │  └─ _current_branch
-   ├─ .temp
-   │  └─ cli-latest
-   └─ functions
-      ├─ backfill_missing_1h_candles.py
-      ├─ fetch_new_1d_candles.py
-      ├─ fetch_new_1h_candles.py
-      ├─ fetch_old_1d_candles.py
-      ├─ fetch_old_1h_candles.py
-      └─ __init__.py
 
-```
-```
-
-## `.vscode\extensions.json`
+## `__init__.py`
 
 ```python
-{
-  "recommendations": ["denoland.vscode-deno"]
-}
-
-```
-
-## `.vscode\settings.json`
-
-```python
-{
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
-  "deno.lint": true,
-  "deno.unstable": [
-    "bare-node-builtins",
-    "byonm",
-    "sloppy-imports",
-    "unsafe-proto",
-    "webgpu",
-    "broadcast-channel",
-    "worker-options",
-    "cron",
-    "kv",
-    "ffi",
-    "fs",
-    "http",
-    "net"
-  ],
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  }
-}
-
-```
-
-## `backend\test_rest_client.py`
-
-```python
-import json
-from okx_api.rest_client import OKXRestClient
-
-client = OKXRestClient()
-
-print('\n===== Testing OKX REST API Connection =====\n')
-
-try:
-    balance = client.get_balance()
-    print('? Account Balance:', json.dumps(balance, indent=2))
-except Exception as e:
-    print('? Failed to fetch balance:', e)
-
-try:
-    ticker = client.get_ticker('BTC-USDT')
-    print('? BTC-USDT Ticker:', json.dumps(ticker, indent=2))
-except Exception as e:
-    print('? Failed to fetch ticker:', e)
-
-print('\n===== Test Completed =====')
 
 ```
 
@@ -317,281 +182,221 @@ print('\n===== Test Completed =====')
 
 ```
 
-## `backend\controllers\data_retrieval.py`
+## `backend\backtesting\metrics.py`
 
 ```python
-"""
-data_retrieval.py
-Handles fetching price and indicator data from Supabase for the 1H and 1D candles.
-"""
-
-import os
-import pandas as pd
-from supabase import create_client, Client
-
-# Load Supabase credentials
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
-
-if not SUPABASE_URL or not SUPABASE_ANON_KEY:
-    raise ValueError("❌ Supabase credentials are missing.")
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-def fetch_market_data(pair: str, timeframe: str = "1H", limit: int = 1000) -> pd.DataFrame:
-    """
-    Fetch recent market data (candlesticks + indicators) from Supabase.
-
-    :param pair: Trading pair, e.g., "BTC-USDT".
-    :param timeframe: "1H" or "1D".
-    :param limit: Number of most recent rows to fetch.
-    :return: Pandas DataFrame containing market data with indicators.
-    """
-    table_name = f"candles_{timeframe}"
-
-    response = supabase.table(table_name) \
-        .select("pair", "timestamp_ms", "open", "high", "low", "close", "volume",
-                "rsi", "macd_line", "macd_signal", "macd_hist",
-                "bollinger_middle", "bollinger_upper", "bollinger_lower",
-                "atr", "stoch_rsi_k", "stoch_rsi_d") \
-        .eq("pair", pair) \
-        .order("timestamp_ms", desc=True) \
-        .limit(limit).execute()
-
-    data = response.data
-    return pd.DataFrame(data) if data else pd.DataFrame()
-
-if __name__ == "__main__":
-    df = fetch_market_data("BTC-USDT", "1H", 5)
-    print(df)
 
 ```
 
-## `backend\controllers\order_execution.py`
+## `backend\backtesting\run_backtest.py`
 
 ```python
-"""
-order_execution.py
-Handles placing, amending, and canceling orders via the OKX V5 API endpoints.
-"""
+#Example Values:
+#Column	Example Value
+#source	"backtest"
+#model_version	"v2.1.3" or "commit:fa23a7c"
+#backtest_config	'{"slippage_model": "v1.2", "filter": "confidence>70%", "risk_factor": 0.95}'
+#✅ When to Set These
+#In run_backtest.py:
 
-from okx_api.rest_client import OKXRestClient
+#Set source = 'backtest'
 
-def place_spot_order(inst_id: str, side: str, ord_type: str, qty: float, price: float = None):
-    """
-    Places a SPOT order on OKX.
-    :param inst_id: e.g. 'BTC-USDT'
-    :param side: 'buy' or 'sell'
-    :param ord_type: 'limit', 'market', 'post_only', 'fok', 'ioc', ...
-    :param qty: the size of the trade, in base or quote currency depending on the ord_type
-    :param price: required if it's a 'limit' or 'post_only' or 'fok' order
-    """
-    client = OKXRestClient()
+#Include model_version from git tag or file
 
-    data = {
-        "instId": inst_id,
-        "tdMode": "cash",    # spot trading
-        "side": side,
-        "ordType": ord_type,
-        "sz": str(qty),      # must be string
-    }
-    if price and ord_type in ["limit", "post_only", "fok", "ioc"]:
-        data["px"] = str(price)
+#Include backtest_config from loaded .yaml or .json config
 
-    endpoint = "/api/v5/trade/order"
-    response = client._request("POST", endpoint, data=data)
-    return response
+#In executor.py (live trading):
 
-def cancel_spot_order(inst_id: str, ord_id: str = None, cl_ord_id: str = None):
-    """
-    Cancel an open SPOT order by either 'ordId' or 'clOrdId' (client ID).
-    instId is required. If both ord_id & cl_ord_id are passed, ord_id is used.
-    """
-    client = OKXRestClient()
-    endpoint = "/api/v5/trade/cancel-order"
+#Set source = 'live'
 
-    data = {
-        "instId": inst_id
-    }
-    if ord_id:
-        data["ordId"] = ord_id
-    elif cl_ord_id:
-        data["clOrdId"] = cl_ord_id
+#Optionally tag model_version if you’re deploying updated models regularly
+```
 
-    response = client._request("POST", endpoint, data=data)
-    return response
+## `backend\backtesting\strategy_wrapper.py`
 
-def amend_spot_order(inst_id: str, new_qty: float = None, new_px: float = None, ord_id: str = None, cl_ord_id: str = None):
-    """
-    Amend a pending SPOT order. E.g., modify the price or size (unfilled portion).
-    The order ID or client order ID must be specified.
-    """
-    client = OKXRestClient()
-    endpoint = "/api/v5/trade/amend-order"
-
-    data = {
-        "instId": inst_id
-    }
-    if ord_id:
-        data["ordId"] = ord_id
-    elif cl_ord_id:
-        data["clOrdId"] = cl_ord_id
-
-    if new_qty:
-        data["newSz"] = str(new_qty)
-    if new_px:
-        data["newPx"] = str(new_px)
-
-    response = client._request("POST", endpoint, data=data)
-    return response
+```python
 
 ```
 
-## `backend\controllers\strategy.py`
+## `backend\backtesting\__init__.py`
 
 ```python
-"""
-strategy.py
-Fetches precomputed indicators from Supabase and generates a trading signal.
-"""
-
-from backend.controllers.data_retrieval import fetch_market_data
-
-def generate_signal(pair: str = "BTC-USDT", timeframe: str = "1H", limit: int = 100) -> dict:
-    """
-    Fetches precomputed indicators and generates a trading signal.
-    """
-    df = fetch_market_data(pair, timeframe, limit)
-
-    if df.empty or len(df) < 20:
-        return {
-            "pair": pair,
-            "timeframe": timeframe,
-            "action": "HOLD",
-            "reason": "Insufficient candle data."
-        }
-
-    # Retrieve indicators from the table
-    last_row = df.iloc[-1]
-    rsi = last_row["rsi"]
-    macd_line = last_row["macd_line"]
-    macd_signal = last_row["macd_signal"]
-    macd_hist = last_row["macd_hist"]
-    close_price = last_row["close"]
-    atr = last_row["atr"]
-    stoch_rsi_k = last_row["stoch_rsi_k"]
-    stoch_rsi_d = last_row["stoch_rsi_d"]
-    bollinger_upper = last_row["bollinger_upper"]
-    bollinger_middle = last_row["bollinger_middle"]
-    bollinger_lower = last_row["bollinger_lower"]
-
-    # Trading Logic (Updated)
-    if (
-        rsi < 30 and 
-        macd_line > macd_signal and 
-        stoch_rsi_k > 0.8 and 
-        close_price < bollinger_lower
-    ):
-        action = "BUY"
-        reason = f"RSI {rsi:.2f} < 30, MACD crossover, Stoch RSI K > 0.8, Price near lower Bollinger Band."
-    elif (
-        rsi > 70 and 
-        macd_line < macd_signal and 
-        stoch_rsi_k < 0.2 and 
-        close_price > bollinger_upper
-    ):
-        action = "SELL"
-        reason = f"RSI {rsi:.2f} > 70, MACD crossover, Stoch RSI K < 0.2, Price near upper Bollinger Band."
-    else:
-        action = "HOLD"
-        reason = "No strong signal."
-
-    return {
-        "pair": pair,
-        "timeframe": timeframe,
-        "action": action,
-        "reason": reason,
-        "latest_close": close_price
-    }
-
-if __name__ == "__main__":
-    # Example usage
-    signal_info = generate_signal("BTC-USDT", "1H", 100)
-    print(signal_info)
 
 ```
 
-## `backend\controllers\trading_account.py`
+## `backend\live-feed\websocket_subscriptions.py`
 
 ```python
-"""
-trading_account.py
-Retrieves account-related information like balances, trade fee, positions, etc.
-"""
+#WebSocket Channels
+#trades-all: every public trade, real-time (used in slippage detection)
 
-from okx_api.rest_client import OKXRestClient
-from config.config_loader import load_config
+#books / books-l2-tbt: full order book updates every 100ms / 10ms
 
-config = load_config()
-simulated_trading = config["SIMULATED_TRADING"]
+#tickers: live price/volume changes
 
-client = OKXRestClient(simulated_trading=simulated_trading)
+#Use:
 
-def get_balance_info():
-    """
-    Returns account balances from /api/v5/account/balance
-    """
-    client = OKXRestClient()
-    resp = client.get_balance()
-    return resp
+#Ideal for live deployment, e.g. real-time model scoring + execution
 
-def get_positions_info():
-    """
-    Returns positions info from /api/v5/account/positions
-    (Applicable if you're using margin/Futures/Swap.)
-    """
-    client = OKXRestClient()
-    resp = client.get_positions()
-    return resp
+#Not used for training
 
-def get_account_config():
-    """
-    Returns the account configuration from /api/v5/account/config
-    e.g. position mode, risk settings.
-    """
-    client = OKXRestClient()
-    resp = client.get_account_config()
-    return resp
+#➡️ Use in live_feed/ws_subscriptions.py for real-time strategy + alerts.
 
-def get_trade_fee(inst_type: str = "SPOT", inst_id: str = None):
-    """
-    Returns fee rate (maker & taker) from /api/v5/account/trade-fee
-    :param inst_type: 'SPOT', 'FUTURES', 'SWAP', etc.
-    :param inst_id: specific pair e.g. 'BTC-USDT' if you want a more precise fee
-    """
-    client = OKXRestClient()
-    endpoint = "/api/v5/account/trade-fee"
-    params = {
-        "instType": inst_type
-    }
-    if inst_id:
-        params["instId"] = inst_id
-
-    resp = client._request("GET", endpoint, params=params)
-    return resp
 
 ```
 
-## `backend\ml\model_trainer.py`
+## `backend\models\signal_model.py`
 
 ```python
-# Where we’d eventually load data & train
+
 ```
 
-## `backend\ml\predictor.py`
+## `backend\models\slippage_model.py`
 
 ```python
-# Possibly used at runtime for inference
+
+```
+
+## `backend\models\__init__.py`
+
+```python
+
+```
+
+## `backend\post_model\market_filter.py`
+
+```python
+#GET /api/v5/market/tickers
+#Purpose: 24h stats snapshot for all pairs (volume, 24h high/low, last price, etc.)
+#Backfill range: ❌ None
+
+#Use:
+
+#Live market health filtering (e.g. skip low-volume pairs)
+
+#Use in post_model/market_filter.py to reduce noise during sideways/ranging markets
+
+#➡️ Only for live pre-trade checks.
+```
+
+## `backend\post_model\signal_filtering.py`
+
+```python
+
+```
+
+## `backend\post_model\slippage_adjustment.py`
+
+```python
+
+```
+
+## `backend\post_model\slippage_guard.py`
+
+```python
+#GET /api/v5/market/books-full
+#Purpose: Retrieve full order book snapshot (max 5,000 bids/asks)
+#Backfill range: ❌ None — only real-time usage
+
+#Use:
+
+#Live execution-aware logic: check liquidity before placing order
+
+#Estimate real slippage cost in post_model/slippage_guard.py
+
+#➡️ Use live. Don't use for training.
+```
+
+## `backend\post_model\throttle_logic.py`
+
+```python
+
+```
+
+## `backend\post_model\trade_sizing.py`
+
+```python
+
+```
+
+## `backend\post_model\__init__.py`
+
+```python
+
+```
+
+## `backend\trading\account.py`
+
+```python
+
+```
+
+## `backend\trading\executor.py`
+
+```python
+
+```
+
+## `backend\trading\portfolio.py`
+
+```python
+
+```
+
+## `backend\trading\recorder.py`
+
+```python
+
+```
+
+## `backend\trading\__init__.py`
+
+```python
+
+```
+
+## `backend\training\dataloader.py`
+
+```python
+
+```
+
+## `backend\training\features.py`
+
+```python
+
+```
+
+## `backend\training\signal\train_signal_model.py`
+
+```python
+
+```
+
+## `backend\training\slippage\fetch_trade_history.py`
+
+```python
+# GET /api/v5/market/history-trades
+
+#Purpose: Returns individual trade-level data (price, size, direction) for last 3 months
+#Backfill range: ❗Only last 3 months
+#Pagination: via tradeId (type=1) or ts (type=2)
+
+#Use:
+
+#Train the slippage model
+
+#Label high-slippage conditions per candle (e.g. price impact)
+
+#Detect microstructure patterns pre-trade
+
+#➡️ Add to training/slippage/fetch_trade_history.py
+```
+
+## `backend\training\slippage\train_slippage_model.py`
+
+```python
+
 ```
 
 ## `config\config_loader.py`
@@ -619,14 +424,19 @@ def load_config():
     config.read(CONFIG_FILE)
 
     settings = {
+        # ✅ Trading configuration
         "SIMULATED_TRADING": config["OKX"].getboolean("SIMULATED_TRADING", fallback=False),
 
-        "SUPABASE_URL": config["SUPABASE"]["SUPABASE_URL"],
-
+        # ✅ Default trading settings
         "DEFAULT_PAIR": config["GENERAL"]["DEFAULT_PAIR"],
         "DEFAULT_TIMEFRAME": config["GENERAL"]["DEFAULT_TIMEFRAME"],
         "ORDER_SIZE_LIMIT": config["GENERAL"].getint("ORDER_SIZE_LIMIT", fallback=5),
-        "LOG_LEVEL": config["GENERAL"]["LOG_LEVEL"]
+        "LOG_LEVEL": config["GENERAL"]["LOG_LEVEL"],
+
+        # ✅ Database connection details
+        "DB_HOST": config["DATABASE"]["DB_HOST"],
+        "DB_PORT": config["DATABASE"]["DB_PORT"],
+        "DB_NAME": config["DATABASE"]["DB_NAME"],
     }
     return settings
 
@@ -697,17 +507,17 @@ def show_master_chart(data):
 
     # ✅ Convert timestamps to local time
     local_tz = pytz.timezone("Europe/Amsterdam")
-    df["timestamp_ms"] = pd.to_datetime(df["timestamp_ms"], unit="ms").dt.tz_localize("UTC").dt.tz_convert(local_tz)
+    df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], unit="ms").dt.tz_localize("UTC").dt.tz_convert(local_tz)
 
     # ✅ Apply Date Filtering (Handles partial selections)
     if date_range and isinstance(date_range, list):
         if len(date_range) == 1:  # ✅ Only start date selected
             start_timestamp = int(pd.Timestamp(date_range[0]).timestamp() * 1000)
-            df = df[df["timestamp_ms"] >= start_timestamp]
+            df = df[df["timestamp_utc"] >= start_timestamp]
         elif len(date_range) == 2:  # ✅ Both start & end date selected
             start_timestamp = int(pd.Timestamp(date_range[0]).timestamp() * 1000)
             end_timestamp = int(pd.Timestamp(date_range[1]).timestamp() * 1000)
-            df = df[(df["timestamp_ms"] >= start_timestamp) & (df["timestamp_ms"] <= end_timestamp)]
+            df = df[(df["timestamp_utc"] >= start_timestamp) & (df["timestamp_utc"] <= end_timestamp)]
 
     # ✅ Auto-Adjust Zoom: Get min & max price for Y-axis
     min_price = df["low"].min() * 0.99
@@ -723,7 +533,7 @@ def show_master_chart(data):
 
     # 📈 **Candlestick Chart**
     fig.add_trace(go.Candlestick(
-        x=df["timestamp_ms"],
+        x=df["timestamp_utc"],
         open=df["open"],
         high=df["high"],
         low=df["low"],
@@ -735,7 +545,7 @@ def show_master_chart(data):
 
     # 📊 **Volume Bars**
     fig.add_trace(go.Bar(
-        x=df["timestamp_ms"],
+        x=df["timestamp_utc"],
         y=df["volume"],
         marker_color=VOLUME_COLOR,
         opacity=0.5,
@@ -744,22 +554,22 @@ def show_master_chart(data):
 
     # 🎚️ **Bollinger Bands**
     if indicators["Bollinger Bands"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["bollinger_upper"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Upper"))
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["bollinger_middle"], line=dict(color="gray", width=1, dash="dash"), name="Bollinger Middle"))
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["bollinger_lower"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Lower"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["bollinger_upper"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Upper"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["bollinger_middle"], line=dict(color="gray", width=1, dash="dash"), name="Bollinger Middle"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["bollinger_lower"], line=dict(color="gray", width=1, dash="dot"), name="Bollinger Lower"))
 
     # 📉 **MACD**
     if indicators["MACD"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["macd_line"], line=dict(color="blue", width=1), name="MACD Line"))
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["macd_signal"], line=dict(color="orange", width=1, dash="dot"), name="MACD Signal"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["macd_line"], line=dict(color="blue", width=1), name="MACD Line"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["macd_signal"], line=dict(color="orange", width=1, dash="dot"), name="MACD Signal"))
 
     # 📊 **RSI**
     if indicators["RSI"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["rsi"], line=dict(color="purple", width=1), name="RSI"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["rsi"], line=dict(color="purple", width=1), name="RSI"))
 
     # 📊 **ATR (Volatility Indicator)**
     if indicators["ATR"]:
-        fig.add_trace(go.Scatter(x=df["timestamp_ms"], y=df["atr"], line=dict(color="red", width=1), name="ATR (Volatility)"))
+        fig.add_trace(go.Scatter(x=df["timestamp_utc"], y=df["atr"], line=dict(color="red", width=1), name="ATR (Volatility)"))
 
     # ✅ Chart Settings (Auto-Adjust Zoom & Secondary Y-Axis for Volume)
     fig.update_layout(
@@ -1190,11 +1000,11 @@ def show_filtered_data(data):
 
     # ✅ Apply Date Filtering (Only if Both Dates Exist)
     if start_timestamp and end_timestamp:
-        data = [d for d in data if start_timestamp <= d['timestamp_ms'] <= end_timestamp]
+        data = [d for d in data if start_timestamp <= d['timestamp_utc'] <= end_timestamp]
     elif start_timestamp:  # ✅ If only start date is selected, show from that date onward
-        data = [d for d in data if start_timestamp <= d['timestamp_ms']]
+        data = [d for d in data if start_timestamp <= d['timestamp_utc']]
     elif end_timestamp:  # ✅ If only end date is selected, show up to that date
-        data = [d for d in data if d['timestamp_ms'] <= end_timestamp]
+        data = [d for d in data if d['timestamp_utc'] <= end_timestamp]
 
     # ✅ Convert to DataFrame
     df = pd.DataFrame(data)
@@ -1304,12 +1114,12 @@ def fetch_market_data(pair: str, timeframe: str = "1H", limit: int = 1000):
 
     # Query Supabase
     response = supabase.table(table_name) \
-        .select("pair", "timestamp_ms", "open", "high", "low", "close", "volume",
+        .select("pair", "timestamp_utc", "open", "high", "low", "close", "volume",
                 "rsi", "macd_line", "macd_signal", "macd_hist",
                 "bollinger_middle", "bollinger_upper", "bollinger_lower",
                 "atr", "stoch_rsi_k", "stoch_rsi_d") \
         .eq("pair", pair) \
-        .order("timestamp_ms", desc=True) \
+        .order("timestamp_utc", desc=True) \
         .limit(limit).execute()
 
     return response.data if response.data else []
@@ -1366,6 +1176,882 @@ def update_timeframe(timeframe: str):
 
 # Ensure session state is initialized
 initialize_session_state()
+
+```
+
+## `database\db.py`
+
+```python
+import psycopg2
+import os
+import time
+from dotenv import load_dotenv
+from config.config_loader import load_config
+from psycopg2.extras import execute_values
+from psycopg2.extensions import adapt
+
+# Load environment variables
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "config", "credentials.env"))
+
+# Load configuration settings
+config = load_config()
+
+DB_HOST = config["DB_HOST"]
+DB_PORT = config["DB_PORT"]
+DB_NAME = config["DB_NAME"]
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+def get_connection():
+    """Establishes and returns a PostgreSQL database connection."""
+    return psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+
+def fetch_data(query, params=None):
+    """Fetches data from PostgreSQL and returns results as a list of dictionaries."""
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    results = []
+    try:
+        cursor.execute(query, params or ())
+        results = cursor.fetchall()
+    except Exception as e:
+        print(f"❌ Database fetch error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+    return results
+
+def execute_query(query, params=None):
+    """Executes a query (INSERT, UPDATE, DELETE) on PostgreSQL."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(query, params or ())
+        conn.commit()
+    except Exception as e:
+        print(f"❌ Database error: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+
+def execute_copy_update(temp_table_name, column_names, values, update_query):
+    """
+    Performs a high-speed COPY into a temp table and executes an UPDATE ... FROM ... join.
+    """
+    import io
+    import time
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        start_all = time.time()
+
+        print(f"🧪 Creating temporary table: {temp_table_name}")
+        cursor.execute(f"DROP TABLE IF EXISTS {temp_table_name}")
+        create_stmt = f"""
+        CREATE TEMP TABLE {temp_table_name} (
+            {', '.join(f"{col} double precision" if col != 'id' else 'id bigint' for col in column_names)}
+        ) ON COMMIT DROP;
+        """
+        cursor.execute(create_stmt)
+
+        print("📥 Starting COPY INTO temp table...")
+        output = io.StringIO()
+        for row in values:
+            output.write("\t".join("" if v is None else str(v) for v in row) + "\n")
+        output.seek(0)
+
+        copy_start = time.time()
+        cursor.copy_from(output, temp_table_name, sep="\t", null="")
+        print(f"✅ COPY completed in {time.time() - copy_start:.2f}s")
+
+        print("🔁 Running UPDATE FROM temp table...")
+        update_start = time.time()
+        cursor.execute(update_query.format(temp_table=temp_table_name))
+        print(f"✅ UPDATE completed in {time.time() - update_start:.2f}s")
+
+        conn.commit()
+        print(f"🎉 Total COPY + UPDATE time: {time.time() - start_all:.2f}s")
+
+    except Exception as e:
+        print(f"❌ Error during COPY+UPDATE: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+```
+
+## `database\__init__.py`
+
+```python
+
+```
+
+## `database\fetching\backfill_missing_1h_candles.py`
+
+```python
+"""
+backfill_missing_1h_candles.py
+Finds and fills missing 1-hour candles in PostgreSQL using OKX API.
+"""
+
+import requests
+import time
+from datetime import datetime, timezone, timedelta
+from config.config_loader import load_config
+from database.db import fetch_data, get_connection
+from psycopg2.extras import execute_values
+
+config = load_config()
+OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
+CANDLES_RATE_LIMIT = 20
+BATCH_INTERVAL = 2
+
+
+def fetch_all_pairs():
+    query = "SELECT DISTINCT pair FROM public.candles_1h;"
+    return [row["pair"] for row in fetch_data(query)]
+
+
+def fetch_timestamps(pair):
+    query = """
+    SELECT timestamp_utc FROM public.candles_1h 
+    WHERE pair = %s ORDER BY timestamp_utc ASC;
+    """
+    return [row["timestamp_utc"] for row in fetch_data(query, (pair,))]
+
+
+def find_gaps(timestamps):
+    gaps = []
+    expected_delta = timedelta(hours=1)
+    for i in range(1, len(timestamps)):
+        current = timestamps[i]
+        prev = timestamps[i - 1]
+        delta = current - prev
+        if delta > expected_delta:
+            missing_start = prev + expected_delta
+            while missing_start < current:
+                gaps.append(missing_start)
+                missing_start += expected_delta
+    return gaps
+
+
+def fetch_candles(pair, after_utc):
+    params = {
+        "instId": pair,
+        "bar": "1H",
+        "limit": 100,
+        "after": str(int(after_utc.timestamp() * 1000))
+    }
+
+    response = requests.get(OKX_CANDLES_URL, params=params)
+    try:
+        return response.json().get("data", [])
+    except Exception as e:
+        print(f"❌ Error fetching {pair} after {after_utc}: {e}")
+        return []
+
+
+def insert_candles(pair, candles):
+    query = """
+    INSERT INTO public.candles_1h 
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    VALUES %s
+    ON CONFLICT (pair, timestamp_utc) DO NOTHING;
+    """
+    rows = []
+    for c in candles:
+        try:
+            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)
+            row = (
+                pair,
+                utc_ts,
+                float(c[1]),
+                float(c[2]),
+                float(c[3]),
+                float(c[4]),
+                float(c[5]),
+                float(c[6]),
+                float(c[7]),
+            )
+            rows.append(row)
+        except Exception as e:
+            print(f"⚠️ Malformed candle for {pair}: {e} | Raw: {c}")
+
+    if rows:
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            execute_values(cursor, query, rows)
+            conn.commit()
+            print(f"✅ Inserted {len(rows)} gap candles for {pair} | {rows[0][1]} → {rows[-1][1]}")
+            return len(rows)
+        except Exception as e:
+            print(f"❌ Insert failed for {pair}: {e}")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
+    return 0
+
+
+def enforce_rate_limit(request_count, start_time):
+    request_count += 1
+    if request_count >= CANDLES_RATE_LIMIT:
+        elapsed = time.time() - start_time
+        if elapsed < BATCH_INTERVAL:
+            time.sleep(BATCH_INTERVAL - elapsed)
+        return 0, time.time()
+    return request_count, start_time
+
+
+def main():
+    print("🚀 Scanning for gaps in 1H candle history...")
+
+    pairs = fetch_all_pairs()
+    print(f"✅ Found {len(pairs)} pairs with existing data")
+
+    total_inserted = 0
+    request_count = {OKX_CANDLES_URL: 0}
+    start_time = time.time()
+
+    for index, pair in enumerate(pairs, start=1):
+        try:
+            print(f"\n🔁 Checking {pair}")
+            timestamps = fetch_timestamps(pair)
+            if len(timestamps) < 2:
+                print(f"⚠️ Not enough data to find gaps for {pair}")
+                continue
+
+            gaps = find_gaps(timestamps)
+            print(f"🧩 Found {len(gaps)} missing 1H timestamps for {pair}")
+
+            for gap_start in gaps:
+                candles = fetch_candles(pair, gap_start)
+                inserted = insert_candles(pair, candles)
+                total_inserted += inserted
+
+                request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(
+                    request_count[OKX_CANDLES_URL], start_time
+                )
+
+            if index % 50 == 0:
+                print(f"📊 Progress: {index}/{len(pairs)} | Total inserted: {total_inserted}")
+
+        except Exception as e:
+            print(f"❌ Failed to process {pair}: {e}")
+
+    print(f"\n✅ Backfill complete: Inserted {total_inserted} missing candles across {len(pairs)} pairs")
+
+
+if __name__ == "__main__":
+    main()
+
+```
+
+## `database\fetching\fetch_new_1h_candles.py`
+
+```python
+"""
+fetch_new_1h_candles.py
+Fetches all historical 1-hour candles from OKX API and inserts them into PostgreSQL.
+"""
+
+import requests
+import time
+from datetime import datetime, timezone, timedelta
+from config.config_loader import load_config
+from database.db import fetch_data, get_connection
+from psycopg2.extras import execute_values
+
+config = load_config()
+
+OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"
+CANDLES_RATE_LIMIT = 40
+BATCH_INTERVAL = 2
+
+def fetch_active_pairs():
+    OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
+    response = requests.get(OKX_INSTRUMENTS_URL)
+    data = response.json()
+    if "data" in data:
+        return [
+            inst["instId"]
+            for inst in data["data"]
+            if inst["quoteCcy"] == "USDT" and inst["state"] == "live"
+        ]
+    return []
+
+def fetch_candles(pair, before_timestamp_utc=None):
+    params = {
+        "instId": pair,
+        "bar": "1H",
+        "limit": 100
+    }
+    if before_timestamp_utc:
+        params["after"] = str(int(before_timestamp_utc.timestamp() * 1000))
+
+    response = requests.get(OKX_CANDLES_URL, params=params)
+    try:
+        return response.json().get("data", [])
+    except Exception as e:
+        print(f"❌ Error fetching {pair}: {e}")
+        return []
+
+def insert_candles(pair, candles):
+    query = """
+    INSERT INTO public.candles_1h 
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    VALUES %s
+    ON CONFLICT (pair, timestamp_utc) DO NOTHING;
+    """
+    rows = []
+    for c in candles:
+        try:
+            # OKX timestamps are in ms, HK-time-aligned → subtract 8h to convert to UTC
+            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)
+            row = (
+                pair,
+                utc_ts,
+                float(c[1]),
+                float(c[2]),
+                float(c[3]),
+                float(c[4]),
+                float(c[5]),
+                float(c[6]),
+                float(c[7]),
+            )
+            rows.append(row)
+        except Exception as e:
+            print(f"⚠️ Malformed row for {pair}: {e} | Raw: {c}")
+
+    if rows:
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            execute_values(cursor, query, rows)
+            conn.commit()
+            print(f"✅ Inserted {len(rows)} candles for {pair} | {rows[-1][1]} → {rows[0][1]}")
+            return rows[-1][1]  # Return earliest timestamp in this batch
+        except Exception as e:
+            print(f"❌ Insert failed for {pair}: {e}")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
+    return None
+
+def enforce_rate_limit(request_count, start_time):
+    request_count += 1
+    if request_count >= CANDLES_RATE_LIMIT:
+        elapsed = time.time() - start_time
+        if elapsed < BATCH_INTERVAL:
+            print(f"⏳ Sleeping for {BATCH_INTERVAL - elapsed:.2f}s (rate limit)")
+            time.sleep(BATCH_INTERVAL - elapsed)
+        return 0, time.time()
+    return request_count, start_time
+
+def main():
+    print("🚀 Backfilling full 1H candle history from OKX...")
+
+    pairs = fetch_active_pairs()
+    print(f"✅ {len(pairs)} active USDT spot pairs found")
+
+    request_count = {OKX_CANDLES_URL: 0}
+    start_time = time.time()
+
+    for index, pair in enumerate(pairs, start=1):
+        print(f"\n🔁 Processing {pair}")
+        before = None
+        total_rows = 0
+        earliest = None
+
+        while True:
+            candles = fetch_candles(pair, before)
+            if not candles:
+                print(f"⛔ No more candles for {pair}. Total inserted: {total_rows}")
+                break
+
+            before = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+            inserted_timestamp = insert_candles(pair, candles)
+            if not inserted_timestamp:
+                break
+
+            earliest = inserted_timestamp
+            total_rows += len(candles)
+
+            request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(
+                request_count[OKX_CANDLES_URL], start_time
+            )
+
+        print(f"📦 Finished {pair}: {total_rows} candles (oldest = {earliest})")
+
+if __name__ == "__main__":
+    main()
+
+```
+
+## `database\fetching\fetch_old_1h_candles.py`
+
+```python
+"""
+fetch_old_1h_candles.py
+Finds and fetches older 1-hour candles from OKX API and stores them in PostgreSQL.
+"""
+
+import requests
+import time
+from datetime import datetime, timezone, timedelta
+from config.config_loader import load_config
+from database.db import fetch_data, get_connection
+from psycopg2.extras import execute_values
+
+# ✅ Load configuration settings
+config = load_config()
+
+# ✅ OKX API Endpoints
+OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
+OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
+
+# ✅ Rate Limit Settings
+HISTORY_CANDLES_RATE_LIMIT = 20
+BATCH_INTERVAL = 2
+
+def fetch_active_pairs():
+    response = requests.get(OKX_INSTRUMENTS_URL)
+    data = response.json()
+    if "data" in data:
+        return [
+            inst["instId"]
+            for inst in data["data"]
+            if inst["quoteCcy"] == "USDT" and inst["state"] == "live"
+        ]
+    return []
+
+def fetch_oldest_timestamp(pair):
+    query = "SELECT MIN(timestamp_utc) FROM public.candles_1h WHERE pair = %s;"
+    result = fetch_data(query, (pair,))
+    return result[0]["min"] if result and result[0]["min"] else None
+
+def fetch_candles(pair, after_timestamp_utc):
+    params = {
+        "instId": pair,
+        "bar": "1H",
+        "limit": 100,
+        "after": str(int(after_timestamp_utc.timestamp() * 1000))
+    }
+
+    response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
+    try:
+        return response.json().get("data", [])
+    except Exception as e:
+        print(f"❌ Error parsing JSON response for {pair}: {e}")
+        return []
+
+def insert_candles(pair, candles):
+    query = """
+    INSERT INTO public.candles_1h 
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    VALUES %s
+    ON CONFLICT (pair, timestamp_utc) DO NOTHING;
+    """
+
+    rows = []
+    for c in candles:
+        try:
+            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)  # HK → UTC
+            row = (
+                pair,
+                utc_ts,
+                float(c[1]),
+                float(c[2]),
+                float(c[3]),
+                float(c[4]),
+                float(c[5]),
+                float(c[6]),
+                float(c[7])
+            )
+            rows.append(row)
+        except Exception as e:
+            print(f"⚠️ Malformed candle for {pair}: {e} | Raw: {c}")
+
+    if rows:
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            execute_values(cursor, query, rows)
+            conn.commit()
+            print(f"✅ Inserted {len(rows)} historical candles for {pair} | {rows[0][1]} → {rows[-1][1]}")
+            return rows[-1][1]  # Return latest timestamp in batch
+        except Exception as e:
+            print(f"❌ Insert failed for {pair}: {e}")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
+    return None
+
+def enforce_rate_limit(request_count, start_time):
+    request_count += 1
+    if request_count >= HISTORY_CANDLES_RATE_LIMIT:
+        elapsed = time.time() - start_time
+        if elapsed < BATCH_INTERVAL:
+            time.sleep(BATCH_INTERVAL - elapsed)
+        return 0, time.time()
+    return request_count, start_time
+
+def main():
+    print("🚀 Fetching older 1H candles from OKX...")
+
+    pairs = fetch_active_pairs()
+    print(f"✅ {len(pairs)} active USDT spot pairs found")
+
+    request_count = {OKX_HISTORY_CANDLES_URL: 0}
+    start_time = time.time()
+
+    for index, pair in enumerate(pairs, start=1):
+        print(f"\n🔁 Processing {pair}")
+        after = fetch_oldest_timestamp(pair)
+        if after is None:
+            print(f"⚠️ No local data for {pair}, skipping.")
+            continue
+
+        total = 0
+
+        while True:
+            candles = fetch_candles(pair, after_timestamp_utc=after)
+            if not candles:
+                print(f"⛔ No more older candles for {pair}")
+                break
+
+            after = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+            inserted_timestamp = insert_candles(pair, candles)
+            if not inserted_timestamp:
+                break
+
+            total += len(candles)
+
+            request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(
+                request_count[OKX_HISTORY_CANDLES_URL], start_time
+            )
+
+        print(f"📦 Finished {pair}: Inserted {total} older candles")
+
+if __name__ == "__main__":
+    main()
+
+```
+
+## `database\fetching\__init__.py`
+
+```python
+
+```
+
+## `database\processing\compute_candles.py`
+
+```python
+"""
+OKXsignal - compute.py
+Efficient, production-grade feature and label computation for candles_1h.
+Supports incremental and full backfill modes.
+Includes multi-timeframe (4h, 1d) indicators and cross-pair intelligence.
+Logs to file and console based on LOG_LEVEL.
+"""
+
+import os
+import configparser
+from dotenv import load_dotenv
+import psycopg2
+import pandas as pd
+import numpy as np
+from ta.momentum import RSIIndicator
+from ta.trend import MACD, PSARIndicator
+from ta.volatility import AverageTrueRange, BollingerBands
+from ta.volume import MFIIndicator, OnBalanceVolumeIndicator
+from concurrent.futures import ProcessPoolExecutor
+from psycopg2.extras import execute_batch
+from datetime import datetime
+import logging
+
+# ---------------------------
+# Load Configuration
+# ---------------------------
+CONFIG_PATH = os.path.join('P:/OKXsignal/config/config.ini')
+CREDENTIALS_PATH = os.path.join('P:/OKXsignal/config/credentials.env')
+
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
+load_dotenv(dotenv_path=CREDENTIALS_PATH)
+
+DB = config['DATABASE']
+MODE = config['GENERAL'].get('COMPUTE_MODE', 'incremental').lower()
+LOG_LEVEL = config['GENERAL'].get('LOG_LEVEL', 'INFO').upper()
+
+# ---------------------------
+# Setup Logging
+# ---------------------------
+os.makedirs("logs", exist_ok=True)
+timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+log_file = os.path.join("logs", f"compute_{timestamp}.log")
+
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL),
+    format='[%(levelname)s] %(asctime)s | %(message)s',
+    handlers=[
+        logging.FileHandler(log_file),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("compute")
+
+# ---------------------------
+# Database Connection
+# ---------------------------
+def get_connection():
+    return psycopg2.connect(
+        host=DB['DB_HOST'],
+        port=DB['DB_PORT'],
+        dbname=DB['DB_NAME'],
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD")
+    )
+
+# ---------------------------
+# Feature Computation Logic
+# ---------------------------
+def compute_1h_features(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.sort_values('timestamp_utc')
+
+    df['rsi_1h'] = RSIIndicator(df['close_1h'], window=14).rsi()
+    df['rsi_slope_1h'] = df['rsi_1h'].rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+    
+    macd = MACD(df['close_1h'])
+    df['macd_slope_1h'] = macd.macd().diff()
+    df['macd_hist_slope_1h'] = macd.macd_diff().diff()
+
+    df['atr_1h'] = AverageTrueRange(df['high_1h'], df['low_1h'], df['close_1h']).average_true_range()
+    
+    bb = BollingerBands(df['close_1h'])
+    df['bollinger_width_1h'] = bb.bollinger_hband() - bb.bollinger_lband()
+    
+    df['donchian_channel_width_1h'] = df['high_1h'].rolling(20).max() - df['low_1h'].rolling(20).min()
+    df['supertrend_direction_1h'] = np.nan  # placeholder
+    df['parabolic_sar_1h'] = PSARIndicator(df['high_1h'], df['low_1h'], df['close_1h']).psar()
+
+    df['money_flow_index_1h'] = MFIIndicator(df['high_1h'], df['low_1h'], df['close_1h'], df['volume_1h']).money_flow_index()
+    
+    obv = OnBalanceVolumeIndicator(df['close_1h'], df['volume_1h']).on_balance_volume()
+    df['obv_slope_1h'] = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+    
+    df['volume_change_pct_1h'] = df['volume_1h'].pct_change()
+    df['estimated_slippage_1h'] = df['high_1h'] - df['low_1h']
+    df['bid_ask_spread_1h'] = df['close_1h'] - df['open_1h']
+    df['hour_of_day'] = df['timestamp_utc'].dt.hour
+    df['day_of_week'] = df['timestamp_utc'].dt.weekday
+    df['quote_volume_1h'] = df['close_1h'] * df['volume_1h']
+
+    return df
+
+def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str) -> pd.DataFrame:
+    df = df.set_index('timestamp_utc')
+    ohlcv = df[['open_1h', 'high_1h', 'low_1h', 'close_1h', 'volume_1h']]
+    resampled = ohlcv.resample(rule).agg({
+        'open_1h': 'first',
+        'high_1h': 'max',
+        'low_1h': 'min',
+        'close_1h': 'last',
+        'volume_1h': 'sum'
+    }).dropna()
+    resampled.columns = [col.replace('1h', tf_label) for col in resampled.columns]
+
+    resampled[f'rsi_{tf_label}'] = RSIIndicator(resampled[f'close_{tf_label}'], window=14).rsi()
+    resampled[f'rsi_slope_{tf_label}'] = resampled[f'rsi_{tf_label}'].rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+    macd = MACD(resampled[f'close_{tf_label}'])
+    resampled[f'macd_slope_{tf_label}'] = macd.macd().diff()
+    resampled[f'macd_hist_slope_{tf_label}'] = macd.macd_diff().diff()
+    resampled[f'atr_{tf_label}'] = AverageTrueRange(
+        resampled[f'high_{tf_label}'],
+        resampled[f'low_{tf_label}'],
+        resampled[f'close_{tf_label}']
+    ).average_true_range()
+    bb = BollingerBands(resampled[f'close_{tf_label}'])
+    resampled[f'bollinger_width_{tf_label}'] = bb.bollinger_hband() - bb.bollinger_lband()
+    resampled[f'donchian_channel_width_{tf_label}'] = resampled[f'high_{tf_label}'].rolling(20).max() - resampled[f'low_{tf_label}'].rolling(20).min()
+    resampled[f'supertrend_direction_{tf_label}'] = np.nan
+    resampled[f'money_flow_index_{tf_label}'] = MFIIndicator(
+        resampled[f'high_{tf_label}'], resampled[f'low_{tf_label}'], resampled[f'close_{tf_label}'], resampled[f'volume_{tf_label}']
+    ).money_flow_index()
+    obv = OnBalanceVolumeIndicator(resampled[f'close_{tf_label}'], resampled[f'volume_{tf_label}']).on_balance_volume()
+    resampled[f'obv_slope_{tf_label}'] = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+    resampled[f'volume_change_pct_{tf_label}'] = resampled[f'volume_{tf_label}'].pct_change()
+
+    df = df.merge(resampled, how='left', left_index=True, right_index=True)
+    df = df.reset_index()
+    return df
+
+# ---------------------------
+# Label Computation Logic
+# ---------------------------
+def compute_labels(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.sort_values('timestamp_utc')
+    for horizon, shift in [('1h', 1), ('4h', 4), ('12h', 12), ('1d', 24), ('3d', 72), ('1w', 168), ('2w', 336)]:
+        df[f'future_return_{horizon}_pct'] = (df['close_1h'].shift(-shift) - df['close_1h']) / df['close_1h']
+    df['targets_computed'] = True
+    return df
+
+# ---------------------------
+# Cross-Pair Intelligence
+# ---------------------------
+def compute_cross_pair_features(latest_df: pd.DataFrame) -> pd.DataFrame:
+    latest_df['volume_rank_1h'] = latest_df['volume_1h'].rank(pct=True) * 100
+    latest_df['volatility_rank_1h'] = latest_df['atr_1h'].rank(pct=True) * 100
+    btc_row = latest_df[latest_df['pair'] == 'BTC-USDT']
+    eth_row = latest_df[latest_df['pair'] == 'ETH-USDT']
+    if not btc_row.empty:
+        btc_return = btc_row['future_return_1h_pct'].values[0]
+        latest_df['performance_rank_btc_1h'] = ((latest_df['future_return_1h_pct'] - btc_return) / abs(btc_return + 1e-9)).rank(pct=True) * 100
+    if not eth_row.empty:
+        eth_return = eth_row['future_return_1h_pct'].values[0]
+        latest_df['performance_rank_eth_1h'] = ((latest_df['future_return_1h_pct'] - eth_return) / abs(eth_return + 1e-9)).rank(pct=True) * 100
+    return latest_df
+
+# ---------------------------
+# Entry Point
+# ---------------------------
+if __name__ == '__main__':
+    logger.info(f"Starting compute.py in {MODE.upper()} mode")
+    conn = get_connection()
+    all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+    latest_rows = []
+    for pair in all_pairs:
+        df = pd.read_sql("SELECT * FROM candles_1h WHERE pair = %s ORDER BY timestamp_utc DESC LIMIT 1;", conn, params=(pair,))
+        if not df.empty:
+            latest_rows.append(df.iloc[0])
+    latest_df = pd.DataFrame(latest_rows)
+    if not latest_df.empty:
+        latest_df = compute_cross_pair_features(latest_df)
+    conn.close()
+    logger.info("Cross-pair features computed. Starting per-pair computation...")
+
+    def process_pair(pair: str):
+        try:
+            conn = get_connection()
+            query = "SELECT * FROM candles_1h WHERE pair = %s ORDER BY timestamp_utc DESC LIMIT 1050;"
+            df = pd.read_sql(query, conn, params=(pair,))
+            if df.empty:
+                return
+            df = compute_1h_features(df)
+            df = compute_labels(df)
+            df = compute_multi_tf_features(df, '4h', '4H')
+            df = compute_multi_tf_features(df, '1d', '1D')
+            df['features_computed'] = True
+            latest_row = df.iloc[-1]
+            with conn.cursor() as cur:
+                update_query = """
+                    UPDATE candles_1h SET
+                        rsi_1h = %s,
+                        rsi_slope_1h = %s,
+                        macd_slope_1h = %s,
+                        macd_hist_slope_1h = %s,
+                        atr_1h = %s,
+                        bollinger_width_1h = %s,
+                        donchian_channel_width_1h = %s,
+                        supertrend_direction_1h = %s,
+                        parabolic_sar_1h = %s,
+                        money_flow_index_1h = %s,
+                        obv_slope_1h = %s,
+                        volume_change_pct_1h = %s,
+                        estimated_slippage_1h = %s,
+                        bid_ask_spread_1h = %s,
+                        hour_of_day = %s,
+                        day_of_week = %s,
+                        rsi_4h = %s,
+                        rsi_slope_4h = %s,
+                        macd_slope_4h = %s,
+                        macd_hist_slope_4h = %s,
+                        atr_4h = %s,
+                        bollinger_width_4h = %s,
+                        donchian_channel_width_4h = %s,
+                        supertrend_direction_4h = %s,
+                        money_flow_index_4h = %s,
+                        obv_slope_4h = %s,
+                        volume_change_pct_4h = %s,
+                        rsi_1d = %s,
+                        rsi_slope_1d = %s,
+                        macd_slope_1d = %s,
+                        macd_hist_slope_1d = %s,
+                        atr_1d = %s,
+                        bollinger_width_1d = %s,
+                        donchian_channel_width_1d = %s,
+                        supertrend_direction_1d = %s,
+                        money_flow_index_1d = %s,
+                        obv_slope_1d = %s,
+                        volume_change_pct_1d = %s,
+                        performance_rank_btc_1h = %s,
+                        performance_rank_eth_1h = %s,
+                        volume_rank_1h = %s,
+                        volatility_rank_1h = %s
+                        row.get('performance_rank_btc_1h'),
+                        row.get('performance_rank_eth_1h'),
+                        row.get('volume_rank_1h'),
+                        row.get('volatility_rank_1h'),
+                        features_computed = TRUE,
+                        targets_computed = TRUE
+                    WHERE pair = %s AND timestamp_utc = %s;
+                """
+
+                # Ensure no critical NaNs before writing
+                required_columns = [
+                    'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
+                    'bollinger_width_1h', 'donchian_channel_width_1h', 'parabolic_sar_1h',
+                    'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
+                    'estimated_slippage_1h', 'bid_ask_spread_1h',
+                    'rsi_4h', 'rsi_slope_4h', 'macd_slope_4h', 'macd_hist_slope_4h', 'atr_4h',
+                    'bollinger_width_4h', 'donchian_channel_width_4h', 'money_flow_index_4h',
+                    'obv_slope_4h', 'volume_change_pct_4h',
+                    'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
+                    'bollinger_width_1d', 'donchian_channel_width_1d', 'money_flow_index_1d',
+                    'obv_slope_1d', 'volume_change_pct_1d'
+                ]
+                if latest_row[required_columns].isnull().any():
+                    logger.warning(f"Skipping update for {pair} at {latest_row['timestamp_utc']} due to NaNs.")
+                    return
+
+                values = [latest_row.get(col) for col in [
+                    'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
+                    'bollinger_width_1h', 'donchian_channel_width_1h', 'supertrend_direction_1h',
+                    'parabolic_sar_1h', 'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
+                    'estimated_slippage_1h', 'bid_ask_spread_1h', 'hour_of_day', 'day_of_week',
+                    'rsi_4h', 'rsi_slope_4h', 'macd_slope_4h', 'macd_hist_slope_4h', 'atr_4h',
+                    'bollinger_width_4h', 'donchian_channel_width_4h', 'supertrend_direction_4h',
+                    'money_flow_index_4h', 'obv_slope_4h', 'volume_change_pct_4h',
+                    'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
+                    'bollinger_width_1d', 'donchian_channel_width_1d', 'supertrend_direction_1d',
+                    'money_flow_index_1d', 'obv_slope_1d', 'volume_change_pct_1d',
+                    'pair', 'timestamp_utc'
+                ]]
+
+                execute_batch(cur, update_query, [tuple(values)])
+                conn.commit()
+
+        except Exception as e:
+            logger.error(f"Error processing {pair}: {e}")
+        finally:
+            conn.close()
+
+    with ProcessPoolExecutor() as executor:
+        executor.map(process_pair, all_pairs)
+
+    logger.info("Feature + target computation completed!")
 
 ```
 
@@ -1500,881 +2186,6 @@ class OKXRestClient:
 
 ```python
 # Initializes OKX API module
-
-```
-
-## `supabase\functions\backfill_missing_1h_candles.py`
-
-```python
-import requests
-import os
-import time
-import smtplib
-import ssl
-from email.message import EmailMessage
-from datetime import datetime
-from supabase import create_client, Client
-from dotenv import load_dotenv
-
-# ✅ Load .env if running locally
-if not os.getenv("GITHUB_ACTIONS"):
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(env_path)
-
-# ✅ Environment Variables
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-EMAIL_RECIPIENT = "robert@rorostudio.com"
-
-SMTP_SERVER = "smtp-relay.brevo.com"
-SMTP_PORT = 587
-
-# ✅ OKX API
-OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
-
-# ✅ Rate Limit (20 requests per 2s)
-CANDLES_RATE_LIMIT = 20
-BATCH_INTERVAL = 2
-
-# ✅ Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-# ✅ Fetch Missing Pairs from Supabase using the correct function
-def fetch_missing_pairs():
-    """Fetch pairs that exist in 1D but are missing from 1H using Supabase function."""
-    response = supabase.rpc("find_missing_1h_pairs").execute()
-    
-    if response.data:
-        missing_pairs = [row["pair"] for row in response.data]
-        print(f"✅ Found {len(missing_pairs)} missing 1H pairs.")
-        return missing_pairs
-    else:
-        print("✅ No missing pairs found.")
-        return []
-
-# ✅ Fetch Latest Timestamp in Supabase
-def fetch_latest_supabase_timestamp(pair):
-    """Fetch the most recent timestamp stored for a given pair."""
-    response = (
-        supabase.table("candles_1H")
-        .select("timestamp_ms")
-        .eq("pair", pair)
-        .order("timestamp_ms", desc=True)
-        .limit(1)
-        .execute()
-    )
-    return int(response.data[0]["timestamp_ms"]) if response.data else None
-
-# ✅ Fetch Candles from OKX
-def fetch_candles(pair, after_timestamp=None):
-    """Fetch 1H historical candles from OKX using `after` to paginate properly."""
-    params = {
-        "instId": pair,
-        "bar": "1H",
-        "limit": 100,
-    }
-    if after_timestamp:
-        params["after"] = str(after_timestamp)  # ✅ Use `after` for correct pagination
-
-    print(f"📡 Sending request to OKX: {params}")  # Debugging output
-
-    response = requests.get(OKX_CANDLES_URL, params=params)
-    try:
-        data = response.json()
-        return data.get("data", [])
-    except Exception as e:
-        print(f"❌ Error parsing JSON for {pair}: {e}")
-        return None
-
-
-# ✅ Insert Candles into Supabase
-def insert_candles(pair, candles):
-    """Insert fetched candles into Supabase."""
-    rows = [
-        {
-            "timestamp_ms": int(c[0]),
-            "pair": pair,
-            "open": float(c[1]),
-            "high": float(c[2]),
-            "low": float(c[3]),
-            "close": float(c[4]),
-            "volume": float(c[5]),
-            "quote_volume": float(c[6]),
-            "taker_buy_base": float(c[7]),
-            "taker_buy_quote": float(c[8]),
-        }
-        for c in candles
-    ]
-
-    if not rows:
-        return 0
-
-    response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp_ms").execute()
-    return len(response.data) if response.data else 0
-
-# ✅ Enforce Rate Limit
-def enforce_rate_limit(request_count, start_time):
-    request_count += 1
-    if request_count >= CANDLES_RATE_LIMIT:
-        elapsed = time.time() - start_time
-        if elapsed < BATCH_INTERVAL:
-            time.sleep(BATCH_INTERVAL - elapsed)
-        return 0, time.time()
-    return request_count, start_time
-
-# ✅ Main Function
-def main():
-    print("🚀 Script started: Backfilling missing 1H candles...")
-
-    missing_pairs = fetch_missing_pairs()
-    if not missing_pairs:
-        print("✅ No missing pairs found. Exiting.")
-        return
-
-    print(f"🚀 Backfilling {len(missing_pairs)} missing 1H candles...")
-
-    total_fixed = 0
-    failed_pairs = []
-    request_count = {OKX_CANDLES_URL: 0}
-    start_time = time.time()
-
-    for index, pair in enumerate(missing_pairs, start=1):
-        try:
-            print(f"🔍 Fetching {pair} missing candles...")
-
-            # ✅ Start from the latest known candle in Supabase
-            latest_supabase_timestamp = fetch_latest_supabase_timestamp(pair)
-
-            # ✅ If no data in Supabase, start from latest OKX candle
-            if latest_supabase_timestamp is None:
-                first_candle = fetch_candles(pair, after_timestamp=None)  # Get the latest candle
-                if not first_candle:
-                    print(f"⚠️ {pair}: No candles found in OKX.")
-                    continue
-                latest_supabase_timestamp = int(first_candle[0][0])
-
-            # ✅ Backfill candles using `before=<timestamp>`
-            while True:
-                candles = fetch_candles(pair, after_timestamp=latest_supabase_timestamp)
-                
-                if not candles:
-                    print(f"⏳ No more missing candles found for {pair}, stopping.")
-                    break
-
-                inserted = insert_candles(pair, candles)
-                total_fixed += inserted
-
-                # ✅ Fix: Use the earliest candle timestamp instead of the latest
-                latest_supabase_timestamp = int(candles[-1][0])  # ✅ Use oldest timestamp in batch for proper backfilling
-
-                print(f"📌 {pair} → Inserted {inserted} missing candles. Now fetching before {latest_supabase_timestamp}...")
-
-                request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_CANDLES_URL], start_time)
-
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(missing_pairs)} | Fixed: {total_fixed}")
-
-        except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
-
-    print(f"\n✅ Sync complete: Processed={len(missing_pairs)}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
-
-if __name__ == "__main__":
-    main()
-
-```
-
-## `supabase\functions\fetch_new_1d_candles.py`
-
-```python
-import requests
-import os
-import time
-import smtplib
-import ssl
-from dateutil import parser
-from email.message import EmailMessage
-from datetime import datetime
-from supabase import create_client, Client
-from dotenv import load_dotenv
-
-# Load .env only if running locally (not in GitHub Actions)
-if not os.getenv("GITHUB_ACTIONS"):
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(env_path)
-
-# Environment Variables
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-EMAIL_RECIPIENT = "robert@rorostudio.com"
-
-SMTP_SERVER = "smtp-relay.brevo.com"
-SMTP_PORT = 587
-
-# OKX API URLs
-OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
-OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"  # ✅ New, faster endpoint
-
-# Rate Limit Settings (40 requests per 2s)
-CANDLES_RATE_LIMIT = 40
-BATCH_INTERVAL = 2
-
-# Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-
-def fetch_active_pairs():
-    """Fetch active trading pairs with USDT or USDC."""
-    response = requests.get(OKX_INSTRUMENTS_URL)
-    data = response.json()
-    return [
-        inst["instId"]
-        for inst in data.get("data", [])
-        if inst["quoteCcy"] in {"USDT"} and inst["state"] == "live"
-    ]
-
-
-def fetch_latest_timestamp(pair):
-    """Fetch the latest timestamp for a given pair."""
-    response = supabase.table("candles_1D").select("timestamp_ms").eq("pair", pair).order("timestamp_ms", desc=True).limit(1).execute()
-    return response.data[0]["timestamp_ms"] if response.data else None
-
-
-def enforce_rate_limit(request_count, start_time):
-    """Ensure API rate limits are respected."""
-    request_count += 1
-    if request_count >= CANDLES_RATE_LIMIT:
-        elapsed = time.time() - start_time
-        if elapsed < BATCH_INTERVAL:
-            time.sleep(BATCH_INTERVAL - elapsed)
-        return 0, time.time()
-    return request_count, start_time
-
-
-def fetch_candles(pair, after_timestamp_ms=None):
-    """Fetch new 1D candles using the OKX market API."""
-    params = {"instId": pair, "bar": "1D", "limit": 100}
-    if after_timestamp_ms:
-        params["before"] = str(after_timestamp_ms)  # ✅ Use milliseconds directly
-
-    response = requests.get(OKX_CANDLES_URL, params=params)
-    try:
-        return response.json().get("data", [])
-    except Exception as e:
-        print(f"❌ Error parsing JSON response for {pair}: {e}")
-        return []
-
-
-def insert_candles(pair, candles):
-    """Insert new candle data into Supabase and return inserted count."""
-    rows = [{
-        "timestamp_ms": int(c[0]),
-        "pair": pair,
-        "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
-        "close": float(c[4]), "volume": float(c[5]),
-        "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
-        "taker_buy_quote": float(c[8])
-    } for c in candles]
-
-    if not rows:
-        return 0
-
-    response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp_ms").execute()
-    return len(response.data) if response.data else 0
-
-
-def send_email(subject, body):
-    """Send an email notification with a report."""
-    if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        return
-
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_USERNAME
-    msg["To"] = EMAIL_RECIPIENT
-
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
-    except smtplib.SMTPException as e:
-        print(f"❌ SMTP Error: {e}")
-
-
-def main():
-    pairs = fetch_active_pairs()
-    total_inserted = 0
-    failed_pairs = []
-
-    request_count = {OKX_CANDLES_URL: 0}
-    start_time = time.time()
-
-    print(f"✅ Found {len(pairs)} active USDT pairs.")
-    print(f"🚀 Fetching new 1D candles...")
-
-    for index, pair in enumerate(pairs, start=1):
-        try:
-            latest_timestamp_ms = fetch_latest_timestamp(pair)
-            pair_inserted = 0
-
-            if latest_timestamp_ms:
-                candles = fetch_candles(pair, after_timestamp_ms=latest_timestamp_ms)
-                inserted = insert_candles(pair, candles)
-                total_inserted += inserted
-                pair_inserted += inserted
-
-            # ✅ Log progress every 50 pairs
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(pairs)} | Inserted: {total_inserted}")
-
-            request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_CANDLES_URL], start_time)
-
-        except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
-
-    print(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Failed={len(failed_pairs)}")
-
-    if total_inserted > 0:
-        send_email("New 1D OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFailed: {len(failed_pairs)}")
-
-
-if __name__ == "__main__":
-    main()
-
-```
-
-## `supabase\functions\fetch_new_1h_candles.py`
-
-```python
-import requests
-import os
-import time
-import smtplib
-import ssl
-from dateutil import parser
-from email.message import EmailMessage
-from datetime import datetime
-from supabase import create_client, Client
-from dotenv import load_dotenv
-
-# Load .env only if running locally (not in GitHub Actions)
-if not os.getenv("GITHUB_ACTIONS"):
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(env_path)
-
-# Environment Variables
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-EMAIL_RECIPIENT = "robert@rorostudio.com"
-
-SMTP_SERVER = "smtp-relay.brevo.com"
-SMTP_PORT = 587
-
-# OKX API URLs
-OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
-OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"  # ✅ New, faster endpoint
-
-# Rate Limit Settings (40 requests per 2s)
-CANDLES_RATE_LIMIT = 40
-BATCH_INTERVAL = 2
-
-# Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-
-def fetch_active_pairs():
-    """Fetch active trading pairs with USDT or USDC."""
-    response = requests.get(OKX_INSTRUMENTS_URL)
-    data = response.json()
-    return [
-        inst["instId"]
-        for inst in data.get("data", [])
-        if inst["quoteCcy"] in {"USDT"} and inst["state"] == "live"
-    ]
-
-
-def fetch_latest_timestamp(pair):
-    """Fetch the latest timestamp for a given pair."""
-    response = supabase.table("candles_1H").select("timestamp_ms").eq("pair", pair).order("timestamp_ms", desc=True).limit(1).execute()
-    return response.data[0]["timestamp_ms"] if response.data else None
-
-
-def enforce_rate_limit(request_count, start_time):
-    """Ensure API rate limits are respected."""
-    request_count += 1
-    if request_count >= CANDLES_RATE_LIMIT:
-        elapsed = time.time() - start_time
-        if elapsed < BATCH_INTERVAL:
-            time.sleep(BATCH_INTERVAL - elapsed)
-        return 0, time.time()
-    return request_count, start_time
-
-
-def fetch_candles(pair, after_timestamp_ms=None):
-    """Fetch new 1H candles using the OKX market API."""
-    params = {"instId": pair, "bar": "1H", "limit": 100}
-    if after_timestamp_ms:
-        params["before"] = str(after_timestamp_ms)  # ✅ Use milliseconds directly
-
-    response = requests.get(OKX_CANDLES_URL, params=params)
-    try:
-        return response.json().get("data", [])
-    except Exception as e:
-        print(f"❌ Error parsing JSON response for {pair}: {e}")
-        return []
-
-
-def insert_candles(pair, candles):
-    """Insert new candle data into Supabase and return inserted count."""
-    rows = [{
-        "timestamp_ms": int(c[0]),
-        "pair": pair,
-        "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
-        "close": float(c[4]), "volume": float(c[5]),
-        "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
-        "taker_buy_quote": float(c[8])
-    } for c in candles]
-
-    if not rows:
-        return 0
-
-    response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp_ms").execute()
-    return len(response.data) if response.data else 0
-
-
-def send_email(subject, body):
-    """Send an email notification with a report."""
-    if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        return
-
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_USERNAME
-    msg["To"] = EMAIL_RECIPIENT
-
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
-    except smtplib.SMTPException as e:
-        print(f"❌ SMTP Error: {e}")
-
-
-def main():
-    pairs = fetch_active_pairs()
-    total_inserted = 0
-    failed_pairs = []
-
-    request_count = {OKX_CANDLES_URL: 0}
-    start_time = time.time()
-
-    print(f"✅ Found {len(pairs)} active USDT pairs.")
-    print(f"🚀 Fetching new 1H candles...")
-
-    for index, pair in enumerate(pairs, start=1):
-        try:
-            latest_timestamp_ms = fetch_latest_timestamp(pair)
-            pair_inserted = 0
-
-            if latest_timestamp_ms:
-                candles = fetch_candles(pair, after_timestamp_ms=latest_timestamp_ms)
-                inserted = insert_candles(pair, candles)
-                total_inserted += inserted
-                pair_inserted += inserted
-
-            # ✅ Log progress every 50 pairs
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(pairs)} | Inserted: {total_inserted}")
-
-            request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_CANDLES_URL], start_time)
-
-        except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
-
-    print(f"\n✅ Sync complete: Processed={len(pairs)}, Inserted={total_inserted}, Failed={len(failed_pairs)}")
-
-    if total_inserted > 0:
-        send_email("New 1H OKX Candle Sync Report", f"Processed: {len(pairs)}\nInserted: {total_inserted}\nFailed: {len(failed_pairs)}")
-
-
-if __name__ == "__main__":
-    main()
-
-```
-
-## `supabase\functions\fetch_old_1d_candles.py`
-
-```python
-import requests
-import os
-import time
-import smtplib
-import ssl
-from email.message import EmailMessage
-from datetime import datetime
-from supabase import create_client, Client
-import os
-from dotenv import load_dotenv
-
-# Load .env only if running locally (not in GitHub Actions)
-if not os.getenv("GITHUB_ACTIONS"):
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(env_path)
-
-# ✅ Load Environment Variables
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-EMAIL_RECIPIENT = "robert@rorostudio.com"
-
-SMTP_SERVER = "smtp-relay.brevo.com"
-SMTP_PORT = 587
-
-# ✅ OKX API
-OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
-OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
-
-# ✅ Rate Limit (20 requests per 2s)
-HISTORY_CANDLES_RATE_LIMIT = 20
-BATCH_INTERVAL = 2
-
-# ✅ Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-# ✅ Fetch Active Trading Pairs
-def fetch_active_pairs():
-    response = requests.get(OKX_INSTRUMENTS_URL)
-    data = response.json()
-    return [inst["instId"] for inst in data.get("data", []) if inst["quoteCcy"] in {"USDT"} and inst["state"] == "live"]
-
-# ✅ Fetch Oldest Timestamp from Supabase
-def fetch_oldest_timestamp(pair):
-    response = supabase.table("candles_1D").select("timestamp_ms").eq("pair", pair).order("timestamp_ms").limit(1).execute()
-    return response.data[0]["timestamp_ms"] if response.data else None
-
-# ✅ Enforce Rate Limit
-def enforce_rate_limit(request_count, start_time):
-    request_count += 1
-    if request_count >= HISTORY_CANDLES_RATE_LIMIT:
-        elapsed = time.time() - start_time
-        if elapsed < BATCH_INTERVAL:
-            time.sleep(BATCH_INTERVAL - elapsed)
-        return 0, time.time()
-    return request_count, start_time
-
-# ✅ Fetch Historical Candles from OKX API
-def fetch_candles(pair, after_timestamp_ms):
-    params = {"instId": pair, "bar": "1D", "limit": 100, "after": str(after_timestamp_ms)}
-    
-    print(f"🔍 Fetching {pair} older candles from {after_timestamp_ms}...")
-    
-    response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-    try:
-        data = response.json().get("data", [])
-        if not data:
-            print(f"⚠️ No older candles found for {pair}")
-        return data
-    except Exception as e:
-        print(f"❌ Error parsing JSON response for {pair}: {e}")
-        return []
-
-# ✅ Insert Candles into Supabase
-def insert_candles(pair, candles):
-    rows = [{
-        "timestamp_ms": int(c[0]),
-        "pair": pair,
-        "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
-        "close": float(c[4]), "volume": float(c[5]),
-        "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
-        "taker_buy_quote": float(c[8])
-    } for c in candles]
-
-    if not rows:
-        return 0
-
-    response = supabase.table("candles_1D").upsert(rows, on_conflict="pair,timestamp_ms").execute()
-    return len(response.data) if response.data else 0
-
-# ✅ Send Email Notification
-def send_email(subject, body):
-    if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        return
-
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_USERNAME
-    msg["To"] = EMAIL_RECIPIENT
-
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
-    except smtplib.SMTPException as e:
-        print(f"❌ SMTP Error: {e}")
-
-# ✅ Main Function
-def main():
-    pairs = fetch_active_pairs()
-    total_fixed = 0
-    failed_pairs = []
-
-    request_count = {OKX_HISTORY_CANDLES_URL: 0}
-    start_time = time.time()
-
-    print(f"✅ Found {len(pairs)} active USDT pairs.")
-    print(f"🚀 Fetching historical 1D candles...")
-
-    for index, pair in enumerate(pairs, start=1):
-        try:
-            oldest_timestamp_ms = fetch_oldest_timestamp(pair)
-            if oldest_timestamp_ms is None:
-                print(f"⚠️ No timestamp found for {pair}, skipping...")
-                continue
-
-            print(f"⏳ {pair} → Fetching candles older than {oldest_timestamp_ms}")
-
-            # ✅ Start from the oldest available timestamp and move forward
-            while True:
-                candles = fetch_candles(pair, after_timestamp_ms=oldest_timestamp_ms)
-                
-                if not candles:
-                    print(f"⏳ No more older candles found for {pair}, stopping.")
-                    break
-
-                inserted = insert_candles(pair, candles)
-                total_fixed += inserted
-                oldest_timestamp_ms = int(candles[-1][0])  # ✅ Move forward in time
-
-                print(f"📌 {pair} → Inserted {inserted} older candles.")
-
-                request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_HISTORY_CANDLES_URL], start_time)
-
-            # ✅ Log progress every 50 pairs
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(pairs)} | Fixed: {total_fixed}")
-
-        except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
-
-    print(f"\n✅ Sync complete: Processed={len(pairs)}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
-
-    if total_fixed > 0:
-        send_email("Historical 1D OKX Candle Sync Report", f"Processed: {len(pairs)}\nFixed: {total_fixed}\nFailed: {len(failed_pairs)}")
-
-if __name__ == "__main__":
-    main()
-
-```
-
-## `supabase\functions\fetch_old_1h_candles.py`
-
-```python
-import requests
-import os
-import time
-import smtplib
-import ssl
-from email.message import EmailMessage
-from datetime import datetime
-from supabase import create_client, Client
-from dotenv import load_dotenv
-
-# ✅ Load .env if running locally
-if not os.getenv("GITHUB_ACTIONS"):
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(env_path)
-
-# ✅ Environment Variables
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-EMAIL_RECIPIENT = "robert@rorostudio.com"
-
-SMTP_SERVER = "smtp-relay.brevo.com"
-SMTP_PORT = 587
-
-# ✅ OKX API
-OKX_INSTRUMENTS_URL = "https://www.okx.com/api/v5/public/instruments?instType=SPOT"
-OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
-
-# ✅ Rate Limit (20 requests per 2s)
-HISTORY_CANDLES_RATE_LIMIT = 20
-BATCH_INTERVAL = 2
-
-# ✅ Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-# ✅ Fetch Active Trading Pairs
-def fetch_active_pairs():
-    response = requests.get(OKX_INSTRUMENTS_URL)
-    data = response.json()
-    return [inst["instId"] for inst in data.get("data", []) if inst["quoteCcy"] in {"USDT"} and inst["state"] == "live"]
-
-# ✅ Fetch Oldest Timestamp from Supabase
-def fetch_oldest_timestamp(pair):
-    """Fetch the oldest available timestamp in the database."""
-    response = supabase.table("candles_1D") \
-        .select("timestamp_ms") \
-        .eq("pair", pair) \
-        .order("timestamp_ms") \
-        .limit(1) \
-        .execute()
-    
-    if response.data:
-        oldest_timestamp = response.data[0]["timestamp_ms"]
-        print(f"✅ Oldest timestamp for {pair}: {oldest_timestamp}")  # 🔍 Debug logging
-        return oldest_timestamp
-    
-    print(f"⚠️ No oldest timestamp found for {pair}, returning None")
-    return None
-
-
-# ✅ Enforce Rate Limit
-def enforce_rate_limit(request_count, start_time):
-    request_count += 1
-    if request_count >= HISTORY_CANDLES_RATE_LIMIT:
-        elapsed = time.time() - start_time
-        if elapsed < BATCH_INTERVAL:
-            time.sleep(BATCH_INTERVAL - elapsed)
-        return 0, time.time()
-    return request_count, start_time
-
-# ✅ Fetch Historical Candles from OKX API
-def fetch_candles(pair, after_timestamp_ms):
-    params = {
-        "instId": pair,
-        "bar": "1H",
-        "limit": 100,
-        "after": str(int(after_timestamp_ms))
-    }
-
-    print(f"🔍 Fetching {pair} older candles from {after_timestamp_ms}...")
-    print(f"🕒 Checking {pair} - Fetching candles with `after`: {after_timestamp_ms}")
-
-    response = requests.get(OKX_HISTORY_CANDLES_URL, params=params)
-
-    try:
-        data = response.json()
-        print(f"📩 Full API Response for {pair}: {data}")  # Log full response
-        return data.get("data", [])
-
-    except Exception as e:
-        print(f"❌ Error parsing JSON response for {pair}: {e}")
-        return []
-
-# ✅ Insert Candles into Supabase
-def insert_candles(pair, candles):
-    rows = [{
-        "timestamp_ms": int(c[0]),
-        "pair": pair,
-        "open": float(c[1]), "high": float(c[2]), "low": float(c[3]),
-        "close": float(c[4]), "volume": float(c[5]),
-        "quote_volume": float(c[6]), "taker_buy_base": float(c[7]),
-        "taker_buy_quote": float(c[8])
-    } for c in candles]
-
-    if not rows:
-        return 0
-
-    response = supabase.table("candles_1H").upsert(rows, on_conflict="pair,timestamp_ms").execute()
-    return len(response.data) if response.data else 0
-
-# ✅ Send Email Notification
-def send_email(subject, body):
-    if not EMAIL_USERNAME or not EMAIL_PASSWORD:
-        return
-
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_USERNAME
-    msg["To"] = EMAIL_RECIPIENT
-
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_USERNAME, EMAIL_RECIPIENT, msg.as_string())
-    except smtplib.SMTPException as e:
-        print(f"❌ SMTP Error: {e}")
-
-# ✅ Main Function
-def main():
-    pairs = fetch_active_pairs()
-    total_fixed = 0
-    failed_pairs = []
-
-    request_count = {OKX_HISTORY_CANDLES_URL: 0}
-    start_time = time.time()
-
-    print(f"✅ Found {len(pairs)} active USDT pairs.")
-    print(f"🚀 Fetching historical 1H candles...")
-
-    for index, pair in enumerate(pairs, start=1):
-        try:
-            oldest_timestamp_ms = fetch_oldest_timestamp(pair)
-            if oldest_timestamp_ms is None:
-                print(f"⚠️ No timestamp found for {pair}, skipping...")
-                continue
-
-            print(f"⏳ {pair} → Fetching candles older than {oldest_timestamp_ms}")
-
-            # ✅ Start from the oldest available timestamp and move forward
-            while True:
-                candles = fetch_candles(pair, after_timestamp_ms=oldest_timestamp_ms)
-
-                if not candles:
-                    print(f"⏳ No more older candles found for {pair}, stopping.")
-                    break
-
-                inserted = insert_candles(pair, candles)
-                total_fixed += inserted
-                oldest_timestamp_ms = int(candles[-1][0])  # ✅ Move forward in time
-
-
-                print(f"📌 {pair} → Inserted {inserted} older candles.")
-
-                request_count[OKX_HISTORY_CANDLES_URL], start_time = enforce_rate_limit(request_count[OKX_HISTORY_CANDLES_URL], start_time)
-
-            # ✅ Log progress every 50 pairs
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(pairs)} | Fixed: {total_fixed}")
-
-        except Exception as e:
-            print(f"⚠️ Error with {pair}: {str(e)}")
-            failed_pairs.append(pair)
-
-    print(f"\n✅ Sync complete: Processed={len(pairs)}, Fixed={total_fixed}, Failed={len(failed_pairs)}")
-
-    if total_fixed > 0:
-        send_email("Historical 1H OKX Candle Sync Report", f"Processed: {len(pairs)}\nFixed: {total_fixed}\nFailed: {len(failed_pairs)}")
-
-if __name__ == "__main__":
-    main()
-
-```
-
-## `supabase\functions\__init__.py`
-
-```python
 
 ```
 

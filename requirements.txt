@@ -1,6 +1,4 @@
 # Backend dependencies
-fastapi
-uvicorn
 pandas
 numpy
 aiohttp
@@ -12,6 +10,3 @@ python-dotenv
 streamlit
 plotly
 requests
-
-# Supabase (for Python integration)
-supabase
