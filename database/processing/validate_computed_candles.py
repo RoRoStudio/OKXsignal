@@ -8,8 +8,9 @@ import numpy as np
 from dotenv import load_dotenv
 import psycopg2
 from ta.momentum import RSIIndicator
-from ta.trend import MACD
+from ta.trend import MACD, PSARIndicator
 from ta.volatility import AverageTrueRange, BollingerBands
+from ta.volume import MFIIndicator, OnBalanceVolumeIndicator
 from datetime import datetime, timedelta
 
 # Load environment variables
@@ -31,13 +32,12 @@ logging.basicConfig(
     level=logging.INFO,
     format='[%(levelname)s] %(asctime)s | %(message)s',
     handlers=[
-        logging.FileHandler(log_file),
+        logging.FileHandler(log_file, encoding="utf-8"),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger("validator")
 
-# Database connection
 def get_connection():
     return psycopg2.connect(
         host=DB_HOST,
@@ -47,80 +47,126 @@ def get_connection():
         password=DB_PASSWORD
     )
 
-# Validation functions
-def validate_rsi(df):
-    original_rsi = df['rsi_1h']
-    computed_rsi = RSIIndicator(df['close_1h'], window=14).rsi()
-    diff = np.abs(original_rsi - computed_rsi)
-    return diff.max(), diff.mean()
+# === Core indicator validations ===
+def validate_indicator(name, original, computed):
+    diff = np.abs(original - computed)
+    return name, diff.max(), diff.mean()
 
-def validate_macd(df):
-    original_macd = df['macd_slope_1h']
+def validate_indicators(df):
+    results = []
+
+    # RSI and Slope
+    rsi = RSIIndicator(df['close_1h'], window=14).rsi()
+    rsi_slope = rsi.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+    results.append(validate_indicator('RSI', df['rsi_1h'], rsi))
+    results.append(validate_indicator('RSI_SLOPE', df['rsi_slope_1h'], rsi_slope))
+
+    # MACD and Hist Slope
     macd = MACD(df['close_1h'])
-    computed_macd = macd.macd().diff()
-    diff = np.abs(original_macd - computed_macd)
-    return diff.max(), diff.mean()
+    results.append(validate_indicator('MACD_SLOPE', df['macd_slope_1h'], macd.macd().diff()))
+    results.append(validate_indicator('MACD_HIST_SLOPE', df['macd_hist_slope_1h'], macd.macd_diff().diff()))
 
-def validate_atr(df):
-    original_atr = df['atr_1h']
-    computed_atr = AverageTrueRange(df['high_1h'], df['low_1h'], df['close_1h']).average_true_range()
-    diff = np.abs(original_atr - computed_atr)
-    return diff.max(), diff.mean()
+    # ATR
+    atr = AverageTrueRange(df['high_1h'], df['low_1h'], df['close_1h']).average_true_range()
+    results.append(validate_indicator('ATR', df['atr_1h'], atr))
 
-def validate_bollinger_width(df):
-    original_bw = df['bollinger_width_1h']
+    # Bollinger
     bb = BollingerBands(df['close_1h'])
-    computed_bw = bb.bollinger_hband() - bb.bollinger_lband()
-    diff = np.abs(original_bw - computed_bw)
-    return diff.max(), diff.mean()
+    boll_width = bb.bollinger_hband() - bb.bollinger_lband()
+    results.append(validate_indicator('BOLLINGER_WIDTH', df['bollinger_width_1h'], boll_width))
 
+    # Parabolic SAR
+    psar = PSARIndicator(df['high_1h'], df['low_1h'], df['close_1h']).psar()
+    results.append(validate_indicator('PARABOLIC_SAR', df['parabolic_sar_1h'], psar))
+
+    # MFI
+    mfi = MFIIndicator(df['high_1h'], df['low_1h'], df['close_1h'], df['volume_1h']).money_flow_index()
+    results.append(validate_indicator('MFI', df['money_flow_index_1h'], mfi))
+
+    # OBV slope
+    obv = OnBalanceVolumeIndicator(df['close_1h'], df['volume_1h']).on_balance_volume()
+    obv_slope = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+    results.append(validate_indicator('OBV_SLOPE', df['obv_slope_1h'], obv_slope))
+
+    # Volume change
+    volume_change = df['volume_1h'].pct_change()
+    results.append(validate_indicator('VOLUME_CHANGE', df['volume_change_pct_1h'], volume_change))
+
+    # Spread
+    results.append(validate_indicator('SPREAD', df['bid_ask_spread_1h'], df['close_1h'] - df['open_1h']))
+    results.append(validate_indicator('SLIPPAGE_ESTIMATE', df['estimated_slippage_1h'], df['high_1h'] - df['low_1h']))
+
+    return results
+
+# === Gap check ===
 def validate_gaps(df):
     df = df.sort_values('timestamp_utc')
-    df['next_timestamp'] = df['timestamp_utc'].shift(-1)
-    df['expected_next_timestamp'] = df['timestamp_utc'] + timedelta(hours=1)
-    gaps = df[df['next_timestamp'] != df['expected_next_timestamp']]
+    df['expected'] = df['timestamp_utc'].shift(1) + timedelta(hours=1)
+    gaps = df[df['timestamp_utc'] != df['expected']]
     return gaps
 
-def validate_all(df):
-    validations = {
-        'RSI': validate_rsi(df),
-        'MACD': validate_macd(df),
-        'ATR': validate_atr(df),
-        'Bollinger Width': validate_bollinger_width(df),
-    }
-    return validations
+# === Null check ===
+def validate_nulls(df):
+    critical_columns = [col for col in df.columns if '_1h' in col or col.startswith('future_') or col.startswith('performance_') or col.endswith('_rank')]
+    null_report = df[critical_columns].isnull().sum()
+    return null_report[null_report > 0]
 
-# Main validation process
+# === Range check ===
+def validate_cross_pair_ranges(df):
+    violations = {}
+    for col in ['volume_rank_1h', 'volatility_rank_1h', 'performance_rank_btc_1h', 'performance_rank_eth_1h']:
+        if col in df.columns:
+            if df[col].min() < 0 or df[col].max() > 100:
+                violations[col] = (df[col].min(), df[col].max())
+    return violations
+
+# === Entry point ===
 def validate_computed_candles():
     conn = get_connection()
     logger.info("Connected to DB... loading computed candles")
-
-    query = """
-    SELECT * FROM candles_1h WHERE features_computed = TRUE
-    """
-    df = pd.read_sql(query, conn)
+    df = pd.read_sql("SELECT * FROM candles_1h WHERE features_computed = TRUE AND targets_computed = TRUE", conn)
     conn.close()
 
     if df.empty:
         logger.warning("No computed candles found.")
         return
 
-    logger.info(f"Validating {len(df)} computed candles...")
+    logger.info(f"Validating {len(df)} computed rows...")
 
-    # Perform validations
-    validations = validate_all(df)
+    # Check indicators
+    indicator_results = validate_indicators(df)
+    for name, max_diff, mean_diff in indicator_results:
+        if max_diff > 1e-6:
+            logger.warning(f"{name}: Max diff = {max_diff:.6f}, Mean diff = {mean_diff:.6f}")
+        else:
+            logger.info(f"{name}: Validation PASSED (diffs negligible)")
 
-    for indicator, (max_diff, mean_diff) in validations.items():
-        logger.info(f"Validation results for {indicator}: Max Diff = {max_diff}, Mean Diff = {mean_diff}")
-
-    # Check for gaps or missing data
+    # Check for gaps
     gaps = validate_gaps(df)
     if not gaps.empty:
-        logger.warning(f"Found {len(gaps)} gaps or missing data points:")
-        for _, row in gaps.iterrows():
-            logger.warning(f"Missing data between {row['timestamp_utc']} and {row['next_timestamp']}")
+        logger.warning(f"❗ Found {len(gaps)} timestamp gaps in 1h data.")
+    else:
+        logger.info("✅ No timestamp gaps detected.")
 
-    logger.info("Validation completed.")
+    # Check nulls
+    nulls = validate_nulls(df)
+    if not nulls.empty:
+        logger.warning("❗ Null values found in critical columns:")
+        for col, count in nulls.items():
+            logger.warning(f" - {col}: {count} nulls")
+    else:
+        logger.info("✅ No null values in critical fields.")
+
+    # Cross-pair range check
+    violations = validate_cross_pair_ranges(df)
+    if violations:
+        logger.warning("❗ Cross-pair ranks out of expected [0–100] range:")
+        for col, (min_val, max_val) in violations.items():
+            logger.warning(f" - {col}: min={min_val:.2f}, max={max_val:.2f}")
+    else:
+        logger.info("✅ Cross-pair rankings within expected range.")
+
+    logger.info("✅ Validation complete.")
 
 if __name__ == "__main__":
     validate_computed_candles()
