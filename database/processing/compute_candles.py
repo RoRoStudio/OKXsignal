@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import psycopg2
 import pandas as pd
 import numpy as np
+import sys
 from ta.momentum import RSIIndicator
 from ta.trend import MACD, PSARIndicator
 from ta.volatility import AverageTrueRange, BollingerBands
@@ -210,7 +211,7 @@ if __name__ == '__main__':
         conn = get_connection()
     except Exception as e:
         logger.critical(f"Unable to start due to database connection issue: {e}")
-        exit(1)
+        sys.exit(1)
 
     logger.info("Connected to DB... loading pair list")
 
@@ -219,11 +220,11 @@ if __name__ == '__main__':
         logger.info(f"Found {len(all_pairs)} pairs")
     except Exception as e:
         logger.critical(f"Error loading pair list: {e}")
-        exit(1)
+        sys.exit(1)
 
     if not all_pairs:
         logger.warning("No pairs found in candles_1h. Exiting early.")
-        exit()
+        sys.exit()
 
     if MODE == "rolling_update":
         conn = get_connection()
@@ -233,7 +234,7 @@ if __name__ == '__main__':
             logger.info(f"Found {len(all_pairs)} pairs for rolling update")
         except Exception as e:
             logger.critical(f"Error loading pair list for rolling update: {e}")
-            exit(1)
+            sys.exit(1)
         finally:
             conn.close()
         logger.info(f"Rolling update mode: computing last {ROLLING_WINDOW} rows per pair")
