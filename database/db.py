@@ -3,8 +3,6 @@ import os
 import time
 from dotenv import load_dotenv
 from config.config_loader import load_config
-from psycopg2.extras import execute_values
-from psycopg2.extensions import adapt
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "config", "credentials.env"))

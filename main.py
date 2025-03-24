@@ -21,9 +21,7 @@ sys.path.append(os.path.join(BASE_DIR, "dashboard"))
 
 # Import layout & theming
 from dashboard.layout.theme import inject_global_css
-from dashboard.layout.base_page import apply_base_layout
 from dashboard.layout.navigation import build_sidebar
-from dashboard.components.forms.filter_form import filter_form
 
 # Inject global CSS (ensure styling is applied correctly)
 inject_global_css()

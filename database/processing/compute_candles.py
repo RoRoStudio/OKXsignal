@@ -18,7 +18,6 @@ from ta.trend import MACD, PSARIndicator
 from ta.volatility import AverageTrueRange, BollingerBands
 from ta.volume import MFIIndicator, OnBalanceVolumeIndicator
 from concurrent.futures import ProcessPoolExecutor
-from psycopg2.extras import execute_batch
 from datetime import datetime
 import logging
 #from sqlalchemy import create_engine
