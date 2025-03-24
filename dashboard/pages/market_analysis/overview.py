@@ -6,7 +6,6 @@ overview.py
 import streamlit as st
 import datetime
 import pandas as pd
-import pytz
 from dashboard.components.forms.filter_form import filter_form
 from dashboard.utils.data_loader import fetch_market_data, fetch_trading_pairs
 from dashboard.components.charts.master_chart import show_master_chart

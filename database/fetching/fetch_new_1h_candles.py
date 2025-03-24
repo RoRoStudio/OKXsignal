@@ -2,8 +2,6 @@
 fetch_new_1h_candles.py
 Fetches new 1-hour candles from OKX API and inserts only unseen rows into PostgreSQL.
 """
-
-import os
 import requests
 import time
 from datetime import datetime, timezone, timedelta

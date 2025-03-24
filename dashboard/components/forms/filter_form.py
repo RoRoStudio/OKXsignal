@@ -9,7 +9,6 @@ filter_form.py
 """
 
 import streamlit as st
-import datetime
 from dashboard.utils.data_loader import fetch_trading_pairs
 
 def filter_form():
