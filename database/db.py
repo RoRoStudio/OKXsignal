@@ -1,8 +1,11 @@
 import psycopg2
 import os
 import time
+import logging
 from dotenv import load_dotenv
 from config.config_loader import load_config
+
+logger = logging.getLogger("compute")
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "config", "credentials.env"))
@@ -35,7 +38,7 @@ def fetch_data(query, params=None):
         cursor.execute(query, params or ())
         results = cursor.fetchall()
     except Exception as e:
-        print(f"❌ Database fetch error: {e}")
+        logger.info(f"Database fetch error: {e}")
     finally:
         cursor.close()
         conn.close()
@@ -49,7 +52,7 @@ def execute_query(query, params=None):
         cursor.execute(query, params or ())
         conn.commit()
     except Exception as e:
-        print(f"❌ Database error: {e}")
+        logger.info(f"Database error: {e}")
         conn.rollback()
     finally:
         cursor.close()
@@ -68,7 +71,7 @@ def execute_copy_update(temp_table_name, column_names, values, update_query):
     try:
         start_all = time.time()
 
-        print(f"🧪 Creating temporary table: {temp_table_name}")
+        logger.info(f"Creating temporary table: {temp_table_name}")
         cursor.execute(f"DROP TABLE IF EXISTS {temp_table_name}")
         create_stmt = f"""
         CREATE TEMP TABLE {temp_table_name} (
@@ -77,7 +80,7 @@ def execute_copy_update(temp_table_name, column_names, values, update_query):
         """
         cursor.execute(create_stmt)
 
-        print("📥 Starting COPY INTO temp table...")
+        logger.info("Starting COPY INTO temp table...")
         output = io.StringIO()
         for row in values:
             output.write("\t".join("" if v is None else str(v) for v in row) + "\n")
@@ -85,18 +88,18 @@ def execute_copy_update(temp_table_name, column_names, values, update_query):
 
         copy_start = time.time()
         cursor.copy_from(output, temp_table_name, sep="\t", null="")
-        print(f"✅ COPY completed in {time.time() - copy_start:.2f}s")
+        logger.info(f"COPY completed in {time.time() - copy_start:.2f}s")
 
-        print("🔁 Running UPDATE FROM temp table...")
+        logger.info("Running UPDATE FROM temp table...")
         update_start = time.time()
         cursor.execute(update_query.format(temp_table=temp_table_name))
-        print(f"✅ UPDATE completed in {time.time() - update_start:.2f}s")
+        logger.info(f"UPDATE completed in {time.time() - update_start:.2f}s")
 
         conn.commit()
-        print(f"🎉 Total COPY + UPDATE time: {time.time() - start_all:.2f}s")
+        logger.info(f"Total COPY + UPDATE time: {time.time() - start_all:.2f}s")
 
     except Exception as e:
-        print(f"❌ Error during COPY+UPDATE: {e}")
+        logger.info(f"Error during COPY+UPDATE: {e}")
         conn.rollback()
     finally:
         cursor.close()

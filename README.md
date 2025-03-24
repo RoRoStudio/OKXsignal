@@ -1,6 +1,7 @@
 
 ```
 OKXsignal
+├─ .deepsource.toml
 ├─ .streamlit
 │  └─ config.toml
 ├─ backend
@@ -92,12 +93,15 @@ OKXsignal
 │  │  ├─ fetch_trade_history.py
 │  │  └─ __init__.py
 │  ├─ processing
-│  │  └─ compute_candles.py
+│  │  ├─ compute_candles.py
+│  │  └─ validate_computed_candles.py
 │  └─ __init__.py
 ├─ documentation
 │  ├─ (personal) commands.md
+│  ├─ documentation.md
 │  ├─ IDEAS.md
 │  └─ trainable_features.md
+├─ exported_files.md
 ├─ export_markdown.py
 ├─ main.py
 ├─ okx_api
