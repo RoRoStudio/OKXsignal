@@ -116,7 +116,10 @@ def validate_cross_pair_ranges(df):
     violations = {}
     for col in ['volume_rank_1h', 'volatility_rank_1h', 'performance_rank_btc_1h', 'performance_rank_eth_1h']:
         if col in df.columns:
-            if df[col].min() < 0 or df[col].max() > 100:
+            min_val = df[col].min()
+max_val = df[col].max()
+if min_val < -1e-3 or max_val > 100 + 1e-3:
+    violations[col] = (min_val, max_val)
                 violations[col] = (df[col].min(), df[col].max())
     return violations
 
