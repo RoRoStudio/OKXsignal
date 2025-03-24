@@ -63,133 +63,163 @@ start_time_global = datetime.now()
 # Database Connection
 # ---------------------------
 def get_connection():
-    return psycopg2.connect(
-        host=DB['DB_HOST'],
-        port=DB['DB_PORT'],
-        dbname=DB['DB_NAME'],
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD")
-    )
+    try:
+        conn = psycopg2.connect(
+            host=DB['DB_HOST'],
+            port=DB['DB_PORT'],
+            dbname=DB['DB_NAME'],
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD")
+        )
+        logger.info("Database connection established.")
+        return conn
+    except Exception as e:
+        logger.error(f"Failed to connect to the database: {e}")
+        raise
 
 # ---------------------------
 # Feature Computation Logic
 # ---------------------------
 def compute_1h_features(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.sort_values('timestamp_utc')
+    try:
+        df = df.sort_values('timestamp_utc')
 
-    df['rsi_1h'] = RSIIndicator(df['close_1h'], window=14).rsi()
-    df['rsi_slope_1h'] = df['rsi_1h'].rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
-    
-    macd = MACD(df['close_1h'])
-    df['macd_slope_1h'] = macd.macd().diff()
-    df['macd_hist_slope_1h'] = macd.macd_diff().diff()
+        df['rsi_1h'] = RSIIndicator(df['close_1h'], window=14).rsi()
+        df['rsi_slope_1h'] = df['rsi_1h'].rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
 
-    df['atr_1h'] = AverageTrueRange(df['high_1h'], df['low_1h'], df['close_1h']).average_true_range()
-    
-    bb = BollingerBands(df['close_1h'])
-    df['bollinger_width_1h'] = bb.bollinger_hband() - bb.bollinger_lband()
-    
-    df['donchian_channel_width_1h'] = df['high_1h'].rolling(20).max() - df['low_1h'].rolling(20).min()
-    df['supertrend_direction_1h'] = np.nan  # placeholder
-    df['parabolic_sar_1h'] = PSARIndicator(df['high_1h'], df['low_1h'], df['close_1h']).psar()
+        macd = MACD(df['close_1h'])
+        df['macd_slope_1h'] = macd.macd().diff()
+        df['macd_hist_slope_1h'] = macd.macd_diff().diff()
 
-    df['money_flow_index_1h'] = MFIIndicator(df['high_1h'], df['low_1h'], df['close_1h'], df['volume_1h']).money_flow_index()
-    
-    obv = OnBalanceVolumeIndicator(df['close_1h'], df['volume_1h']).on_balance_volume()
-    df['obv_slope_1h'] = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
-    
-    df['volume_change_pct_1h'] = df['volume_1h'].pct_change()
-    df['estimated_slippage_1h'] = df['high_1h'] - df['low_1h']
-    df['bid_ask_spread_1h'] = df['close_1h'] - df['open_1h']
-    df['hour_of_day'] = df['timestamp_utc'].dt.hour
-    df['day_of_week'] = df['timestamp_utc'].dt.weekday
-    df['was_profitable_12h'] = (df['close_1h'].shift(-12) > df['close_1h']).astype(int)
-    df['prev_close_change_pct'] = df['close_1h'].pct_change()
-    df['prev_volume_rank'] = df['volume_1h'].rank(pct=True).shift(1) * 100
+        df['atr_1h'] = AverageTrueRange(df['high_1h'], df['low_1h'], df['close_1h']).average_true_range()
 
-    return df
+        bb = BollingerBands(df['close_1h'])
+        df['bollinger_width_1h'] = bb.bollinger_hband() - bb.bollinger_lband()
+
+        df['donchian_channel_width_1h'] = df['high_1h'].rolling(20).max() - df['low_1h'].rolling(20).min()
+        df['supertrend_direction_1h'] = np.nan  # placeholder
+        df['parabolic_sar_1h'] = PSARIndicator(df['high_1h'], df['low_1h'], df['close_1h']).psar()
+
+        df['money_flow_index_1h'] = MFIIndicator(df['high_1h'], df['low_1h'], df['close_1h'], df['volume_1h']).money_flow_index()
+
+        obv = OnBalanceVolumeIndicator(df['close_1h'], df['volume_1h']).on_balance_volume()
+        df['obv_slope_1h'] = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+
+        df['volume_change_pct_1h'] = df['volume_1h'].pct_change()
+        df['estimated_slippage_1h'] = df['high_1h'] - df['low_1h']
+        df['bid_ask_spread_1h'] = df['close_1h'] - df['open_1h']
+        df['hour_of_day'] = df['timestamp_utc'].dt.hour
+        df['day_of_week'] = df['timestamp_utc'].dt.weekday
+        df['was_profitable_12h'] = (df['close_1h'].shift(-12) > df['close_1h']).astype(int)
+        df['prev_close_change_pct'] = df['close_1h'].pct_change()
+        df['prev_volume_rank'] = df['volume_1h'].rank(pct=True).shift(1) * 100
+
+        return df
+    except Exception as e:
+        logger.error(f"Error in compute_1h_features: {e}")
+        raise
 
 def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str) -> pd.DataFrame:
-    df = df.set_index('timestamp_utc')
-    ohlcv = df[['open_1h', 'high_1h', 'low_1h', 'close_1h', 'volume_1h']]
-    resampled = ohlcv.resample(rule).agg({
-        'open_1h': 'first',
-        'high_1h': 'max',
-        'low_1h': 'min',
-        'close_1h': 'last',
-        'volume_1h': 'sum'
-    }).dropna()
-    resampled.columns = [col.replace('1h', tf_label) for col in resampled.columns]
+    try:
+        df = df.set_index('timestamp_utc')
+        ohlcv = df[['open_1h', 'high_1h', 'low_1h', 'close_1h', 'volume_1h']]
+        resampled = ohlcv.resample(rule).agg({
+            'open_1h': 'first',
+            'high_1h': 'max',
+            'low_1h': 'min',
+            'close_1h': 'last',
+            'volume_1h': 'sum'
+        }).dropna()
+        resampled.columns = [col.replace('1h', tf_label) for col in resampled.columns]
 
-    resampled[f'rsi_{tf_label}'] = RSIIndicator(resampled[f'close_{tf_label}'], window=14).rsi()
-    resampled[f'rsi_slope_{tf_label}'] = resampled[f'rsi_{tf_label}'].rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
-    macd = MACD(resampled[f'close_{tf_label}'])
-    resampled[f'macd_slope_{tf_label}'] = macd.macd().diff()
-    resampled[f'macd_hist_slope_{tf_label}'] = macd.macd_diff().diff()
-    resampled[f'atr_{tf_label}'] = AverageTrueRange(
-        resampled[f'high_{tf_label}'],
-        resampled[f'low_{tf_label}'],
-        resampled[f'close_{tf_label}']
-    ).average_true_range()
-    bb = BollingerBands(resampled[f'close_{tf_label}'])
-    resampled[f'bollinger_width_{tf_label}'] = bb.bollinger_hband() - bb.bollinger_lband()
-    resampled[f'donchian_channel_width_{tf_label}'] = resampled[f'high_{tf_label}'].rolling(20).max() - resampled[f'low_{tf_label}'].rolling(20).min()
-    resampled[f'supertrend_direction_{tf_label}'] = np.nan
-    resampled[f'money_flow_index_{tf_label}'] = MFIIndicator(
-        resampled[f'high_{tf_label}'], resampled[f'low_{tf_label}'], resampled[f'close_{tf_label}'], resampled[f'volume_{tf_label}']
-    ).money_flow_index()
-    obv = OnBalanceVolumeIndicator(resampled[f'close_{tf_label}'], resampled[f'volume_{tf_label}']).on_balance_volume()
-    resampled[f'obv_slope_{tf_label}'] = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
-    resampled[f'volume_change_pct_{tf_label}'] = resampled[f'volume_{tf_label}'].pct_change()
+        resampled[f'rsi_{tf_label}'] = RSIIndicator(resampled[f'close_{tf_label}'], window=14).rsi()
+        resampled[f'rsi_slope_{tf_label}'] = resampled[f'rsi_{tf_label}'].rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+        macd = MACD(resampled[f'close_{tf_label}'])
+        resampled[f'macd_slope_{tf_label}'] = macd.macd().diff()
+        resampled[f'macd_hist_slope_{tf_label}'] = macd.macd_diff().diff()
+        resampled[f'atr_{tf_label}'] = AverageTrueRange(
+            resampled[f'high_{tf_label}'],
+            resampled[f'low_{tf_label}'],
+            resampled[f'close_{tf_label}']
+        ).average_true_range()
+        bb = BollingerBands(resampled[f'close_{tf_label}'])
+        resampled[f'bollinger_width_{tf_label}'] = bb.bollinger_hband() - bb.bollinger_lband()
+        resampled[f'donchian_channel_width_{tf_label}'] = resampled[f'high_{tf_label}'].rolling(20).max() - resampled[f'low_{tf_label}'].rolling(20).min()
+        resampled[f'supertrend_direction_{tf_label}'] = np.nan
+        resampled[f'money_flow_index_{tf_label}'] = MFIIndicator(
+            resampled[f'high_{tf_label}'], resampled[f'low_{tf_label}'], resampled[f'close_{tf_label}'], resampled[f'volume_{tf_label}']
+        ).money_flow_index()
+        obv = OnBalanceVolumeIndicator(resampled[f'close_{tf_label}'], resampled[f'volume_{tf_label}']).on_balance_volume()
+        resampled[f'obv_slope_{tf_label}'] = obv.rolling(3).apply(lambda x: np.polyfit(range(len(x)), x, 1)[0])
+        resampled[f'volume_change_pct_{tf_label}'] = resampled[f'volume_{tf_label}'].pct_change()
 
-    df = df.merge(resampled, how='left', left_index=True, right_index=True)
-    df = df.reset_index()
-    return df
+        df = df.merge(resampled, how='left', left_index=True, right_index=True)
+        df = df.reset_index()
+        return df
+    except Exception as e:
+        logger.error(f"Error in compute_multi_tf_features: {e}")
+        raise
 
 # ---------------------------
 # Label Computation Logic
 # ---------------------------
 def compute_labels(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.sort_values('timestamp_utc')
-    for horizon, shift in [('1h', 1), ('4h', 4), ('12h', 12), ('1d', 24), ('3d', 72), ('1w', 168), ('2w', 336)]:
-        df[f'future_return_{horizon}_pct'] = (df['close_1h'].shift(-shift) - df['close_1h']) / df['close_1h']
-        
-    df['future_max_return_24h_pct'] = (df['high_1h'].rolling(window=24).max() - df['close_1h']) / df['close_1h']
+    try:
+        df = df.sort_values('timestamp_utc')
+        for horizon, shift in [('1h', 1), ('4h', 4), ('12h', 12), ('1d', 24), ('3d', 72), ('1w', 168), ('2w', 336)]:
+            df[f'future_return_{horizon}_pct'] = (df['close_1h'].shift(-shift) - df['close_1h']) / df['close_1h']
 
-    rolling_low = df['low_1h'].shift(-1).rolling(12).min()
-    df['future_max_drawdown_12h_pct'] = (rolling_low - df['close_1h']) / df['close_1h']
+        df['future_max_return_24h_pct'] = (df['high_1h'].rolling(window=24).max() - df['close_1h']) / df['close_1h']
 
-    df['targets_computed'] = True
-    
-    return df
+        rolling_low = df['low_1h'].shift(-1).rolling(12).min()
+        df['future_max_drawdown_12h_pct'] = (rolling_low - df['close_1h']) / df['close_1h']
+
+        df['targets_computed'] = True
+
+        return df
+    except Exception as e:
+        logger.error(f"Error in compute_labels: {e}")
+        raise
 
 # ---------------------------
 # Cross-Pair Intelligence
 # ---------------------------
 def compute_cross_pair_features(latest_df: pd.DataFrame) -> pd.DataFrame:
-    latest_df['volume_rank_1h'] = latest_df['volume_1h'].rank(pct=True) * 100
-    latest_df['volatility_rank_1h'] = latest_df['atr_1h'].rank(pct=True) * 100
-    btc_row = latest_df[latest_df['pair'] == 'BTC-USDT']
-    eth_row = latest_df[latest_df['pair'] == 'ETH-USDT']
-    if not btc_row.empty:
-        btc_return = btc_row['future_return_1h_pct'].values[0]
-        latest_df['performance_rank_btc_1h'] = ((latest_df['future_return_1h_pct'] - btc_return) / abs(btc_return + 1e-9)).rank(pct=True) * 100
-    if not eth_row.empty:
-        eth_return = eth_row['future_return_1h_pct'].values[0]
-        latest_df['performance_rank_eth_1h'] = ((latest_df['future_return_1h_pct'] - eth_return) / abs(eth_return + 1e-9)).rank(pct=True) * 100
-    return latest_df
+    try:
+        latest_df['volume_rank_1h'] = latest_df['volume_1h'].rank(pct=True) * 100
+        latest_df['volatility_rank_1h'] = latest_df['atr_1h'].rank(pct=True) * 100
+        btc_row = latest_df[latest_df['pair'] == 'BTC-USDT']
+        eth_row = latest_df[latest_df['pair'] == 'ETH-USDT']
+        if not btc_row.empty:
+            btc_return = btc_row['future_return_1h_pct'].values[0]
+            latest_df['performance_rank_btc_1h'] = ((latest_df['future_return_1h_pct'] - btc_return) / abs(btc_return + 1e-9)).rank(pct=True) * 100
+        if not eth_row.empty:
+            eth_return = eth_row['future_return_1h_pct'].values[0]
+            latest_df['performance_rank_eth_1h'] = ((latest_df['future_return_1h_pct'] - eth_return) / abs(eth_return + 1e-9)).rank(pct=True) * 100
+        return latest_df
+    except Exception as e:
+        logger.error(f"Error in compute_cross_pair_features: {e}")
+        raise
 
 # ---------------------------
 # Entry Point
 # ---------------------------
 if __name__ == '__main__':
     logger.info(f"Starting compute_candles.py in {MODE.upper()} mode")
-    conn = get_connection()
+    try:
+        conn = get_connection()
+    except Exception as e:
+        logger.critical(f"Unable to start due to database connection issue: {e}")
+        exit(1)
 
     logger.info("Connected to DB... loading pair list")
 
-    all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
-    logger.info(f"Found {len(all_pairs)} pairs")
+    try:
+        all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+        logger.info(f"Found {len(all_pairs)} pairs")
+    except Exception as e:
+        logger.critical(f"Error loading pair list: {e}")
+        exit(1)
 
     if not all_pairs:
         logger.warning("No pairs found in candles_1h. Exiting early.")
@@ -198,9 +228,14 @@ if __name__ == '__main__':
     if MODE == "rolling_update":
         conn = get_connection()
         logger.info("Connected to DB for rolling update")
-        all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
-        logger.info(f"Found {len(all_pairs)} pairs for rolling update")
-        conn.close()
+        try:
+            all_pairs = pd.read_sql("SELECT DISTINCT pair FROM candles_1h", conn)['pair'].tolist()
+            logger.info(f"Found {len(all_pairs)} pairs for rolling update")
+        except Exception as e:
+            logger.critical(f"Error loading pair list for rolling update: {e}")
+            exit(1)
+        finally:
+            conn.close()
         logger.info(f"Rolling update mode: computing last {ROLLING_WINDOW} rows per pair")
 
         def process_pair_rolling(pair: str):
@@ -281,22 +316,22 @@ if __name__ == '__main__':
                     WHERE pair = %s AND timestamp_utc = %s;
                 """
 
-                values = [row.get(col) for col in [
-                    'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
-                    'bollinger_width_1h', 'donchian_channel_width_1h', 'supertrend_direction_1h',
-                    'parabolic_sar_1h', 'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
-                    'estimated_slippage_1h', 'bid_ask_spread_1h', 'hour_of_day', 'day_of_week',
-                    'rsi_4h', 'rsi_slope_4h', 'macd_slope_4h', 'macd_hist_slope_4h', 'atr_4h',
-                    'bollinger_width_4h', 'donchian_channel_width_4h', 'supertrend_direction_4h',
-                    'money_flow_index_4h', 'obv_slope_4h', 'volume_change_pct_4h',
-                    'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
-                    'bollinger_width_1d', 'donchian_channel_width_1d', 'supertrend_direction_1d',
-                    'money_flow_index_1d', 'obv_slope_1d', 'volume_change_pct_1d', 'was_profitable_12h', 
-                    'prev_close_change_pct', 'prev_volume_rank', 'future_max_return_24h_pct',
-                    'future_max_drawdown_12h_pct', 'pair', 'timestamp_utc'
-                ]]
-                cur.execute(update_query, values)
-                conn.commit()
+                        values = [row.get(col) for col in [
+                            'rsi_1h', 'rsi_slope_1h', 'macd_slope_1h', 'macd_hist_slope_1h', 'atr_1h',
+                            'bollinger_width_1h', 'donchian_channel_width_1h', 'supertrend_direction_1h',
+                            'parabolic_sar_1h', 'money_flow_index_1h', 'obv_slope_1h', 'volume_change_pct_1h',
+                            'estimated_slippage_1h', 'bid_ask_spread_1h', 'hour_of_day', 'day_of_week',
+                            'rsi_4h', 'rsi_slope_4h', 'macd_slope_4h', 'macd_hist_slope_4h', 'atr_4h',
+                            'bollinger_width_4h', 'donchian_channel_width_4h', 'supertrend_direction_4h',
+                            'money_flow_index_4h', 'obv_slope_4h', 'volume_change_pct_4h',
+                            'rsi_1d', 'rsi_slope_1d', 'macd_slope_1d', 'macd_hist_slope_1d', 'atr_1d',
+                            'bollinger_width_1d', 'donchian_channel_width_1d', 'supertrend_direction_1d',
+                            'money_flow_index_1d', 'obv_slope_1d', 'volume_change_pct_1d', 'was_profitable_12h',
+                            'prev_close_change_pct', 'prev_volume_rank', 'future_max_return_24h_pct',
+                            'future_max_drawdown_12h_pct', 'pair', 'timestamp_utc'
+                        ]]
+                        cur.execute(update_query, values)
+                        conn.commit()
 
             except Exception as e:
                 logger.error(f"Error processing {pair}: {e}")
