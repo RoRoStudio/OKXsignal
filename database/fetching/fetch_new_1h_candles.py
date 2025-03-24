@@ -19,7 +19,7 @@ BATCH_INTERVAL = 2
 
 def get_known_timestamps(pair):
     query = "SELECT timestamp_utc FROM candles_1h WHERE pair = %s;"
-    return set(row["timestamp_utc"] for row in fetch_data(query, (pair,)))
+    return {row["timestamp_utc"] for row in fetch_data(query, (pair,))}
 
 def fetch_active_pairs():
     response = requests.get("https://www.okx.com/api/v5/public/instruments?instType=SPOT")

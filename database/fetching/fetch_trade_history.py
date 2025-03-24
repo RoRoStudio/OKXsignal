@@ -47,7 +47,7 @@ def fetch_active_usdt_pairs():
 def fetch_existing_trade_ids(pair):
     query = "SELECT trade_id FROM slippage_training_data WHERE pair = %s;"
     result = fetch_data(query, (pair,))
-    return set(row["trade_id"] for row in result)
+    return {row["trade_id"] for row in result}
 
 
 def fetch_trades(pair, before_trade_id=None):
