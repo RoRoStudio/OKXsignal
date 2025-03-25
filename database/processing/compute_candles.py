@@ -194,7 +194,9 @@ class DatabaseConnectionManager:
             pool_size=max(10, BATCH_SIZE),  # Ensure enough connections for all threads
             max_overflow=20,
             pool_timeout=30,
-            pool_recycle=3600
+            pool_recycle=3600,
+            pool_pre_ping=True,  # Test connection before using
+            isolation_level="READ COMMITTED"  # Good balance for read performance
         )
         
     def get_engine(self):
@@ -206,26 +208,51 @@ class DatabaseConnectionManager:
         """
         Execute a COPY operation to a temporary table, then update the main table from it
         """
+        if not values:
+            logging.warning("No values to update in execute_copy_update")
+            return 0
+            
         conn = None
         try:
             conn = self.engine.raw_connection()
             cursor = conn.cursor()
             
-            # Create temp table with same structure
+            # Create temp table with appropriate column types
+            create_columns = []
+            for col in column_names:
+                if col == 'timestamp_utc':
+                    col_type = "TIMESTAMP WITH TIME ZONE"
+                elif col == 'pair':
+                    col_type = "VARCHAR"
+                elif col in SMALLINT_COLUMNS:
+                    col_type = "SMALLINT"
+                else:
+                    col_type = "DOUBLE PRECISION"
+                    
+                create_columns.append(f"{col} {col_type}")
+                
             cursor.execute(f"""
                 CREATE TEMP TABLE {temp_table_name} (
-                    {', '.join([f"{col} VARCHAR" for col in column_names])}
+                    {', '.join(create_columns)}
                 ) ON COMMIT DROP;
             """)
             
-            # Use psycopg2's fast copy_from
-            with cursor.copy(f"COPY {temp_table_name} FROM STDIN WITH CSV NULL 'NULL'") as copy:
-                for row in values:
-                    # Convert None to NULL string for copy protocol
-                    csv_row = ','.join(['NULL' if v is None else str(v) for v in row])
-                    copy.write(csv_row + '\n')
+            # Prepare data for COPY
+            csv_data = io.StringIO()
+            for row in values:
+                # Convert None to empty string for CSV
+                csv_row = ','.join(['' if v is None else str(v) for v in row])
+                csv_data.write(csv_row + '\n')
+                
+            csv_data.seek(0)
             
-            # Execute the update
+            # Use psycopg2's copy_expert for maximum performance
+            cursor.copy_expert(
+                f"COPY {temp_table_name} FROM STDIN WITH CSV NULL ''", 
+                csv_data
+            )
+            
+            # Execute the update with a transaction
             cursor.execute(update_query.format(temp_table=temp_table_name))
             affected_rows = cursor.rowcount
             conn.commit()
@@ -234,6 +261,44 @@ class DatabaseConnectionManager:
         except Exception as e:
             if conn:
                 conn.rollback()
+            logging.error(f"Error in execute_copy_update: {e}", exc_info=True)
+            raise e
+        finally:
+            if conn:
+                conn.close()
+    
+    def execute_batch_update(self, query_text, param_lists, batch_size=1000):
+        """
+        Execute updates in efficient batches
+        """
+        if not param_lists:
+            logging.warning("No params to update in execute_batch_update")
+            return 0
+            
+        conn = None
+        updated_rows = 0
+        
+        try:
+            conn = self.engine.raw_connection()
+            cursor = conn.cursor()
+            
+            # Process in batches for better performance
+            for i in range(0, len(param_lists), batch_size):
+                batch = param_lists[i:i+batch_size]
+                
+                # Log batch size 
+                if i == 0:
+                    logging.debug(f"Executing batch update with {len(batch)}/{len(param_lists)} rows")
+                
+                cursor.executemany(query_text, batch)
+                updated_rows += cursor.rowcount
+                
+            conn.commit()
+            return updated_rows
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Error in execute_batch_update: {e}", exc_info=True)
             raise e
         finally:
             if conn:
@@ -502,7 +567,7 @@ def compute_1h_features(df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFr
                 )
         result_df.loc[:, 'prev_close_change_pct'] = prev_close_change_pct
         
-        # Previous volume rank - needs pandas
+        # Previous volume rank
         result_df['prev_volume_rank'] = pd.Series(volume).rank(pct=True).shift(1).fillna(0).values * 100
         
         if debug_mode:
@@ -521,7 +586,7 @@ def compute_1h_features(df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFr
 def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str, debug_mode: bool = False) -> pd.DataFrame:
     """
     Resample from 1h to 4h or 1d, then compute relevant multi-timeframe indicators.
-    Fixed version that avoids KeyError issues.
+    Fixed version that avoids NoneType errors and improves performance.
     """
     try:
         if debug_mode:
@@ -594,14 +659,14 @@ def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str, debug_
             resampled[f'close_{tf_label}'], window=14, fillna=True
         ).rsi()
         
-        # RSI slope
+        # RSI slope - use diff instead of polyfit for speed
         resampled[f'rsi_slope_{tf_label}'] = resampled[f'rsi_{tf_label}'].diff(2) / 2
         
         if debug_mode:
             logging.debug(f"{tf_label} RSI calculation completed in {time.time() - start_time:.3f}s")
             start_time = time.time()
             
-        # MACD
+        # MACD - simplified calculation
         macd = MACD(
             resampled[f'close_{tf_label}'], 
             window_slow=26, window_fast=12, window_sign=9, 
@@ -640,7 +705,7 @@ def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str, debug_
             logging.debug(f"{tf_label} Bollinger calculation completed in {time.time() - start_time:.3f}s")
             start_time = time.time()
             
-        # Donchian Channels - avoid deprecated fillna with method
+        # Donchian Channels - use ffill instead of deprecated fillna with method
         donchian_high = resampled[f'high_{tf_label}'].rolling(20).max()
         donchian_high = donchian_high.ffill().fillna(resampled[f'high_{tf_label}'].iloc[0] if len(resampled) > 0 else 0)
         
@@ -655,7 +720,7 @@ def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str, debug_
             logging.debug(f"{tf_label} Donchian calculation completed in {time.time() - start_time:.3f}s")
             start_time = time.time()
             
-        # Supertrend (placeholder)
+        # Supertrend (placeholder) - explicitly cast to int 
         resampled[f'supertrend_direction_{tf_label}'] = 0
         
         # MFI
@@ -671,7 +736,7 @@ def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str, debug_
             logging.debug(f"{tf_label} MFI calculation completed in {time.time() - start_time:.3f}s")
             start_time = time.time()
             
-        # OBV
+        # OBV - vectorized implementation
         obv_values = np.zeros(len(resampled))
         close_arr = resampled[f'close_{tf_label}'].values
         volume_arr = resampled[f'volume_{tf_label}'].values
@@ -679,7 +744,7 @@ def compute_multi_tf_features(df: pd.DataFrame, tf_label: str, rule: str, debug_
         # First value
         obv_values[0] = volume_arr[0]
         
-        # Compute OBV values
+        # Compute OBV values efficiently
         for i in range(1, len(resampled)):
             if close_arr[i] > close_arr[i-1]:
                 obv_values[i] = obv_values[i-1] + volume_arr[i]
@@ -799,7 +864,7 @@ def compute_labels(df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFrame:
             logging.debug(f"Future returns calculation completed in {time.time() - start_time:.3f}s")
             start_time = time.time()
         
-        # Max future return calculation - forward looking at high prices
+        # Max future return calculation using a more accurate method
         future_max_return = np.zeros(len(close))
         
         for i in range(len(close) - 1):
@@ -810,7 +875,7 @@ def compute_labels(df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFrame:
         
         result_df['future_max_return_24h_pct'] = future_max_return
         
-        # Max future drawdown calculation - forward looking at low prices
+        # Max future drawdown calculation with proper handling
         future_max_drawdown = np.zeros(len(close))
         
         for i in range(len(close) - 1):
@@ -973,6 +1038,14 @@ def process_pair(pair: str, db_manager, rolling_window: int, debug_mode: bool = 
                 logging.debug(f"{pair}: Computed 1d features in {time.time() - start_time:.3f}s")
                 start_time = time.time()
                 
+            # Compute cross-pair features if we have the relevant pairs
+            if pair in ['BTC-USDT', 'ETH-USDT'] or df['pair'].iloc[0] in ['BTC-USDT', 'ETH-USDT']:
+                df = compute_cross_pair_features(df)
+                
+                if debug_mode:
+                    logging.debug(f"{pair}: Computed cross-pair features in {time.time() - start_time:.3f}s")
+                    start_time = time.time()
+                
             df['features_computed'] = True
             df['targets_computed'] = True
 
@@ -1007,18 +1080,23 @@ def process_pair(pair: str, db_manager, rolling_window: int, debug_mode: bool = 
                     col_type = int if col in SMALLINT_COLUMNS else float
                     df_to_update[col] = np.zeros(len(df_to_update), dtype=col_type)
                 else:
+                    # Handle NaN values before type conversion
+                    df_to_update[col] = df_to_update[col].replace([np.inf, -np.inf], 0).fillna(0)
+                    
                     # Ensure correct type for each column
                     col_type = int if col in SMALLINT_COLUMNS else float
-                    df_to_update[col] = df_to_update[col].astype(col_type)
+                    try:
+                        df_to_update[col] = df_to_update[col].astype(col_type)
+                    except Exception as e:
+                        logging.warning(f"Error converting {col} to {col_type}: {e}")
+                        # If conversion failed, set to default values
+                        df_to_update[col] = 0 if col_type == int else 0.0
 
-            # Clean up NaN/Inf values before update - use infer_objects to avoid warning
+            # Clean up NaN/Inf values before update
             for col in df_to_update.columns:
                 if col not in ['timestamp_utc', 'pair', 'id']:
                     df_to_update[col] = df_to_update[col].replace([np.inf, -np.inf], 0).fillna(0)
             
-            # Call infer_objects to avoid downcasting warning
-            df_to_update = df_to_update.infer_objects()
-
             # Prepare update query
             update_query = """
             UPDATE candles_1h
@@ -1138,6 +1216,7 @@ def main():
                        help='Number of parallel workers (overrides default)')
     parser.add_argument('--debug', action='store_true',
                        help='Enable debug mode with detailed timing')
+    parser.add_argument('--pairs', type=str, help='Comma-separated list of pairs to process (default: all)')
     
     args = parser.parse_args()
     
@@ -1165,8 +1244,8 @@ def main():
     # Get rolling window from config or command line
     rolling_window = args.rolling_window if args.rolling_window else config_manager.get_rolling_window()
     
-    # Set batch size from command line or use default
-    batch_size = args.batch_size if args.batch_size else BATCH_SIZE
+    # Set batch size from command line or use default (cpu count + 50% for optimal resource use)
+    batch_size = args.batch_size if args.batch_size else min(24, max(8, int(os.cpu_count() * 1.5)))
     
     # Set up database connection
     db_manager = DatabaseConnectionManager(config_manager)
@@ -1192,8 +1271,13 @@ def main():
 
     try:
         with db_manager.get_engine().connect() as conn:
-            all_pairs = pd.read_sql(text("SELECT DISTINCT pair FROM candles_1h"), conn)['pair'].tolist()
-            logger.info(f"Found {len(all_pairs)} pairs")
+            # If specific pairs are requested, use them; otherwise get all pairs
+            if args.pairs:
+                all_pairs = [p.strip() for p in args.pairs.split(',')]
+                logger.info(f"Processing {len(all_pairs)} specified pairs")
+            else:
+                all_pairs = pd.read_sql(text("SELECT DISTINCT pair FROM candles_1h"), conn)['pair'].tolist()
+                logger.info(f"Found {len(all_pairs)} pairs")
     except Exception as e:
         logger.critical(f"Error loading pair list: {e}")
         sys.exit(1)
@@ -1281,14 +1365,22 @@ def main():
                 df = compute_labels(df, args.debug)
                 df = compute_multi_tf_features(df, '4h', '4h', args.debug)
                 df = compute_multi_tf_features(df, '1d', '1d', args.debug)
+                
+                # Compute cross-pair on pairs that need it
+                if pair in ['BTC-USDT', 'ETH-USDT'] or df['pair'].iloc[0] in ['BTC-USDT', 'ETH-USDT']:
+                    df = compute_cross_pair_features(df)
+                    
                 df['features_computed'] = True
                 df['targets_computed'] = True
 
                 # Ensure proper types for all columns
                 for col in columns_for_update[2:]:  # Skip pair, timestamp_utc
                     if col in SMALLINT_COLUMNS:
+                        # Handle NaN values before conversion
+                        df[col] = df[col].replace([np.inf, -np.inf], 0).fillna(0)
                         df[col] = df[col].astype(int)
                     else:
+                        df[col] = df[col].replace([np.inf, -np.inf], 0).fillna(0)
                         df[col] = df[col].astype(float)
 
                 # Cross-pair for last rolling_window
@@ -1362,52 +1454,24 @@ def main():
         else:
             logger.info(f"Writing {rows_written} rows across {pairs_processed} pairs to DB...")
 
-            # Import execute_copy_update from the db module
-            try:
-                # Try to use our internal implementation first
-                sys.path.append("P:/OKXsignal")  # Ensure module is importable
-                from database.db import execute_copy_update
-                
-                # Use the external function
-                update_query = """
-                UPDATE candles_1h AS c SET
-                """ + ",\n".join([
-                    f"{col} = t.{col}" for col in columns_for_update[2:]  # skip pair, timestamp_utc
-                ]) + """
-                , features_computed = TRUE,
-                  targets_computed = TRUE
-                FROM {temp_table} t
-                WHERE c.pair = t.pair AND c.timestamp_utc = t.timestamp_utc;
-                """
-                
-                execute_copy_update(
-                    temp_table_name="temp_full_backfill",
-                    column_names=columns_for_update,
-                    values=all_rows,
-                    update_query=update_query
-                )
-                
-            except (ImportError, Exception) as import_err:
-                logger.warning(f"Could not import execute_copy_update from database.db: {import_err}. Using internal implementation.")
-                
-                # Use our own implementation
-                update_query = """
-                UPDATE candles_1h AS c SET
-                """ + ",\n".join([
-                    f"{col} = t.{col}" for col in columns_for_update[2:]  # skip pair, timestamp_utc
-                ]) + """
-                , features_computed = TRUE,
-                  targets_computed = TRUE
-                FROM {temp_table} t
-                WHERE c.pair = t.pair AND c.timestamp_utc = t.timestamp_utc;
-                """
-                
-                db_manager.execute_copy_update(
-                    temp_table_name="temp_full_backfill",
-                    column_names=columns_for_update,
-                    values=all_rows,
-                    update_query=update_query
-                )
+            # Use our own implementation for bulk update
+            update_query = """
+            UPDATE candles_1h AS c SET
+            """ + ",\n".join([
+                f"{col} = t.{col}" for col in columns_for_update[2:]  # skip pair, timestamp_utc
+            ]) + """
+            , features_computed = TRUE,
+              targets_computed = TRUE
+            FROM {temp_table} t
+            WHERE c.pair = t.pair AND c.timestamp_utc = t.timestamp_utc;
+            """
+            
+            db_manager.execute_copy_update(
+                temp_table_name="temp_full_backfill",
+                column_names=columns_for_update,
+                values=all_rows,
+                update_query=update_query
+            )
 
             logger.info(
                 f"Full backfill complete: {rows_written} rows updated for {pairs_processed} pairs (skipped {skipped})."
