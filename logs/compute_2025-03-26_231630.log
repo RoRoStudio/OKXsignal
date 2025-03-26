@@ -1,0 +1,14 @@
+[INFO] 2025-03-26 23:16:30,973 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-03-26 23:16:30,974 | System memory: 18.86 GB available / 23.43 GB total
+[INFO] 2025-03-26 23:16:30,979 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-03-26 23:16:30,982 | Loaded config from /root/OKXsignal/config/config.ini
+[INFO] 2025-03-26 23:16:31,117 | GPU detected: Device #0, Memory: 12.00 GB
+[INFO] 2025-03-26 23:16:31,117 | GPU acceleration is available
+[INFO] 2025-03-26 23:16:31,117 | GPU capabilities detected - enabling GPU acceleration
+[INFO] 2025-03-26 23:16:31,236 | Initialized database connection pool with min=2, max=29 connections
+[INFO] 2025-03-26 23:16:31,236 | Starting compute_features.py in ROLLING_UPDATE mode with rolling_window=128
+[INFO] 2025-03-26 23:16:31,236 | Using 24 parallel workers with max 29 database connections
+[INFO] 2025-03-26 23:16:31,236 | Numba: enabled, GPU: enabled
+[INFO] 2025-03-26 23:16:31,237 | Database connection test successful
+[INFO] 2025-03-26 23:16:32,171 | Found 303 pairs
+[INFO] 2025-03-26 23:16:32,172 | Rolling update mode: computing last 128 rows per pair

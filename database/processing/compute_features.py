@@ -14,159 +14,40 @@ import signal
 import time
 import threading
 import psutil
-import psycopg2
-import psycopg2.extras
-import psycopg2.pool
-from contextlib import contextmanager
-from psycopg2 import pool
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import numpy as np
 import pandas as pd
+import psycopg2
+import psycopg2.extras
+
+# Import database connection pool
+from database.processing.features.db_pool import (
+    initialize_connection_pool,
+    get_db_connection,
+    get_thread_connection,
+    release_thread_connection,
+    get_pool_status
+)
+
 # Import configuration
 from database.processing.features.config import ConfigManager, SMALLINT_COLUMNS, MIN_CANDLES_REQUIRED
+
+# Import performance monitoring
+from database.processing.features.performance_monitor import PerformanceMonitor
+
 # Import optimized feature processor
 from database.processing.features.optimized.feature_processor import OptimizedFeatureProcessor
+
 # Import database utilities
 from database.processing.features.db_operations import (
-    get_optimized_connection,
     fetch_data_numpy,
     batch_update_features,
     bulk_copy_update,
     get_database_columns
 )
-# Import utilities
-from database.processing.features.utils import PerformanceMonitor
-
-# Thread-local storage for database connections
-thread_local = threading.local()
-
-# Global connection pool (will be initialized in main)
-connection_pool = None
-
-def initialize_connection_pool(config_manager, max_connections=None):
-    """
-    Initialize the global connection pool
-    
-    Args:
-        config_manager: Configuration manager with database settings
-        max_connections: Maximum number of connections in the pool
-                        (if None, will be set to batch_size + 5)
-    
-    Returns:
-        Initialized connection pool
-    """
-    global connection_pool
-    
-    # Get database parameters
-    db_params = config_manager.get_db_params()
-    
-    # If max_connections not specified, use batch_size + some buffer
-    if max_connections is None:
-        batch_size = config_manager.get_batch_size()
-        max_connections = batch_size + 5  # Add buffer for safety
-    
-    # Add application name for monitoring
-    db_params['application_name'] = 'compute_features'
-    
-    # Create connection pool
-    connection_pool = pool.ThreadedConnectionPool(
-        minconn=2,                   # Minimum connections
-        maxconn=max_connections,     # Maximum connections
-        **db_params
-    )
-    
-    logging.info(f"Initialized connection pool with min=2, max={max_connections} connections")
-    return connection_pool
-
-@contextmanager
-def get_db_connection():
-    """
-    Context manager for getting a connection from the pool
-    and ensuring it's returned properly
-    
-    Usage:
-        with get_db_connection() as conn:
-            # Use conn here
-    
-    Returns:
-        Database connection from the pool
-    """
-    conn = None
-    try:
-        # Get connection from pool
-        conn = connection_pool.getconn()
-        
-        # Set connection to autocommit mode for better performance
-        conn.autocommit = False
-        
-        # Yield connection to caller
-        yield conn
-    except Exception as e:
-        logging.error(f"Connection error: {e}")
-        # Re-raise the exception to be handled by caller
-        raise
-    finally:
-        # Always return connection to pool
-        if conn is not None:
-            connection_pool.putconn(conn)
-
-def get_thread_connection():
-    """
-    Get a thread-local database connection
-    
-    Returns:
-        Connection from the pool, stored in thread-local storage
-    """
-    # Check if thread already has a connection
-    if not hasattr(thread_local, 'connection'):
-        # If not, get a new connection from the pool
-        try:
-            thread_local.connection = connection_pool.getconn()
-            thread_local.connection.autocommit = False
-        except Exception as e:
-            logging.error(f"Error getting connection from pool: {e}")
-            raise
-    
-    return thread_local.connection
-
-def release_thread_connection():
-    """
-    Release the thread-local connection back to the pool
-    """
-    if hasattr(thread_local, 'connection'):
-        try:
-            # First commit any pending transactions
-            if not thread_local.connection.closed:
-                thread_local.connection.commit()
-            
-            # Return connection to pool
-            connection_pool.putconn(thread_local.connection)
-            
-            # Remove connection from thread-local storage
-            del thread_local.connection
-        except Exception as e:
-            logging.error(f"Error releasing connection: {e}")
-
-# Initialize the connection pool
-def init_connection_pool(config_manager, min_conn=5, max_conn=20):
-    global connection_pool
-    db_params = config_manager.get_db_params()
-    
-    # Create connection pool
-    connection_pool = psycopg2.pool.ThreadedConnectionPool(
-        min_conn,
-        max_conn,
-        dbname=db_params['dbname'],
-        user=db_params['user'],
-        password=db_params['password'],
-        host=db_params['host'],
-        port=db_params['port']
-    )
-    
-    logging.info(f"Initialized database connection pool (min={min_conn}, max={max_conn})")
-    return connection_pool
 
 # ---------------------------
 # Logging Setup
@@ -240,7 +121,7 @@ def configure_memory_settings():
     """Configure optimal memory settings for performance"""
     # NumPy settings
     np.set_printoptions(threshold=100, precision=4, suppress=True)
-
+    
     # Adjust Numba settings
     try:
         from numba import config as numba_config
@@ -250,38 +131,92 @@ def configure_memory_settings():
         numba_config.NUMBA_NUM_THREADS = min(os.cpu_count(), 16)
     except ImportError:
         pass
-
+    
     # Configure CuPy if available
     try:
         import cupy as cp
         # Create a memory pool to reduce allocation overhead
         memory_pool = cp.cuda.MemoryPool(cp.cuda.malloc_managed)
         cp.cuda.set_allocator(memory_pool.malloc)
-
+        
         # Use pinned memory for faster CPU-GPU transfers
         pinned_memory_pool = cp.cuda.PinnedMemoryPool()
         cp.cuda.set_pinned_memory_allocator(pinned_memory_pool.malloc)
-
+        
         # Log GPU memory info
         device = cp.cuda.Device(0)
         mem_info = device.mem_info
-        free_memory = mem_info[0] / (10243)
-        total_memory = mem_info[1] / (10243)
-
+        free_memory = mem_info[0] / (1024**3)
+        total_memory = mem_info[1] / (1024**3)
+        
         logging.info(f"GPU memory: {free_memory:.2f} GB free / {total_memory:.2f} GB total")
     except ImportError:
         pass
-
+    
     # Report available system memory
     vm = psutil.virtual_memory()
-    logging.info(f"System memory: {vm.available/(10243):.2f} GB available / {vm.total/(10243):.2f} GB total")
+    logging.info(f"System memory: {vm.available/(1024**3):.2f} GB available / {vm.total/(1024**3):.2f} GB total")
+
+def setup_error_reporting(log_dir="logs"):
+    """Set up detailed error reporting"""
+    # Ensure log directory exists
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # Create an error log file
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    error_log_file = os.path.join(log_dir, f"errors_{timestamp}.log")
+    
+    # Set up error handler
+    error_handler = logging.FileHandler(error_log_file)
+    error_handler.setLevel(logging.ERROR)
+    error_formatter = logging.Formatter('[%(levelname)s] %(asctime)s | %(message)s')
+    error_handler.setFormatter(error_formatter)
+    
+    # Add handler to root logger
+    logging.getLogger().addHandler(error_handler)
+    
+    # Set up sys.excepthook for uncaught exceptions
+    def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
+        logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+        # Call original excepthook
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+    
+    sys.excepthook = handle_uncaught_exception
+    
+    return error_log_file
+
+# Add error context manager for better tracking
+class ErrorContext:
+    """Context manager for tracking operations and reporting errors with context"""
+    
+    def __init__(self, operation, pair=None):
+        self.operation = operation
+        self.pair = pair
+        self.start_time = None
+        
+    def __enter__(self):
+        self.start_time = time.time()
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            # Error occurred
+            pair_info = f" for {self.pair}" if self.pair else ""
+            logging.error(f"Error in {self.operation}{pair_info}: {exc_val}", exc_info=(exc_type, exc_val, exc_tb))
+        
+        # Log duration regardless of error
+        duration = time.time() - self.start_time
+        logging.debug(f"{self.operation} completed in {duration:.3f}s")
+        
+        # Don't suppress the exception
+        return False
 # ---------------------------
 # Pair Processing
 # ---------------------------
 def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
     """
     Process a single pair, compute features, and update the database
-
+    
     Args:
         pair: Symbol pair (e.g., 'BTC-USDT')
         db_conn: Database connection
@@ -289,50 +224,50 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
         config_manager: Configuration manager
         debug_mode: Whether to log debug info
         perf_monitor: Performance monitor
-
+        
     Returns:
         Number of rows updated
     """
     start_process = time.time()
     logging.info(f"Computing features for {pair}")
     updated_rows = 0
-
+    
     try:
         # Start performance monitoring for this pair
         if perf_monitor:
             perf_monitor.start_pair(pair)
-
+        
         # Create feature processor with GPU acceleration if enabled
         feature_processor = OptimizedFeatureProcessor(
             use_numba=config_manager.use_numba(),
             use_gpu=config_manager.use_gpu()
         )
-
+        
         # Get database columns
         start_db_connect = time.time()
         db_columns = get_database_columns(db_conn, 'candles_1h')
         if perf_monitor:
             perf_monitor.log_operation("db_get_columns", time.time() - start_db_connect)
-
+        
         # Fetch data using optimized method
         start_fetch = time.time()
         price_data = fetch_data_numpy(db_conn, pair, rolling_window + 300)
         if perf_monitor:
             perf_monitor.log_operation("fetch_data", time.time() - start_fetch)
-
+        
         if not price_data:
             logging.warning(f"No data found for {pair}")
             return 0
-
+            
         row_count = len(price_data['closes'])
-
+        
         if debug_mode:
             logging.debug(f"{pair}: Fetched {row_count} rows in {time.time() - start_fetch:.3f}s")
-
+        
         if row_count < MIN_CANDLES_REQUIRED:
             logging.warning(f"Skipping {pair}: only {row_count} candles, need >= {MIN_CANDLES_REQUIRED}")
             return 0
-
+        
         # Determine enabled feature groups
         enabled_features = {
             feature_name.lower() for feature_name 
@@ -340,47 +275,47 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
                 'statistical', 'pattern', 'time', 'labels']
             if config_manager.is_feature_enabled(feature_name)
         }
-
+        
         # Free memory
         gc.collect()
-
+        
         # Process features
         start_compute = time.time()
         feature_results = feature_processor.process_features(
             price_data, enabled_features, perf_monitor
         )
-
+        
         if perf_monitor:
             perf_monitor.log_operation("compute_features_total", time.time() - start_compute)
-
+        
         # Take only the newest rows for updating
         if row_count > rolling_window:
             # Slice arrays to get only the newest rows
             start_idx = row_count - rolling_window
             for key in feature_results:
                 feature_results[key] = feature_results[key][start_idx:]
-
+                
             # Also slice timestamps
             update_timestamps = price_data['raw_timestamps'][start_idx:]
         else:
             update_timestamps = price_data['raw_timestamps']
-
+        
         # Define columns to update (all computed features that exist in the database)
         reserved_columns = {'id', 'pair', 'timestamp_utc', 'open_1h', 'high_1h', 'low_1h', 'close_1h', 
                           'volume_1h', 'quote_volume_1h', 'taker_buy_base_1h'}
-
+        
         # Filter out columns that don't exist in the database
         columns_for_update = [
             col for col in feature_results.keys() 
             if col in db_columns and col not in reserved_columns
         ]
-
+        
         if debug_mode:
             logging.debug(f"{pair}: Updating {len(columns_for_update)} columns for {len(update_timestamps)} rows")
-
+        
         # Update database
         start_update = time.time()
-
+        
         if columns_for_update:
             # Use bulk copy method for maximum performance
             try:
@@ -393,57 +328,64 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
                 updated_rows = batch_update_features(
                     db_conn, pair, update_timestamps, feature_results, columns_for_update
                 )
-
+        
         if perf_monitor:
             perf_monitor.log_operation("database_update", time.time() - start_update)
-
+    
     except Exception as e:
         logging.error(f"Error processing {pair}: {e}", exc_info=True)
-        raise
+        # Don't re-raise the exception - just log it and return
+        return 0
     finally:
         total_time = time.time() - start_process
         logging.info(f"{pair}: Updated {updated_rows}/{len(update_timestamps) if 'update_timestamps' in locals() else 0} rows in {total_time:.2f}s")
-
+        
         # End performance monitoring for this pair
         if perf_monitor:
             perf_monitor.end_pair(total_time)
-
+        
         # Clear memory
         gc.collect()
-
+        
         return updated_rows
+
 def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
     """Wrapper function for thread pool to handle a single pair"""
+    db_conn = None
+    start_time = time.time()
+    
     try:
         # Set current pair for performance tracking
         if perf_monitor:
             perf_monitor.start_pair(pair)
-            
-        start_time = time.time()
         
-        # Get a connection for this thread
+        # Acquire a connection for this thread from the pool
         db_conn = get_thread_connection()
         
         # Process the pair
         result = process_pair(pair, db_conn, rolling_window, config_manager, debug_mode, perf_monitor)
         
-        # End timing for this pair
-        total_time = time.time() - start_time
-        if perf_monitor:
-            perf_monitor.end_pair(total_time)
-            
         return result
         
-    except KeyboardInterrupt:
-        # Handle keyboard interrupt
-        logging.info(f"Processing of {pair} interrupted by user")
-        return 0
     except Exception as e:
-        logging.error(f"Thread error for pair {pair}: {e}", exc_info=True)
+        # More detailed error logging with entire exception
+        logging.error(f"Thread error for pair {pair}: {str(e) or type(e).__name__}", exc_info=True)
         return 0
     finally:
-        # Always release the connection back to the pool
-        release_thread_connection()
+        try:
+            # Always release the connection back to the pool
+            if db_conn is not None:
+                release_thread_connection()
+        except Exception as conn_ex:
+            logging.error(f"Error releasing connection for {pair}: {conn_ex}")
+        
+        try:
+            # End performance monitoring for this pair even if there was an error
+            if perf_monitor:
+                total_time = time.time() - start_time
+                perf_monitor.end_pair(total_time)
+        except Exception as monitor_ex:
+            logging.error(f"Error ending performance monitoring for {pair}: {monitor_ex}")
 
 # ---------------------------
 # Cross-Pair Features
@@ -451,29 +393,33 @@ def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, 
 def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_monitor=None):
     """
     Compute features that require data across multiple pairs
-
+    
     Args:
         db_conn: Database connection
         config_manager: Configuration manager
         debug_mode: Whether to log debug info
         perf_monitor: Performance monitor
-
+        
     Returns:
         Number of rows updated
     """
     start_time = time.time()
     logging.info("Computing cross-pair features")
     updated_rows = 0
-
+    
+    # Track this operation under a special "CROSS_PAIR" context
+    if perf_monitor:
+        perf_monitor.start_pair("CROSS_PAIR")
+    
     try:
         # Only compute if cross_pair features are enabled
         if not config_manager.is_feature_enabled('cross_pair'):
             logging.info("Cross-pair features disabled, skipping")
             return 0
-
+            
         # Get most recent candles
         cursor = db_conn.cursor()
-
+        
         query = """
         SELECT pair, timestamp_utc, close_1h, volume_1h, atr_1h, future_return_1h_pct, log_return
         FROM candles_1h 
@@ -481,19 +427,19 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
         ORDER BY timestamp_utc, pair
         """
         cursor.execute(query)
-
+        
         rows = cursor.fetchall()
         cursor.close()
-
+        
         if not rows:
             logging.warning("No recent data found for cross-pair features")
             return 0
-
+            
         # Group by timestamp
         timestamps = {}
         for row in rows:
             pair, ts, close, volume, atr, future_return, log_return = row
-
+            
             if ts not in timestamps:
                 timestamps[ts] = {
                     'pairs': [],
@@ -503,22 +449,22 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                     'log_returns': {},
                     'btc_returns': []
                 }
-
+                
             timestamps[ts]['pairs'].append(pair)
             timestamps[ts]['volumes'].append(volume if volume is not None else 0)
             timestamps[ts]['atrs'].append(atr if atr is not None else 0)
             timestamps[ts]['future_returns'].append(future_return if future_return is not None else 0)
-
+            
             # Store log returns by pair for correlation
             timestamps[ts]['log_returns'][pair] = log_return if log_return is not None else 0
-
+            
             # Save BTC returns separately for correlation
             if pair == 'BTC-USDT':
                 timestamps[ts]['btc_returns'].append(log_return if log_return is not None else 0)
-
+        
         # Prepare update data
         updates = []
-
+        
         # Process each timestamp
         for ts, data in timestamps.items():
             pairs = data['pairs']
@@ -526,43 +472,39 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
             atrs = data['atrs']
             future_returns = data['future_returns']
             log_returns = data['log_returns']
-
+            
             # Skip if no data or missing BTC
             if not pairs or 'BTC-USDT' not in log_returns:
                 continue
-
+                
             # Compute volume ranks
             vol_ranks = np.zeros(len(volumes))
-
+            
             if volumes and any(v > 0 for v in volumes):
                 # Convert to numpy array for ranking
                 vol_array = np.array(volumes)
-                # Compute percentile rank
-                vol_ranks = np.zeros_like(vol_array)
                 # Sort indices (ascending)
                 sorted_indices = np.argsort(vol_array)
                 # Assign ranks (higher volume = higher rank)
                 for i, idx in enumerate(sorted_indices):
                     vol_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-
+            
             # Compute volatility ranks
-            vol_ranks = np.zeros(len(atrs))
-
+            atr_ranks = np.zeros(len(atrs))
+            
             if atrs and any(a > 0 for a in atrs):
                 # Convert to numpy array for ranking
                 atr_array = np.array(atrs)
-                # Compute percentile rank
-                atr_ranks = np.zeros_like(atr_array)
                 # Sort indices (ascending)
                 sorted_indices = np.argsort(atr_array)
                 # Assign ranks (higher ATR = higher rank)
                 for i, idx in enumerate(sorted_indices):
                     atr_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-
+            
             # Compute performance ranks relative to BTC
             btc_return = log_returns.get('BTC-USDT', 0)
             perf_ranks_btc = np.zeros(len(future_returns))
-
+            
             if btc_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
                 # Compute relative performance
                 rel_perf = np.array([(fr - btc_return) / abs(btc_return) if btc_return != 0 else 0 
@@ -574,11 +516,11 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                 # Assign ranks (higher relative perf = higher rank)
                 for i, idx in enumerate(sorted_indices):
                     perf_ranks_btc[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-
+            
             # Compute performance ranks relative to ETH
             eth_return = log_returns.get('ETH-USDT', 0)
             perf_ranks_eth = np.zeros(len(future_returns))
-
+            
             if eth_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
                 # Compute relative performance
                 rel_perf = np.array([(fr - eth_return) / abs(eth_return) if eth_return != 0 else 0 
@@ -590,18 +532,15 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                 # Assign ranks (higher relative perf = higher rank)
                 for i, idx in enumerate(sorted_indices):
                     perf_ranks_eth[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-
+            
             # Compute BTC correlation
             btc_corr = np.zeros(len(pairs))
-
-            btc_series = []
-            all_series = []
-
+            
             # Get correlation window data
             correlation_window = 24  # 24 hours
-
+            
             cursor = db_conn.cursor()
-
+            
             # Get historical data for correlation
             window_query = """
             SELECT pair, timestamp_utc, log_return
@@ -611,15 +550,15 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
               AND pair IN ('BTC-USDT', %s)
             ORDER BY pair, timestamp_utc
             """
-
+            
             for i, pair in enumerate(pairs):
                 if pair == 'BTC-USDT':
                     btc_corr[i] = 1.0  # BTC correlation with itself is 1
                     continue
-
+                    
                 cursor.execute(window_query, (ts, ts, pair))
                 corr_rows = cursor.fetchall()
-
+                
                 # Group by pair
                 pair_returns = {}
                 for row in corr_rows:
@@ -627,25 +566,25 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                     if p not in pair_returns:
                         pair_returns[p] = {}
                     pair_returns[p][t] = ret if ret is not None else 0
-
+                
                 # Get common timestamps
                 if 'BTC-USDT' in pair_returns and pair in pair_returns:
                     btc_times = set(pair_returns['BTC-USDT'].keys())
                     pair_times = set(pair_returns[pair].keys())
                     common_times = sorted(btc_times.intersection(pair_times))
-
+                    
                     if len(common_times) >= 12:  # Need at least 12 points for correlation
                         # Create arrays for correlation
                         btc_vals = np.array([pair_returns['BTC-USDT'][t] for t in common_times])
                         pair_vals = np.array([pair_returns[pair][t] for t in common_times])
-
+                        
                         # Compute correlation
                         if np.std(btc_vals) > 0 and np.std(pair_vals) > 0:
                             corr = np.corrcoef(btc_vals, pair_vals)[0, 1]
                             btc_corr[i] = corr
-
+            
             cursor.close()
-
+            
             # Prepare update parameters
             for i, pair in enumerate(pairs):
                 updates.append((
@@ -658,11 +597,11 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                     pair,
                     ts
                 ))
-
+        
         # Execute updates
         if updates:
             cursor = db_conn.cursor()
-
+            
             update_query = """
             UPDATE candles_1h
             SET 
@@ -674,30 +613,108 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                 prev_volume_rank = %s
             WHERE pair = %s AND timestamp_utc = %s
             """
-
+            
             psycopg2.extras.execute_batch(
                 cursor, 
                 update_query, 
                 updates,
                 page_size=1000
             )
-
+            
             updated_rows = cursor.rowcount
             db_conn.commit()
             cursor.close()
-
+            
             logging.info(f"Updated {updated_rows} rows with cross-pair features")
-
+        
     except Exception as e:
         logging.error(f"Error computing cross-pair features: {e}", exc_info=True)
         if 'cursor' in locals() and not cursor.closed:
             cursor.close()
-        db_conn.rollback()
+        # Rollback on error
+        try:
+            db_conn.rollback()
+        except Exception:
+            pass
     finally:
         if perf_monitor:
             perf_monitor.log_operation("cross_pair_features", time.time() - start_time)
-
+            perf_monitor.end_pair(time.time() - start_time)
+    
     return updated_rows
+
+def calibrate_batch_size(config_manager, initial_pairs=10):
+    """Calibrate the optimal batch size based on test runs"""
+    logging.info("Calibrating optimal batch size...")
+    
+    # Get a small sample of pairs
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT pair FROM candles_1h LIMIT %s", (initial_pairs,))
+        test_pairs = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+    
+    if not test_pairs:
+        logging.warning("No pairs found for calibration")
+        return None
+    
+    # Testing with different batch sizes
+    test_sizes = [4, 8, 12, 16, 24, 32]
+    results = {}
+    
+    # Create a dummy performance monitor that doesn't log to files
+    class DummyMonitor:
+        def start_pair(self, pair): pass
+        def log_operation(self, op, duration): pass
+        def end_pair(self, duration): pass
+    
+    dummy_monitor = DummyMonitor()
+    
+    for batch_size in test_sizes:
+        logging.info(f"Testing batch size {batch_size}...")
+        
+        # Time the processing
+        start_time = time.time()
+        
+        # Process with current batch size
+        with ThreadPoolExecutor(max_workers=min(batch_size, len(test_pairs))) as executor:
+            futures = {
+                executor.submit(
+                    process_pair_thread, 
+                    pair, 10, config_manager, False, dummy_monitor
+                ): pair for pair in test_pairs[:batch_size]
+            }
+            
+            for future in as_completed(futures):
+                # Just wait for completion
+                pair = futures[future]
+                try:
+                    future.result()
+                except Exception:
+                    pass
+        
+        # Record time
+        duration = time.time() - start_time
+        pairs_per_second = len(test_pairs[:batch_size]) / duration
+        results[batch_size] = pairs_per_second
+        
+        logging.info(f"Batch size {batch_size}: {pairs_per_second:.2f} pairs/sec")
+        
+        # Force cleanup
+        gc.collect()
+    
+    # Find optimal batch size
+    if results:
+        optimal_size = max(results, key=results.get)
+        logging.info(f"Optimal batch size determined: {optimal_size} ({results[optimal_size]:.2f} pairs/sec)")
+        return optimal_size
+    
+    return None
+
+# Add this to the main function before processing the batches:
+
+
+
 # ---------------------------
 # Main Function
 # ---------------------------
@@ -722,14 +739,13 @@ def main():
                        help='Enable debug mode with detailed timing')
     parser.add_argument('--pairs', type=str, help='Comma-separated list of pairs to process (default: all)')
     parser.add_argument('--no-numba', action='store_true', help='Disable Numba optimizations')
-    
+    parser.add_argument('--max-connections', type=int, default=None,
+                       help='Maximum number of database connections in the pool')
     parser.add_argument('--use-gpu', action='store_true', help='Enable GPU acceleration (if available)')
     parser.add_argument('--no-gpu', action='store_true', help='Disable GPU acceleration')
 
     parser.add_argument('--disable-features', type=str, 
                        help='Comma-separated list of feature groups to disable (e.g., momentum,pattern)')
-    parser.add_argument('--max-connections', type=int, default=None,
-                       help='Maximum number of database connections in the pool')
     
     args = parser.parse_args()
     
@@ -753,6 +769,13 @@ def main():
         config_path=args.config,
         credentials_path=args.credentials
     )
+
+    # Enable GPU if available and not explicitly disabled
+    if config_manager.gpu_available and not args.no_gpu:
+        if 'GENERAL' not in config_manager.config:
+            config_manager.config['GENERAL'] = {}
+        config_manager.config['GENERAL']['USE_GPU'] = 'True'
+        logger.info("GPU capabilities detected - enabling GPU acceleration")
 
     # Override config with command line arguments
     if args.no_numba:
@@ -782,9 +805,12 @@ def main():
     # Set batch size
     batch_size = args.batch_size if args.batch_size else config_manager.get_batch_size()
     
+    # Set max connections for the pool
+    max_connections = args.max_connections if args.max_connections is not None else batch_size + 5
+    
     # Initialize the connection pool
-    max_connections = args.max_connections if args.max_connections else batch_size + 5
-    initialize_connection_pool(config_manager, max_connections)
+    db_params = config_manager.get_db_params()
+    initialize_connection_pool(db_params, min_connections=2, max_connections=max_connections)
     
     # Create runtime log path
     runtime_log_path = os.path.join(args.log_dir, "runtime_stats.log")
@@ -842,6 +868,17 @@ def main():
                 
         # Sort pairs by complexity (process simpler pairs first)
         sorted_pairs = sorted(all_pairs, key=estimate_pair_complexity)
+
+        # Auto-calibrate batch size if not specified
+        if not args.batch_size and not args.no_calibration:
+            optimal_batch_size = calibrate_batch_size(config_manager)
+            if optimal_batch_size:
+                batch_size = optimal_batch_size
+                logger.info(f"Using auto-calibrated batch size: {batch_size}")
+
+        # Add to the argument parser:
+        parser.add_argument('--no-calibration', action='store_true', 
+                        help='Skip batch size auto-calibration')
         
         # Split pairs into batches
         batches = []
@@ -871,7 +908,13 @@ def main():
         for batch_idx, batch in enumerate(batches):
             logger.info(f"Processing batch {batch_idx+1}/{len(batches)} with {len(batch)} pairs")
             
-            with ThreadPoolExecutor(max_workers=min(batch_size, len(batch))) as executor:
+            # Use a thread pool size that won't exhaust connections
+            # Allow 2 extra connections for overhead/monitoring
+            max_pool_size = max_connections - 2
+            thread_pool_size = min(batch_size, len(batch), max_pool_size)
+            logger.info(f"Using thread pool size of {thread_pool_size} for this batch")
+            
+            with ThreadPoolExecutor(max_workers=thread_pool_size) as executor:
                 futures = {
                     executor.submit(
                         process_pair_thread, 
@@ -886,6 +929,11 @@ def main():
                         rows_updated = future.result()
                         completed += 1
                         
+                        # Log pool status every 10 pairs
+                        if completed % 10 == 0:
+                            pool_status = get_pool_status()
+                            logger.info(f"Connection pool status: {pool_status}")
+                        
                         if completed % 25 == 0 or completed == len(all_pairs):
                             elapsed = (datetime.now() - start_time_global).total_seconds()
                             pairs_per_second = completed / elapsed if elapsed > 0 else 0
@@ -894,6 +942,10 @@ def main():
                                         f"({pairs_per_second:.2f} pairs/sec, ~{remaining:.0f}s remaining)")
                     except Exception as e:
                         logger.error(f"Error processing pair {pair}: {e}")
+            
+            # Log pool status after each batch
+            pool_status = get_pool_status()
+            logger.info(f"Connection pool status after batch: {pool_status}")
             
             # Cleanup between batches
             gc.collect()
@@ -923,5 +975,5 @@ def main():
     
     logger.info(f"Total runtime: {duration:.2f} seconds")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

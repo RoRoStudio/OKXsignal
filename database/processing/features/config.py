@@ -293,6 +293,7 @@ class ConfigManager:
         except:
             return BATCH_SIZE
         
+        
     def is_feature_enabled(self, feature_name):
         """Check if a specific feature group is enabled"""
         if 'FEATURES' in self.config and feature_name.upper() in self.config['FEATURES']:

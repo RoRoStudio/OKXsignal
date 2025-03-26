@@ -6,7 +6,6 @@ Utility functions for feature computation
 import os
 import gc
 import logging
-import threading
 import time
 from datetime import datetime
 import numpy as np
@@ -26,185 +25,16 @@ def get_database_columns(db_engine, table_name):
         result = pd.read_sql(query, conn)
         return set(result['column_name'].tolist())
 
-# ---------------------------
-# Performance Monitoring
-# ---------------------------
-class PerformanceMonitor:
-    """Class to track and log computation times for performance analysis"""
-    
-    def __init__(self, log_dir="logs"):
-        """Initialize the performance monitor with given log directory"""
-        self.log_dir = log_dir
-        self.timings = {}
-        self.current_pair = None
-        self.lock = threading.Lock()
-        
-        # Create the log directory if it doesn't exist
-        os.makedirs(log_dir, exist_ok=True)
-        
-        # Create a log file with timestamp
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        self.log_file = os.path.join(log_dir, f"computing_durations_{timestamp}.log")
-        
-        # Write header to log file
-        with open(self.log_file, 'w') as f:
-            f.write("Timestamp,Pair,Operation,Duration(s)\n")
-    
-    def start_pair(self, pair):
-        """Set the current pair being processed"""
-        with self.lock:
-            self.current_pair = pair
-            if pair not in self.timings:
-                self.timings[pair] = {
-                    "total": 0,
-                    "operations": {}
-                }
-    
-    def log_operation(self, operation, duration):
-        """Log the duration of a specific operation"""
-        global shutdown_requested
-        
-        # Skip if shutdown is requested
-        if 'shutdown_requested' in globals() and shutdown_requested:
-            return
-            
-        # Skip if no current pair is set
-        if not self.current_pair:
-            return
-            
-        with self.lock:
-            # Make sure the pair exists in timings
-            if self.current_pair not in self.timings:
-                self.timings[self.current_pair] = {
-                    "total": 0,
-                    "operations": {}
-                }
-                
-            # Make sure the operation exists for this pair
-            if operation not in self.timings[self.current_pair]["operations"]:
-                self.timings[self.current_pair]["operations"][operation] = []
-                
-            self.timings[self.current_pair]["operations"][operation].append(duration)
-            
-            # Write to log file immediately
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            try:
-                with open(self.log_file, 'a') as f:
-                    f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
-            except Exception as e:
-                logging.warning(f"Failed to write to performance log: {e}")
-
-    def end_pair(self, total_duration):
-        """Log the total processing time for the current pair"""
-        global shutdown_requested
-        
-        # Skip if shutdown is requested
-        if 'shutdown_requested' in globals() and shutdown_requested:
-            return
-            
-        # Skip if no current pair is set
-        if not self.current_pair:
-            return
-            
-        with self.lock:
-            pair_name = self.current_pair
-            
-            # Make sure the pair exists in timings
-            if pair_name not in self.timings:
-                self.timings[pair_name] = {
-                    "total": 0,
-                    "operations": {}
-                }
-                
-            self.timings[pair_name]["total"] = total_duration
-            
-            # Write total to log file
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            try:
-                with open(self.log_file, 'a') as f:
-                    f.write(f"{timestamp},{pair_name},TOTAL,{total_duration:.6f}\n")
-            except Exception as e:
-                logging.warning(f"Failed to write to performance log: {e}")
-                
-            # Reset current pair
-            self.current_pair = None
-    
-    def save_summary(self):
-        """Save a summary of all timings to JSON file"""
-        import json
-        
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        summary_file = os.path.join(self.log_dir, f"performance_summary_{timestamp}.json")
-        
-        summary = {
-            "pairs_processed": len(self.timings),
-            "total_processing_time": sum(data["total"] for data in self.timings.values()),
-            "average_pair_time": sum(data["total"] for data in self.timings.values()) / len(self.timings) if self.timings else 0,
-            "operation_summaries": {}
-        }
-        
-        # Calculate statistics for each operation
-        all_operations = set()
-        for pair_data in self.timings.values():
-            all_operations.update(pair_data["operations"].keys())
-        
-        for operation in all_operations:
-            operation_times = []
-            for pair_data in self.timings.values():
-                if operation in pair_data["operations"]:
-                    operation_times.extend(pair_data["operations"][operation])
-            
-            if operation_times:
-                summary["operation_summaries"][operation] = {
-                    "total_calls": len(operation_times),
-                    "average_time": sum(operation_times) / len(operation_times),
-                    "min_time": min(operation_times),
-                    "max_time": max(operation_times),
-                    "total_time": sum(operation_times),
-                    "percentage_of_total": (sum(operation_times) / summary["total_processing_time"]) * 100 if summary["total_processing_time"] > 0 else 0
-                }
-        
-        # Sort operations by total time (descending)
-        summary["operation_summaries"] = dict(
-            sorted(
-                summary["operation_summaries"].items(),
-                key=lambda x: x[1]["total_time"],
-                reverse=True
-            )
-        )
-        
-        # Save to file
-        with open(summary_file, 'w') as f:
-            json.dump(summary, f, indent=2)
-        
-        # Also save a readable text report
-        report_file = os.path.join(self.log_dir, f"performance_report_{timestamp}.txt")
-        with open(report_file, 'w') as f:
-            f.write("PERFORMANCE SUMMARY REPORT\n")
-            f.write("=========================\n\n")
-            f.write(f"Pairs Processed: {summary['pairs_processed']}\n")
-            f.write(f"Total Processing Time: {summary['total_processing_time']:.2f} seconds\n")
-            f.write(f"Average Time Per Pair: {summary['average_pair_time']:.2f} seconds\n\n")
-            
-            f.write("OPERATION BREAKDOWN (Sorted by Total Time)\n")
-            f.write("----------------------------------------\n")
-            f.write(f"{'Operation':<30} {'Total Time (s)':<15} {'Avg Time (s)':<15} {'Calls':<10} {'% of Total':<10}\n")
-            f.write("-" * 80 + "\n")
-            
-            for op, stats in summary["operation_summaries"].items():
-                f.write(
-                    f"{op[:30]:<30} {stats['total_time']:<15.2f} {stats['average_time']:<15.6f} "
-                    f"{stats['total_calls']:<10} {stats['percentage_of_total']:<10.2f}\n"
-                )
-        
-        return summary_file, report_file
-
-# ---------------------------
-# Memory Management
-# ---------------------------
-def clean_memory():
-    """Force garbage collection to free memory"""
-    gc.collect()
+# Define smallint columns for proper type conversion
+SMALLINT_COLUMNS = {
+    'performance_rank_btc_1h', 'performance_rank_eth_1h',
+    'volatility_rank_1h', 'volume_rank_1h',
+    'hour_of_day', 'day_of_week', 'month_of_year',
+    'was_profitable_12h', 'is_weekend', 'asian_session',
+    'european_session', 'american_session',
+    'pattern_doji', 'pattern_engulfing', 'pattern_hammer',
+    'pattern_morning_star', 'profit_target_1pct', 'profit_target_2pct'
+}
 
 # ---------------------------
 # Data Type Conversion
@@ -221,7 +51,6 @@ def cast_for_sqlalchemy(col_name, val, smallint_columns=None):
     Returns:
         Converted value
     """
-    from config import SMALLINT_COLUMNS
     smallint_columns = smallint_columns or SMALLINT_COLUMNS
     
     # Handle null values first
@@ -259,6 +88,13 @@ def cast_for_sqlalchemy(col_name, val, smallint_columns=None):
         val = str(val)
 
     return val
+
+# ---------------------------
+# Memory Management
+# ---------------------------
+def clean_memory():
+    """Force garbage collection to free memory"""
+    gc.collect()
 
 # ---------------------------
 # DataFrame Operations
@@ -326,3 +162,43 @@ def check_gpu_available():
         return True
     except Exception:
         return False
+    
+def monitor_pool_usage(interval=30):
+    """Start a background thread to monitor pool usage"""
+    if connection_pool is None:
+        logging.warning("Cannot monitor connection pool - not initialized")
+        return
+    
+    def _monitor():
+        while True:
+            status = get_pool_status()
+            if status['used_connections'] > status['max_connections'] * 0.8:
+                logging.warning(f"Connection pool nearing capacity: {status}")
+            time.sleep(interval)
+    
+    monitor_thread = threading.Thread(target=_monitor, daemon=True)
+    monitor_thread.start()
+    logging.info(f"Started connection pool monitoring thread (interval: {interval}s)")
+
+def get_connection_with_timeout(timeout=5.0):
+    """Get a connection with timeout to prevent deadlocks"""
+    if connection_pool is None:
+        raise ValueError("Connection pool not initialized")
+    
+    start_time = time.time()
+    last_exc = None
+    
+    while time.time() - start_time < timeout:
+        try:
+            conn = connection_pool.getconn()
+            return conn
+        except psycopg2.pool.PoolError as e:
+            last_exc = e
+            # Log and sleep before retrying
+            logging.warning(f"Pool exhausted, waiting for connection (used: {len(connection_pool._used)})")
+            time.sleep(0.5)
+    
+    # If we get here, we timed out
+    status = get_pool_status()
+    logging.error(f"Timed out waiting for connection. Pool status: {status}")
+    raise last_exc if last_exc else psycopg2.pool.PoolError("Timed out waiting for connection")
