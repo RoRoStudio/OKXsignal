@@ -17,6 +17,8 @@ import psutil
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool
+from contextlib import contextmanager
+from psycopg2 import pool
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -37,26 +39,115 @@ from database.processing.features.db_operations import (
 # Import utilities
 from database.processing.features.utils import PerformanceMonitor
 
-# Create a thread-local storage for database connections
+# Thread-local storage for database connections
 thread_local = threading.local()
 
-# Global connection pool
+# Global connection pool (will be initialized in main)
 connection_pool = None
 
-# Function to get a connection from the pool for the current thread
-def get_thread_connection():
+def initialize_connection_pool(config_manager, max_connections=None):
+    """
+    Initialize the global connection pool
+    
+    Args:
+        config_manager: Configuration manager with database settings
+        max_connections: Maximum number of connections in the pool
+                        (if None, will be set to batch_size + 5)
+    
+    Returns:
+        Initialized connection pool
+    """
     global connection_pool
-    if not hasattr(thread_local, "connection"):
-        # Get a new connection from the pool for this thread
-        thread_local.connection = connection_pool.getconn()
+    
+    # Get database parameters
+    db_params = config_manager.get_db_params()
+    
+    # If max_connections not specified, use batch_size + some buffer
+    if max_connections is None:
+        batch_size = config_manager.get_batch_size()
+        max_connections = batch_size + 5  # Add buffer for safety
+    
+    # Add application name for monitoring
+    db_params['application_name'] = 'compute_features'
+    
+    # Create connection pool
+    connection_pool = pool.ThreadedConnectionPool(
+        minconn=2,                   # Minimum connections
+        maxconn=max_connections,     # Maximum connections
+        **db_params
+    )
+    
+    logging.info(f"Initialized connection pool with min=2, max={max_connections} connections")
+    return connection_pool
+
+@contextmanager
+def get_db_connection():
+    """
+    Context manager for getting a connection from the pool
+    and ensuring it's returned properly
+    
+    Usage:
+        with get_db_connection() as conn:
+            # Use conn here
+    
+    Returns:
+        Database connection from the pool
+    """
+    conn = None
+    try:
+        # Get connection from pool
+        conn = connection_pool.getconn()
+        
+        # Set connection to autocommit mode for better performance
+        conn.autocommit = False
+        
+        # Yield connection to caller
+        yield conn
+    except Exception as e:
+        logging.error(f"Connection error: {e}")
+        # Re-raise the exception to be handled by caller
+        raise
+    finally:
+        # Always return connection to pool
+        if conn is not None:
+            connection_pool.putconn(conn)
+
+def get_thread_connection():
+    """
+    Get a thread-local database connection
+    
+    Returns:
+        Connection from the pool, stored in thread-local storage
+    """
+    # Check if thread already has a connection
+    if not hasattr(thread_local, 'connection'):
+        # If not, get a new connection from the pool
+        try:
+            thread_local.connection = connection_pool.getconn()
+            thread_local.connection.autocommit = False
+        except Exception as e:
+            logging.error(f"Error getting connection from pool: {e}")
+            raise
+    
     return thread_local.connection
 
-# Function to release a connection back to the pool
 def release_thread_connection():
-    global connection_pool
-    if hasattr(thread_local, "connection"):
-        connection_pool.putconn(thread_local.connection)
-        del thread_local.connection
+    """
+    Release the thread-local connection back to the pool
+    """
+    if hasattr(thread_local, 'connection'):
+        try:
+            # First commit any pending transactions
+            if not thread_local.connection.closed:
+                thread_local.connection.commit()
+            
+            # Return connection to pool
+            connection_pool.putconn(thread_local.connection)
+            
+            # Remove connection from thread-local storage
+            del thread_local.connection
+        except Exception as e:
+            logging.error(f"Error releasing connection: {e}")
 
 # Initialize the connection pool
 def init_connection_pool(config_manager, min_conn=5, max_conn=20):
@@ -322,16 +413,16 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
 
         return updated_rows
 def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
-    """Wrapper function for thread pool to handle a single pair with dedicated connection"""
+    """Wrapper function for thread pool to handle a single pair"""
     try:
-        # Get a database connection for this thread
-        db_conn = get_thread_connection()
-        
         # Set current pair for performance tracking
         if perf_monitor:
             perf_monitor.start_pair(pair)
             
         start_time = time.time()
+        
+        # Get a connection for this thread
+        db_conn = get_thread_connection()
         
         # Process the pair
         result = process_pair(pair, db_conn, rolling_window, config_manager, debug_mode, perf_monitor)
@@ -343,17 +434,17 @@ def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, 
             
         return result
         
-    except (KeyboardInterrupt, SystemExit):
-        # Handle keyboard interrupt and SystemExit gracefully
-        logging.info(f"Processing of {pair} interrupted")
-        if perf_monitor and perf_monitor.current_pair:
-            perf_monitor.end_pair(0)  # Log 0 duration for interrupted pairs
+    except KeyboardInterrupt:
+        # Handle keyboard interrupt
+        logging.info(f"Processing of {pair} interrupted by user")
         return 0
     except Exception as e:
         logging.error(f"Thread error for pair {pair}: {e}", exc_info=True)
-        if perf_monitor and perf_monitor.current_pair:
-            perf_monitor.end_pair(0)  # Log 0 duration for failed pairs
         return 0
+    finally:
+        # Always release the connection back to the pool
+        release_thread_connection()
+
 # ---------------------------
 # Cross-Pair Features
 # ---------------------------
@@ -634,13 +725,17 @@ def main():
     
     parser.add_argument('--use-gpu', action='store_true', help='Enable GPU acceleration (if available)')
     parser.add_argument('--no-gpu', action='store_true', help='Disable GPU acceleration')
+
     parser.add_argument('--disable-features', type=str, 
                        help='Comma-separated list of feature groups to disable (e.g., momentum,pattern)')
+    parser.add_argument('--max-connections', type=int, default=None,
+                       help='Maximum number of database connections in the pool')
     
     args = parser.parse_args()
     
     # Set up logging
     logger = setup_logging(args.log_dir, args.log_level)
+
     # Set up performance monitoring
     perf_monitor = PerformanceMonitor(args.log_dir)
     
@@ -658,6 +753,7 @@ def main():
         config_path=args.config,
         credentials_path=args.credentials
     )
+
     # Override config with command line arguments
     if args.no_numba:
         config_manager.config['GENERAL']['USE_NUMBA'] = 'False'
@@ -686,57 +782,55 @@ def main():
     # Set batch size
     batch_size = args.batch_size if args.batch_size else config_manager.get_batch_size()
     
-    # Initialize connection pool
-    # Use more connections for larger batch sizes
-    min_conn = 5
-    max_conn = min(batch_size * 2, 50)  # Limit maximum connections
-    init_connection_pool(config_manager, min_conn, max_conn)
-    
-    # Get a connection for initial operations
-    db_conn = get_thread_connection()
+    # Initialize the connection pool
+    max_connections = args.max_connections if args.max_connections else batch_size + 5
+    initialize_connection_pool(config_manager, max_connections)
     
     # Create runtime log path
     runtime_log_path = os.path.join(args.log_dir, "runtime_stats.log")
     os.makedirs(os.path.dirname(runtime_log_path), exist_ok=True)
     
     logger.info(f"Starting compute_features.py in {mode.upper()} mode with rolling_window={rolling_window}")
-    logger.info(f"Using {batch_size} parallel workers")
+    logger.info(f"Using {batch_size} parallel workers with max {max_connections} database connections")
     logger.info(f"Numba: {'enabled' if config_manager.use_numba() else 'disabled'}, "
                f"GPU: {'enabled' if config_manager.use_gpu() else 'disabled'}")
     
     if args.debug:
         logger.info("Debug mode enabled - detailed timing information will be logged")
+
     try:
         # Test connection
-        cursor = db_conn.cursor()
-        cursor.execute("SELECT 1")
-        cursor.close()
-        logger.info("Database connection test successful")
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.close()
+            logger.info("Database connection test successful")
     except Exception as e:
         logger.critical(f"Unable to start due to database connection issue: {e}")
-        release_thread_connection()
         sys.exit(1)
+
     try:
         # Get pairs to process
-        cursor = db_conn.cursor()
-        
-        if args.pairs:
-            all_pairs = [p.strip() for p in args.pairs.split(',')]
-            logger.info(f"Processing {len(all_pairs)} specified pairs")
-        else:
-            cursor.execute("SELECT DISTINCT pair FROM candles_1h")
-            all_pairs = [row[0] for row in cursor.fetchall()]
-            logger.info(f"Found {len(all_pairs)} pairs")
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
             
-        cursor.close()
+            if args.pairs:
+                all_pairs = [p.strip() for p in args.pairs.split(',')]
+                logger.info(f"Processing {len(all_pairs)} specified pairs")
+            else:
+                cursor.execute("SELECT DISTINCT pair FROM candles_1h")
+                all_pairs = [row[0] for row in cursor.fetchall()]
+                logger.info(f"Found {len(all_pairs)} pairs")
+                
+            cursor.close()
     except Exception as e:
         logger.critical(f"Error loading pair list: {e}")
-        release_thread_connection()
         sys.exit(1)
+
     if not all_pairs:
         logger.warning("No pairs found in candles_1h. Exiting early.")
-        release_thread_connection()
         sys.exit()
+
     if mode == "rolling_update":
         logger.info(f"Rolling update mode: computing last {rolling_window} rows per pair")
         
@@ -770,6 +864,7 @@ def main():
             batches.append(batch)
             
         logger.info(f"Grouped {len(all_pairs)} pairs into {len(batches)} balanced batches")
+
         # Process each batch with controlled parallelism
         completed = 0
         
@@ -802,32 +897,24 @@ def main():
             
             # Cleanup between batches
             gc.collect()
-        
-        # Get a dedicated connection for cross-pair features
-        cross_pair_conn = get_thread_connection()
-        
+
         # Compute cross-pair features after all individual pairs are done
         if config_manager.is_feature_enabled('cross_pair'):
-            compute_cross_pair_features(cross_pair_conn, config_manager, args.debug, perf_monitor)
-            
-        # Release the cross-pair connection
-        release_thread_connection()
-        
+            with get_db_connection() as conn:
+                compute_cross_pair_features(conn, config_manager, args.debug, perf_monitor)
+
         # Save performance summary at the end
         summary_file, report_file = perf_monitor.save_summary()
         logger.info(f"Performance summary saved to {summary_file}")
         logger.info(f"Performance report saved to {report_file}")
         
         logger.info("Rolling update mode completed.")
+
     elif mode == "full_backfill":
         logger.info("Full backfill mode: computing all historical data")
         logger.warning("Full backfill mode is not fully implemented yet")
         # TODO: Implement full backfill if needed
-        release_thread_connection()
-    
-    # Close the main thread's connection
-    release_thread_connection()
-    
+
     # Runtime logging
     end_time = datetime.now()
     duration = (end_time - start_time_global).total_seconds()
