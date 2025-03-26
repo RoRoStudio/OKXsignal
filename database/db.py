@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.extras
 import os
 import time
 import logging
@@ -15,14 +16,14 @@ if os.path.exists(credentials_path):
 else:
     logger.warning(f"Credentials file not found: {credentials_path}")
 
-# Try to load configuration settings
+# Load configuration settings
 try:
     config = load_config()
-    DB_HOST = config.get("DB_HOST", os.getenv("DB_HOST", "localhost"))
-    DB_PORT = config.get("DB_PORT", os.getenv("DB_PORT", "5432"))
-    DB_NAME = config.get("DB_NAME", os.getenv("DB_NAME", "okxsignal"))
+    DB_HOST = config["DB_HOST"]
+    DB_PORT = config["DB_PORT"]
+    DB_NAME = config["DB_NAME"]
 except Exception as e:
-    logger.warning(f"Error loading config: {e}. Using environment variables or defaults.")
+    logger.warning(f"Error loading config: {e}. Using defaults.")
     DB_HOST = os.getenv("DB_HOST", "localhost")
     DB_PORT = os.getenv("DB_PORT", "5432")
     DB_NAME = os.getenv("DB_NAME", "okxsignal")
@@ -31,34 +32,18 @@ except Exception as e:
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-# Global connection pool flag and object
-POOL_AVAILABLE = False
+# Connection pool
 connection_pool = None
 
-# Check if connection pooling is available
-try:
-    if hasattr(psycopg2, 'pool'):
-        POOL_AVAILABLE = True
-        logger.info("Connection pooling is available")
-    else:
-        logger.warning("psycopg2.pool not available. Install psycopg2-binary for connection pooling support.")
-except Exception as e:
-    logger.warning(f"Error checking for connection pooling: {e}")
-
 def initialize_connection_pool(min_conn=3, max_conn=10):
-    """Initialize a connection pool for better performance if available"""
-    global connection_pool, POOL_AVAILABLE
+    """Initialize a connection pool for better performance"""
+    global connection_pool
     
-    if not POOL_AVAILABLE:
-        logger.warning("Connection pooling not available. Skipping pool initialization.")
-        return False
-        
     if connection_pool is not None:
         logger.warning("Connection pool already initialized")
-        return True
+        return connection_pool
         
     try:
-        logger.info(f"Initializing connection pool with {min_conn}-{max_conn} connections")
         connection_pool = psycopg2.pool.ThreadedConnectionPool(
             minconn=min_conn,
             maxconn=max_conn,
@@ -82,30 +67,25 @@ def initialize_connection_pool(min_conn=3, max_conn=10):
         cursor.close()
         connection_pool.putconn(conn)
         
-        logger.info(f"Connection pool initialized successfully")
-        return True
+        logger.info(f"Connection pool initialized with {min_conn}-{max_conn} connections")
+        return connection_pool
     except Exception as e:
         logger.error(f"Failed to initialize connection pool: {e}")
         connection_pool = None
-        POOL_AVAILABLE = False  # Disable pool on error
-        return False
+        raise
 
 def get_connection():
     """Establishes and returns a PostgreSQL database connection."""
-    global connection_pool, POOL_AVAILABLE
+    global connection_pool
     
     # Try to use connection pool if available
-    if POOL_AVAILABLE and connection_pool is not None:
+    if connection_pool is not None:
         try:
-            conn = connection_pool.getconn()
-            logger.debug("Got connection from pool")
-            return conn
+            return connection_pool.getconn()
         except Exception as e:
             logger.warning(f"Error getting connection from pool: {e}. Falling back to direct connection.")
-            POOL_AVAILABLE = False  # Disable pool on error
     
     # Fall back to direct connection
-    logger.debug("Using direct connection")
     return psycopg2.connect(
         dbname=DB_NAME,
         user=DB_USER,
@@ -116,26 +96,23 @@ def get_connection():
 
 def return_connection(conn):
     """Return a connection to the pool if it came from the pool"""
-    global connection_pool, POOL_AVAILABLE
+    global connection_pool
     
-    if POOL_AVAILABLE and connection_pool is not None:
+    if connection_pool is not None:
         try:
             connection_pool.putconn(conn)
-            logger.debug("Returned connection to pool")
             return True
         except Exception as e:
             logger.warning(f"Error returning connection to pool: {e}")
             return False
     
-    # If not using pool, close the connection
-    conn.close()
     return False
 
 def close_all_connections():
     """Close all connections in the pool"""
-    global connection_pool, POOL_AVAILABLE
+    global connection_pool
     
-    if POOL_AVAILABLE and connection_pool is not None:
+    if connection_pool is not None:
         try:
             connection_pool.closeall()
             logger.info("All connections in the pool closed")
@@ -153,15 +130,7 @@ def fetch_data(query, params=None):
     results = []
     try:
         conn = get_connection()
-        
-        # Import extras module here to handle case where it might not exist
-        try:
-            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        except AttributeError:
-            # Fall back to regular cursor if extras not available
-            cursor = conn.cursor()
-            logger.warning("psycopg2.extras not available, using regular cursor")
-            
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(query, params or ())
         results = cursor.fetchall()
     except Exception as e:
@@ -249,7 +218,7 @@ def execute_copy_update(temp_table_name, column_names, values, update_query):
             if not return_connection(conn):
                 conn.close()
 
-# Try to initialize connection pool at module load time, but continue if it fails
+# Initialize connection pool at module load time
 try:
     initialize_connection_pool()
 except Exception as e:

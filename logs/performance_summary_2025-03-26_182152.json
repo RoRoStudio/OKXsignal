@@ -1,0 +1,23 @@
+{
+  "pairs_processed": 1,
+  "total_processing_time": 0.012207508087158203,
+  "average_pair_time": 0.012207508087158203,
+  "operation_summaries": {
+    "db_get_columns": {
+      "total_calls": 1,
+      "average_time": 0.009392738342285156,
+      "min_time": 0.009392738342285156,
+      "max_time": 0.009392738342285156,
+      "total_time": 0.009392738342285156,
+      "percentage_of_total": 76.94230694113512
+    },
+    "fetch_data": {
+      "total_calls": 1,
+      "average_time": 0.0015516281127929688,
+      "min_time": 0.0015516281127929688,
+      "max_time": 0.0015516281127929688,
+      "total_time": 0.0015516281127929688,
+      "percentage_of_total": 12.7104409983985
+    }
+  }
+}

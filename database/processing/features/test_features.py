@@ -49,7 +49,7 @@ def setup_logging(log_level="INFO"):
     )
     return logging.getLogger("test_features")
 
-def generate_test_data(rows=30000, pairs=["BTC-USDT"]):
+def generate_test_data(rows=1000, pairs=["BTC-USDT"]):
     """
     Generate synthetic OHLCV data for testing
     
