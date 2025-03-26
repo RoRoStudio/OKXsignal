@@ -1,4 +1,0 @@
-Timestamp,Pair,Operation,Duration(s)
-2025-03-26 18:21:46,BTC-USD,db_get_columns,0.009393
-2025-03-26 18:21:46,BTC-USD,fetch_data,0.001552
-2025-03-26 18:21:46,BTC-USD,TOTAL,0.012208

@@ -1,8 +1,0 @@
-[INFO] 2025-03-26 16:17:08,638 | Starting database diagnostic
-[INFO] 2025-03-26 16:17:08,643 | Loaded environment from /root/OKXsignal/config/credentials.env
-[INFO] 2025-03-26 16:17:08,643 | Testing connection to: localhost:5432/okxsignal
-[INFO] 2025-03-26 16:17:08,643 | Testing connection to okxsignal on localhost:5432
-[ERROR] 2025-03-26 16:17:08,643 | Connection failed: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
-	Is the server running on that host and accepting TCP/IP connections?
-
-[ERROR] 2025-03-26 16:17:08,643 | Basic connection test failed. Exiting.
