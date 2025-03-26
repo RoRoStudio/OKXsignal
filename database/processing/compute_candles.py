@@ -16,6 +16,8 @@ import signal
 import logging
 import argparse
 import configparser
+import json
+import threading
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Tuple, Optional, Union
 from pathlib import Path
@@ -62,8 +64,12 @@ MIN_CANDLES_REQUIRED = 200  # Minimum candles needed for reliable calculation
 ROLLING_WINDOW = 128  # Default window size for rolling updates
 
 # Default paths
-DEFAULT_CONFIG_PATH = "P:/OKXsignal/config/config.ini"
-DEFAULT_CREDENTIALS_PATH = "P:/OKXsignal/config/credentials.env"
+# DEFAULT_CONFIG_PATH = "P:/OKXsignal/config/config.ini"
+# DEFAULT_CREDENTIALS_PATH = "P:/OKXsignal/config/credentials.env"
+
+DEFAULT_CONFIG_PATH = os.path.expanduser("~/OKXsignal/config/credentials.env")
+DEFAULT_CREDENTIALS_PATH = os.path.expanduser("~/OKXsignal/config/config.ini")
+
 
 # Define smallint columns for proper type conversion
 SMALLINT_COLUMNS = {
@@ -296,10 +302,15 @@ class PerformanceMonitor:
     
     def log_operation(self, operation: str, duration: float):
         """Log the duration of a specific operation"""
-        if not self.current_pair:
+        if not self.current_pair or self.current_pair not in self.timings:
+            logging.warning(f"Skipping performance log: current_pair is None or not initialized")
             return
             
         with self.lock:
+            if self.current_pair is None or self.current_pair not in self.timings:
+                logging.warning(f"Skipping performance log: current_pair is None or not initialized")
+                return
+
             if operation not in self.timings[self.current_pair]["operations"]:
                 self.timings[self.current_pair]["operations"][operation] = []
                 
@@ -312,7 +323,8 @@ class PerformanceMonitor:
     
     def end_pair(self, total_duration: float):
         """Log the total processing time for the current pair"""
-        if not self.current_pair:
+        if not self.current_pair or self.current_pair not in self.timings:
+            logging.warning(f"Skipping performance log: current_pair is None or not initialized")
             return
             
         with self.lock:
@@ -566,145 +578,6 @@ def cast_for_sqlalchemy(col_name: str, val) -> any:
         val = str(val)
 
     return val
-
-# 2. GPU-accelerated FeatureComputer class
-
-class GPUFeatureComputer(FeatureComputer):
-    """Feature computer that uses GPU acceleration when available"""
-    
-    def __init__(self, use_talib=True, use_numba=True, use_gpu=False):
-        super().__init__(use_talib, use_numba)
-        self.use_gpu = use_gpu and (CUPY_AVAILABLE or RAPIDS_AVAILABLE)
-        
-        if self.use_gpu:
-            logging.info("GPU acceleration enabled for feature computation")
-            
-            # Test GPU memory and warm up
-            if CUPY_AVAILABLE:
-                try:
-                    # Simple warm-up calculation
-                    a = cp.array([1, 2, 3])
-                    b = cp.array([4, 5, 6])
-                    c = a + b
-                    cp.cuda.Stream.null.synchronize()
-                    logging.info("CuPy GPU warm-up successful")
-                except Exception as e:
-                    logging.warning(f"CuPy GPU warm-up failed: {e}")
-                    self.use_gpu = False
-    
-    def compute_price_action_features(self, df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFrame:
-        """Compute price action features with GPU acceleration if available"""
-        # Extract price data
-        open_prices = df['open_1h'].values
-        high_prices = df['high_1h'].values
-        low_prices = df['low_1h'].values
-        close_prices = df['close_1h'].values
-        
-        # Use GPU for body features if available
-        if self.use_gpu and CUPY_AVAILABLE:
-            try:
-                body_features = compute_candle_body_features_gpu(
-                    open_prices, high_prices, low_prices, close_prices
-                )
-                df['candle_body_size'] = body_features[0:len(df)]
-                df['upper_shadow'] = body_features[len(df):2*len(df)]
-                df['lower_shadow'] = body_features[2*len(df):3*len(df)]
-                df['relative_close_position'] = body_features[3*len(df):4*len(df)]
-                
-                # Clean any NaN values that might have been introduced
-                for col in ['candle_body_size', 'upper_shadow', 'lower_shadow', 'relative_close_position']:
-                    df[col] = df[col].fillna(0)
-                
-            except Exception as e:
-                logging.warning(f"GPU calculation failed for candle features: {e}")
-                # Fall back to CPU implementation
-                return super().compute_price_action_features(df, debug_mode)
-        else:
-            # Use the parent class implementation (CPU)
-            return super().compute_price_action_features(df, debug_mode)
-        
-        # Compute other price action features
-        
-        # Log returns - using numpy for consistency with CPU version
-        df['log_return'] = np.log(df['close_1h'] / df['close_1h'].shift(1)).fillna(0)
-        
-        # Gap open (compared to previous close)
-        df['gap_open'] = (df['open_1h'] / df['close_1h'].shift(1) - 1).fillna(0)
-        
-        # Price velocity (rate of change over time)
-        df['price_velocity'] = df['close_1h'].pct_change(3).fillna(0)
-        
-        # Price acceleration (change in velocity)
-        df['price_acceleration'] = df['price_velocity'].diff(3).fillna(0)
-        
-        # Previous close percent change
-        df['prev_close_change_pct'] = df['close_1h'].pct_change().fillna(0)
-        
-        return df
-    
-    def compute_statistical_features(self, df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFrame:
-        """Compute statistical features with GPU acceleration if available"""
-        if len(df) < 20:  # Need at least 20 points for statistical features
-            return df
-            
-        # If GPU is not available or not enabled, use CPU implementation
-        if not self.use_gpu or not CUPY_AVAILABLE:
-            return super().compute_statistical_features(df, debug_mode)
-            
-        try:
-            # Extract price data
-            close = df['close_1h']
-            
-            # Standard deviation of returns - using pandas for consistency
-            df['std_dev_returns_20'] = df['log_return'].rolling(window=20).std().fillna(0)
-            
-            # Skewness and kurtosis - using pandas for consistency
-            df['skewness_20'] = df['log_return'].rolling(window=20).apply(
-                lambda x: stats.skew(x) if len(x) > 3 else 0, raw=True
-            ).fillna(0)
-            
-            df['kurtosis_20'] = df['log_return'].rolling(window=20).apply(
-                lambda x: stats.kurtosis(x) if len(x) > 3 else 0, raw=True
-            ).fillna(0)
-            
-            # Z-score calculation
-            ma_20 = close.rolling(window=20).mean()
-            
-            # Use GPU z-score calculation
-            df['z_score_20'] = compute_z_score_gpu(close.values, ma_20.fillna(0).values, 20)
-            
-            # Hurst Exponent with GPU
-            if len(df) >= 100:
-                df['hurst_exponent'] = hurst_exponent_gpu(
-                    close.replace(0, np.nan).ffill().values, 
-                    20
-                )
-            else:
-                df['hurst_exponent'] = 0.5  # Default value for short series
-            
-            # Shannon Entropy with GPU
-            if len(df) >= 20:
-                df['shannon_entropy'] = shannon_entropy_gpu(
-                    close.replace(0, np.nan).ffill().values, 20
-                )
-            else:
-                df['shannon_entropy'] = 0  # Default value
-            
-            # Autocorrelation lag 1 - using pandas for consistency
-            df['autocorr_1'] = df['log_return'].rolling(window=20).apply(
-                lambda x: x.autocorr(1) if len(x) > 1 else 0
-            ).fillna(0)
-            
-            # Estimated slippage and bid-ask spread proxies
-            df['estimated_slippage_1h'] = df['high_1h'] - df['low_1h']
-            df['bid_ask_spread_1h'] = df['estimated_slippage_1h'] * 0.1  # Rough approximation
-            
-            return df
-            
-        except Exception as e:
-            logging.warning(f"GPU calculation failed for statistical features: {e}")
-            # Fall back to CPU implementation
-            return super().compute_statistical_features(df, debug_mode)
         
 # ---------------------------
 # Numba Optimized Functions
@@ -1457,13 +1330,11 @@ class FeatureComputer:
             bb_upper, bb_middle, bb_lower = talib.BBANDS(close.values, timeperiod=20, nbdevup=2, nbdevdn=2)
             df['bollinger_width_1h'] = (bb_upper - bb_lower)
             
-            # FIXED: Handle division by zero
             bb_diff = bb_upper - bb_lower
-            df['bollinger_percent_b'] = np.where(
-                bb_diff != 0, 
-                (close.values - bb_lower) / bb_diff,
-                0.5  # Default to middle if no range
-            )
+            bb_diff_safe = np.where(bb_diff == 0, np.nan, bb_diff)
+            bollinger_percent_b = (close.values - bb_lower) / bb_diff_safe
+            df['bollinger_percent_b'] = np.nan_to_num(bollinger_percent_b, nan=0.5)
+
         else:
             bbands = pta.bbands(close, length=20, std=2.0)
             bb_width = bbands['BBU_20_2.0'] - bbands['BBL_20_2.0']
@@ -2108,6 +1979,145 @@ class FeatureComputer:
         
         return df
     
+    # 2. GPU-accelerated FeatureComputer class
+
+class GPUFeatureComputer(FeatureComputer):
+    """Feature computer that uses GPU acceleration when available"""
+    
+    def __init__(self, use_talib=True, use_numba=True, use_gpu=False):
+        super().__init__(use_talib, use_numba)
+        self.use_gpu = use_gpu and (CUPY_AVAILABLE or RAPIDS_AVAILABLE)
+        
+        if self.use_gpu:
+            logging.info("GPU acceleration enabled for feature computation")
+            
+            # Test GPU memory and warm up
+            if CUPY_AVAILABLE:
+                try:
+                    # Simple warm-up calculation
+                    a = cp.array([1, 2, 3])
+                    b = cp.array([4, 5, 6])
+                    c = a + b
+                    cp.cuda.Stream.null.synchronize()
+                    logging.info("CuPy GPU warm-up successful")
+                except Exception as e:
+                    logging.warning(f"CuPy GPU warm-up failed: {e}")
+                    self.use_gpu = False
+    
+    def compute_price_action_features(self, df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFrame:
+        """Compute price action features with GPU acceleration if available"""
+        # Extract price data
+        open_prices = df['open_1h'].values
+        high_prices = df['high_1h'].values
+        low_prices = df['low_1h'].values
+        close_prices = df['close_1h'].values
+        
+        # Use GPU for body features if available
+        if self.use_gpu and CUPY_AVAILABLE:
+            try:
+                body_features = compute_candle_body_features_gpu(
+                    open_prices, high_prices, low_prices, close_prices
+                )
+                df['candle_body_size'] = body_features[0:len(df)]
+                df['upper_shadow'] = body_features[len(df):2*len(df)]
+                df['lower_shadow'] = body_features[2*len(df):3*len(df)]
+                df['relative_close_position'] = body_features[3*len(df):4*len(df)]
+                
+                # Clean any NaN values that might have been introduced
+                for col in ['candle_body_size', 'upper_shadow', 'lower_shadow', 'relative_close_position']:
+                    df[col] = df[col].fillna(0)
+                
+            except Exception as e:
+                logging.warning(f"GPU calculation failed for candle features: {e}")
+                # Fall back to CPU implementation
+                return super().compute_price_action_features(df, debug_mode)
+        else:
+            # Use the parent class implementation (CPU)
+            return super().compute_price_action_features(df, debug_mode)
+        
+        # Compute other price action features
+        
+        # Log returns - using numpy for consistency with CPU version
+        df['log_return'] = np.log(df['close_1h'] / df['close_1h'].shift(1)).fillna(0)
+        
+        # Gap open (compared to previous close)
+        df['gap_open'] = (df['open_1h'] / df['close_1h'].shift(1) - 1).fillna(0)
+        
+        # Price velocity (rate of change over time)
+        df['price_velocity'] = df['close_1h'].pct_change(3).fillna(0)
+        
+        # Price acceleration (change in velocity)
+        df['price_acceleration'] = df['price_velocity'].diff(3).fillna(0)
+        
+        # Previous close percent change
+        df['prev_close_change_pct'] = df['close_1h'].pct_change().fillna(0)
+        
+        return df
+    
+    def compute_statistical_features(self, df: pd.DataFrame, debug_mode: bool = False) -> pd.DataFrame:
+        """Compute statistical features with GPU acceleration if available"""
+        if len(df) < 20:  # Need at least 20 points for statistical features
+            return df
+            
+        # If GPU is not available or not enabled, use CPU implementation
+        if not self.use_gpu or not CUPY_AVAILABLE:
+            return super().compute_statistical_features(df, debug_mode)
+            
+        try:
+            # Extract price data
+            close = df['close_1h']
+            
+            # Standard deviation of returns - using pandas for consistency
+            df['std_dev_returns_20'] = df['log_return'].rolling(window=20).std().fillna(0)
+            
+            # Skewness and kurtosis - using pandas for consistency
+            df['skewness_20'] = df['log_return'].rolling(window=20).apply(
+                lambda x: stats.skew(x) if len(x) > 3 else 0, raw=True
+            ).fillna(0)
+            
+            df['kurtosis_20'] = df['log_return'].rolling(window=20).apply(
+                lambda x: stats.kurtosis(x) if len(x) > 3 else 0, raw=True
+            ).fillna(0)
+            
+            # Z-score calculation
+            ma_20 = close.rolling(window=20).mean()
+            
+            # Use GPU z-score calculation
+            df['z_score_20'] = compute_z_score_gpu(close.values, ma_20.fillna(0).values, 20)
+            
+            # Hurst Exponent with GPU
+            if len(df) >= 100:
+                df['hurst_exponent'] = hurst_exponent_gpu(
+                    close.replace(0, np.nan).ffill().values, 
+                    20
+                )
+            else:
+                df['hurst_exponent'] = 0.5  # Default value for short series
+            
+            # Shannon Entropy with GPU
+            if len(df) >= 20:
+                df['shannon_entropy'] = shannon_entropy_gpu(
+                    close.replace(0, np.nan).ffill().values, 20
+                )
+            else:
+                df['shannon_entropy'] = 0  # Default value
+            
+            # Autocorrelation lag 1 - using pandas for consistency
+            df['autocorr_1'] = df['log_return'].rolling(window=20).apply(
+                lambda x: x.autocorr(1) if len(x) > 1 else 0
+            ).fillna(0)
+            
+            # Estimated slippage and bid-ask spread proxies
+            df['estimated_slippage_1h'] = df['high_1h'] - df['low_1h']
+            df['bid_ask_spread_1h'] = df['estimated_slippage_1h'] * 0.1  # Rough approximation
+            
+            return df
+            
+        except Exception as e:
+            logging.warning(f"GPU calculation failed for statistical features: {e}")
+            # Fall back to CPU implementation
+            return super().compute_statistical_features(df, debug_mode)
+    
 class CrossPairFeatureComputer:
     """Compute features that require data across multiple pairs"""
     
@@ -2417,9 +2427,10 @@ def main():
     credentials_path = args.credentials if args.credentials else DEFAULT_CREDENTIALS_PATH
     
     config_manager = ConfigManager(
-        config_path=config_path,
-        credentials_path=credentials_path
+        config_path="config/config.ini",
+        credentials_path="config/credentials.env"
     )
+
     
     # Override config with command line arguments
     if args.no_talib:
@@ -2488,8 +2499,10 @@ def main():
         def process_pair_thread(pair):
             """Wrapper function for thread pool to handle a single pair"""
             try:
-                # Start timing for this pair
+                # Set current pair for performance tracking
                 perf_monitor.start_pair(pair)
+                if not perf_monitor.current_pair:
+                    perf_monitor.current_pair = pair  # Ensure it's explicitly set
                 start_time = time.time()
                 
                 # Process the pair

@@ -1,0 +1,27 @@
+PERFORMANCE SUMMARY REPORT
+=========================
+
+Pairs Processed: 303
+Total Processing Time: 0.00 seconds
+Average Time Per Pair: 0.00 seconds
+
+OPERATION BREAKDOWN (Sorted by Total Time)
+----------------------------------------
+Operation                      Total Time (s)  Avg Time (s)    Calls      % of Total
+--------------------------------------------------------------------------------
+label_features                 528125765433.50 871494662.431520 606        0.00      
+compute_1d_features            528125765054.10 1742989323.610888 303        0.00      
+compute_4h_features            528125764944.87 1742989323.250403 303        0.00      
+compute_all_features_total     4696.53         15.500099       303        0.00      
+statistical_features           3960.13         6.534876        606        0.00      
+momentum_features              945.36          1.559999        606        0.00      
+volume_features                801.80          1.323107        606        0.00      
+volatility_features            751.65          1.240350        606        0.00      
+price_action_features          680.55          1.123018        606        0.00      
+pattern_features               569.71          0.940117        606        0.00      
+multi_timeframe_features       228.10          0.752794        303        0.00      
+multi_timeframe_features_total 221.94          0.732460        303        0.00      
+cleanup                        173.62          0.573019        303        0.00      
+time_features                  167.77          0.276856        606        0.00      
+fetch_data                     105.78          0.349120        303        0.00      
+db_get_columns                 44.15           0.145725        303        0.00      

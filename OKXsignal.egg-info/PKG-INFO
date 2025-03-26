@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: OKXsignal
+Version: 0.1
+Summary: Advanced crypto signal computation
+Author: Robert
+Requires-Python: >=3.9
