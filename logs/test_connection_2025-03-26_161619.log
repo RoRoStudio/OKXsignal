@@ -1,0 +1,21 @@
+[INFO] 2025-03-26 16:16:19,005 | Starting connection pool test with 10 threads
+[INFO] 2025-03-26 16:16:19,008 | Connecting to database okxsignal on localhost:5432
+[ERROR] 2025-03-26 16:16:19,009 | Failed to initialize connection pool: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+[ERROR] 2025-03-26 16:16:19,010 | Traceback (most recent call last):
+  File "/root/OKXsignal/test_db_connection.py", line 51, in initialize_connection_pool
+    connection_pool = psycopg2.pool.ThreadedConnectionPool(
+  File "/root/miniconda3/envs/okxsignal/lib/python3.9/site-packages/psycopg2/pool.py", line 161, in __init__
+    AbstractConnectionPool.__init__(
+  File "/root/miniconda3/envs/okxsignal/lib/python3.9/site-packages/psycopg2/pool.py", line 59, in __init__
+    self._connect()
+  File "/root/miniconda3/envs/okxsignal/lib/python3.9/site-packages/psycopg2/pool.py", line 63, in _connect
+    conn = psycopg2.connect(*self._args, **self._kwargs)
+  File "/root/miniconda3/envs/okxsignal/lib/python3.9/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+
+[CRITICAL] 2025-03-26 16:16:19,010 | Failed to initialize database connection pool

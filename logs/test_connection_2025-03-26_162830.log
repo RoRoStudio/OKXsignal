@@ -1,0 +1,9 @@
+[INFO] 2025-03-26 16:28:30,686 | Starting connection pool test with 1 threads
+[INFO] 2025-03-26 16:28:30,690 | Connecting to database okxsignal on 192.168.144.1:5432
+[INFO] 2025-03-26 16:28:30,860 | Connection pool initialized with 3-10 connections
+[INFO] 2025-03-26 16:28:30,861 | Thread 0 starting
+[INFO] 2025-03-26 16:28:31,060 | Thread 0 found 8442568 rows in candles_1h
+[INFO] 2025-03-26 16:28:33,077 | Thread 0 found pairs: ['1INCH-USDT', 'AAVE-USDT', 'ACA-USDT', 'ACE-USDT', 'ACH-USDT']
+[INFO] 2025-03-26 16:28:33,077 | Thread 0 finished
+[INFO] 2025-03-26 16:28:33,079 | Test completed: 1/1 threads succeeded
+[INFO] 2025-03-26 16:28:33,079 | Connection pool closed

@@ -1,0 +1,9 @@
+[INFO] 2025-03-26 16:35:58,429 | Starting feature test with pair BTC-USDT and window 100
+[INFO] 2025-03-26 16:35:58,434 | Connecting to database okxsignal on localhost:5432 as postgres
+[ERROR] 2025-03-26 16:35:58,434 | Database connection error: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+[ERROR] 2025-03-26 16:35:58,434 | Database verification failed: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+[ERROR] 2025-03-26 16:35:58,434 | Database verification failed. Exiting.

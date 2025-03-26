@@ -15,130 +15,256 @@ import signal
 import time
 import threading
 import psutil
+import traceback
 import psycopg2
-import psycopg2.extras
-import psycopg2.pool
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import local as thread_local_class
+from dotenv import load_dotenv
 
-import numpy as np
-import pandas as pd
-import psycopg2
-import psycopg2.extras
+# Add project root to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(os.path.dirname(current_dir))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
 
-# Import configuration
-from database.processing.features.config import ConfigManager, SMALLINT_COLUMNS, MIN_CANDLES_REQUIRED
+# For early error detection
+print("Starting compute_features.py...")
 
-# Import optimized feature processor
-from database.processing.features.optimized.feature_processor import OptimizedFeatureProcessor
+try:
+    import numpy as np
+    import pandas as pd
+except ImportError as e:
+    print(f"ERROR: Failed to import numpy or pandas: {e}")
+    sys.exit(1)
 
-# Import database utilities
-from database.processing.features.db_operations import (
-    get_optimized_connection,
-    fetch_data_numpy,
-    batch_update_features,
-    bulk_copy_update,
-    get_database_columns
-)
-
-# Import utilities
-from database.processing.features.utils import PerformanceMonitor
+# Thread-local storage for connections
+thread_local = thread_local_class()
 
 # Global connection pool
 connection_pool = None
 
-# Thread-local storage
-thread_local = threading.local()
-
-# Flag to signal shutdown
-shutdown_requested = False
-
-# Function to get a connection from the pool for the current thread
-def get_thread_connection():
-    """Get a connection for the current thread from the pool"""
-    global connection_pool
-    if not hasattr(thread_local, "connection"):
-        try:
-            # Get a new connection from the pool for this thread
-            thread_local.connection = connection_pool.getconn()
-            logging.debug(f"Thread {threading.get_ident()} acquired new database connection")
-        except Exception as e:
-            logging.error(f"Failed to get connection from pool: {e}")
-            raise
-    return thread_local.connection
-
-def release_thread_connection():
-    """Release the connection back to the pool"""
-    global connection_pool
-    if hasattr(thread_local, "connection"):
-        try:
-            connection_pool.putconn(thread_local.connection)
-            logging.debug(f"Thread {threading.get_ident()} released database connection")
-            del thread_local.connection
-        except Exception as e:
-            logging.error(f"Error releasing connection: {e}")
-
-def init_connection_pool(config_manager, min_conn=5, max_conn=20):
-    """Initialize the connection pool"""
-    global connection_pool
-    db_params = config_manager.get_db_params()
-    
-    # Create connection pool with appropriate settings
-    connection_pool = psycopg2.pool.ThreadedConnectionPool(
-        min_conn,
-        max_conn,
-        dbname=db_params['dbname'],
-        user=db_params['user'],
-        password=db_params['password'],
-        host=db_params['host'],
-        port=db_params['port'],
-        # Add connection timeout and other settings
-        connect_timeout=30,
-        application_name='okxsignal_compute'
-    )
-    
-    logging.info(f"Initialized database connection pool (min={min_conn}, max={max_conn})")
-    return connection_pool
+# ---------------------------
+# Early Import Tests
+# ---------------------------
+def test_imports():
+    """Test critical imports early to detect issues"""
+    try:
+        # Import configuration
+        from features.config import ConfigManager, SMALLINT_COLUMNS, MIN_CANDLES_REQUIRED
+        # Import optimized feature processor
+        from features.optimized.feature_processor import OptimizedFeatureProcessor
+        # Import database utilities
+        from features.db_operations import (
+            fetch_data_numpy,
+            batch_update_features,
+            bulk_copy_update,
+            get_database_columns
+        )
+        # Import utilities
+        from features.utils import PerformanceMonitor
+        
+        print("All required modules imported successfully")
+        return True
+    except Exception as e:
+        error_message = f"ERROR: Failed to import required modules: {e}"
+        print(error_message)
+        print(f"Current directory: {os.getcwd()}")
+        print(f"Python path: {sys.path}")
+        print(traceback.format_exc())
+        return False
 
 # ---------------------------
 # Logging Setup
 # ---------------------------
 def setup_logging(log_dir="logs", log_level="INFO"):
     """Set up application logging"""
-    os.makedirs(log_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    log_file = os.path.join(log_dir, f"compute_{timestamp}.log")
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        log_file = os.path.join(log_dir, f"compute_{timestamp}.log")
+        
+        logging.basicConfig(
+            level=getattr(logging, log_level.upper()),
+            format='[%(levelname)s] %(asctime)s | %(message)s',
+            handlers=[
+                logging.FileHandler(log_file, encoding="utf-8"),
+                logging.StreamHandler()
+            ]
+        )
+        logger = logging.getLogger("compute_features")
+        logger.info("Logging initialized successfully")
+        return logger
+    except Exception as e:
+        print(f"CRITICAL ERROR: Failed to set up logging: {e}")
+        print(traceback.format_exc())
+        sys.exit(1)
+
+# ---------------------------
+# Connection Pool Management
+# ---------------------------
+def initialize_connection_pool(config_manager, min_conn=5, max_conn=20):
+    """Initialize the connection pool"""
+    global connection_pool
     
-    logging.basicConfig(
-        level=getattr(logging, log_level.upper()),
-        format='[%(levelname)s] %(asctime)s | %(message)s',
-        handlers=[
-            logging.FileHandler(log_file, encoding="utf-8"),
-            logging.StreamHandler()
-        ]
-    )
-    return logging.getLogger("compute_features")
+    try:
+        db_params = config_manager.get_db_params()
+        
+        # Extra parameters for performance
+        db_params.update({
+            'application_name': 'feature_compute',
+            'client_encoding': 'UTF8',
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5
+        })
+        
+        # Check if connection pooling is available
+        if not hasattr(psycopg2, 'pool'):
+            logging.warning("psycopg2.pool not available. Install psycopg2-binary for connection pooling.")
+            return False
+        
+        # Create a ThreadedConnectionPool
+        connection_pool = psycopg2.pool.ThreadedConnectionPool(
+            minconn=min_conn,
+            maxconn=max_conn,
+            **db_params
+        )
+        
+        # Test the connection pool
+        conn = connection_pool.getconn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.close()
+        connection_pool.putconn(conn)
+        
+        print(f"Connection pool initialized with {min_conn}-{max_conn} connections")
+        return True
+    except AttributeError:
+        print("Connection pooling not available (psycopg2.pool not found)")
+        return False
+    except Exception as e:
+        print(f"CRITICAL ERROR: Failed to initialize connection pool: {e}")
+        print(traceback.format_exc())
+        return False
+
+def get_thread_connection():
+    """Get a connection for the current thread"""
+    global connection_pool, thread_local
+    
+    # Check if connection pool exists
+    if connection_pool is None:
+        # Use direct connection if pool not available
+        try:
+            from config.config_loader import load_config
+            config = load_config()
+            return psycopg2.connect(
+                dbname=config.get('DB_NAME', os.getenv('DB_NAME', 'okxsignal')),
+                user=os.getenv('DB_USER', 'postgres'),
+                password=os.getenv('DB_PASSWORD', ''),
+                host=config.get('DB_HOST', os.getenv('DB_HOST', 'localhost')),
+                port=config.get('DB_PORT', os.getenv('DB_PORT', '5432'))
+            )
+        except Exception as e:
+            print(f"Error connecting directly: {e}")
+            return psycopg2.connect(
+                dbname=os.getenv('DB_NAME', 'okxsignal'),
+                user=os.getenv('DB_USER', 'postgres'),
+                password=os.getenv('DB_PASSWORD', ''),
+                host=os.getenv('DB_HOST', 'localhost'),
+                port=os.getenv('DB_PORT', '5432')
+            )
+    
+    # Check if thread already has a connection
+    if not hasattr(thread_local, 'connection') or thread_local.connection is None:
+        try:
+            thread_local.connection = connection_pool.getconn()
+        except Exception as e:
+            print(f"ERROR: Failed to get connection from pool: {e}")
+            # Fall back to direct connection
+            thread_local.connection = psycopg2.connect(
+                dbname=os.getenv('DB_NAME', 'okxsignal'),
+                user=os.getenv('DB_USER', 'postgres'),
+                password=os.getenv('DB_PASSWORD', ''),
+                host=os.getenv('DB_HOST', 'localhost'),
+                port=os.getenv('DB_PORT', '5432')
+            )
+    
+    return thread_local.connection
+
+def release_thread_connection():
+    """Release the connection for the current thread"""
+    global connection_pool, thread_local
+    
+    if connection_pool is not None and hasattr(thread_local, 'connection') and thread_local.connection is not None:
+        try:
+            connection_pool.putconn(thread_local.connection)
+            thread_local.connection = None
+        except Exception as e:
+            print(f"WARNING: Failed to release connection to pool: {e}")
+            # Close the connection if it can't be returned to the pool
+            try:
+                thread_local.connection.close()
+            except:
+                pass
+            thread_local.connection = None
 
 def force_exit_on_ctrl_c():
-    """Handles Ctrl-C to gracefully exit threads"""
+    """Handles Ctrl-C to forcibly exit all threads"""
     import os
     import signal
+    import threading
     
-    global shutdown_requested
+    # Global flag to indicate shutdown is in progress
+    is_shutting_down = [False]
     
     def handler(signum, frame):
-        global shutdown_requested
+        global connection_pool
         
-        if shutdown_requested:
+        if is_shutting_down[0]:
             # If already shutting down and Ctrl+C pressed again, force exit
             print("\nForced exit!")
             os._exit(1)  # Emergency exit
         
-        # Set the shutdown flag to signal all threads to exit gracefully
-        shutdown_requested = True
-        print("\nInterrupted. Initiating graceful shutdown... (Press Ctrl+C again to force immediate exit)")
+        is_shutting_down[0] = True
+        print("\nInterrupted. Forcing thread exit... (Press Ctrl+C again to force immediate exit)")
         
+        # Release all connections back to the pool
+        if connection_pool is not None:
+            try:
+                connection_pool.closeall()
+                print("All database connections closed.")
+            except Exception as e:
+                print(f"Error closing connections: {e}")
+        
+        # Forcibly terminate all threads
+        for thread in threading.enumerate():
+            if thread is not threading.current_thread():
+                try:
+                    # Set trace function to raise exception
+                    import ctypes
+                    ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                        ctypes.c_long(thread.ident), 
+                        ctypes.py_object(SystemExit)
+                    )
+                except Exception:
+                    pass
+        
+        # Set a small timeout before forcing exit
+        def force_exit():
+            print("Shutdown timed out. Forcing exit.")
+            os._exit(1)
+        
+        # Set a timer to force exit after 5 seconds if graceful shutdown fails
+        exit_timer = threading.Timer(5.0, force_exit)
+        exit_timer.daemon = True
+        exit_timer.start()
+        
+        # Try graceful exit first
+        sys.exit(1)
+
     # Register the handler for SIGINT (Ctrl+C)
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
@@ -189,13 +315,12 @@ def configure_memory_settings():
 # ---------------------------
 # Pair Processing
 # ---------------------------
-def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
+def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
     """
     Process a single pair, compute features, and update the database
     
     Args:
         pair: Symbol pair (e.g., 'BTC-USDT')
-        db_conn: Database connection
         rolling_window: Number of recent candles to process
         config_manager: Configuration manager
         debug_mode: Whether to log debug info
@@ -204,9 +329,26 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
     Returns:
         Number of rows updated
     """
+    # Import all required modules here to ensure they're available
+    try:
+        from features.config import SMALLINT_COLUMNS, MIN_CANDLES_REQUIRED
+        from features.optimized.feature_processor import OptimizedFeatureProcessor
+        from features.db_operations import (
+            fetch_data_numpy,
+            batch_update_features,
+            bulk_copy_update,
+            get_database_columns
+        )
+    except ImportError as e:
+        logging.error(f"Failed to import required modules in process_pair: {e}")
+        return 0
+    
     start_process = time.time()
     logging.info(f"Computing features for {pair}")
     updated_rows = 0
+    
+    # Get a connection from the pool for this thread
+    db_conn = get_thread_connection()
     
     try:
         # Start performance monitoring for this pair
@@ -325,17 +467,8 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
         return updated_rows
 
 def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
-    """Wrapper function for thread pool to handle a single pair with dedicated connection"""
-    # Check if shutdown was requested
-    if shutdown_requested:
-        logging.info(f"Skipping {pair} due to shutdown request")
-        return 0
-        
-    db_conn = None
+    """Wrapper function for thread pool to handle a single pair"""
     try:
-        # Get a database connection for this thread
-        db_conn = get_thread_connection()
-        
         # Set current pair for performance tracking
         if perf_monitor:
             perf_monitor.start_pair(pair)
@@ -343,7 +476,7 @@ def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, 
         start_time = time.time()
         
         # Process the pair
-        result = process_pair(pair, db_conn, rolling_window, config_manager, debug_mode, perf_monitor)
+        result = process_pair(pair, rolling_window, config_manager, debug_mode, perf_monitor)
         
         # End timing for this pair
         total_time = time.time() - start_time
@@ -352,31 +485,25 @@ def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, 
             
         return result
         
-    except (KeyboardInterrupt, SystemExit):
-        # Handle keyboard interrupt and SystemExit gracefully
-        logging.info(f"Processing of {pair} interrupted")
-        if perf_monitor and hasattr(perf_monitor, 'current_pair') and perf_monitor.current_pair:
-            perf_monitor.end_pair(0)  # Log 0 duration for interrupted pairs
+    except KeyboardInterrupt:
+        # Handle keyboard interrupt
+        logging.info(f"Processing of {pair} interrupted by user")
         return 0
     except Exception as e:
         logging.error(f"Thread error for pair {pair}: {e}", exc_info=True)
-        if perf_monitor and hasattr(perf_monitor, 'current_pair') and perf_monitor.current_pair:
-            perf_monitor.end_pair(0)  # Log 0 duration for failed pairs
         return 0
     finally:
-        # Always make sure to release the connection back to the pool
-        if db_conn is not None:
-            release_thread_connection()
+        # Release the connection back to the pool
+        release_thread_connection()
 
 # ---------------------------
 # Cross-Pair Features
 # ---------------------------
-def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_monitor=None):
+def compute_cross_pair_features(config_manager, debug_mode=False, perf_monitor=None):
     """
     Compute features that require data across multiple pairs
     
     Args:
-        db_conn: Database connection
         config_manager: Configuration manager
         debug_mode: Whether to log debug info
         perf_monitor: Performance monitor
@@ -387,6 +514,9 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
     start_time = time.time()
     logging.info("Computing cross-pair features")
     updated_rows = 0
+    
+    # Get a connection from the pool
+    db_conn = get_thread_connection()
     
     try:
         # Only compute if cross_pair features are enabled
@@ -469,7 +599,7 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                     vol_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
             
             # Compute volatility ranks
-            vol_ranks = np.zeros(len(atrs))
+            atr_ranks = np.zeros(len(atrs))
             
             if atrs and any(a > 0 for a in atrs):
                 # Convert to numpy array for ranking
@@ -584,32 +714,63 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
         
         # Execute updates
         if updates:
-            cursor = db_conn.cursor()
-            
-            update_query = """
-            UPDATE candles_1h
-            SET 
-                performance_rank_btc_1h = %s,
-                performance_rank_eth_1h = %s,
-                volume_rank_1h = %s,
-                volatility_rank_1h = %s,
-                btc_corr_24h = %s,
-                prev_volume_rank = %s
-            WHERE pair = %s AND timestamp_utc = %s
-            """
-            
-            psycopg2.extras.execute_batch(
-                cursor, 
-                update_query, 
-                updates,
-                page_size=1000
-            )
-            
-            updated_rows = cursor.rowcount
-            db_conn.commit()
-            cursor.close()
-            
-            logging.info(f"Updated {updated_rows} rows with cross-pair features")
+            try:
+                # Import psycopg2.extras here to handle case where it might not be available
+                import psycopg2.extras
+                
+                cursor = db_conn.cursor()
+                
+                update_query = """
+                UPDATE candles_1h
+                SET 
+                    performance_rank_btc_1h = %s,
+                    performance_rank_eth_1h = %s,
+                    volume_rank_1h = %s,
+                    volatility_rank_1h = %s,
+                    btc_corr_24h = %s,
+                    prev_volume_rank = %s
+                WHERE pair = %s AND timestamp_utc = %s
+                """
+                
+                psycopg2.extras.execute_batch(
+                    cursor, 
+                    update_query, 
+                    updates,
+                    page_size=1000
+                )
+                
+                updated_rows = cursor.rowcount
+                db_conn.commit()
+                cursor.close()
+                
+                logging.info(f"Updated {updated_rows} rows with cross-pair features")
+            except AttributeError:
+                # Handle case where psycopg2.extras is not available
+                cursor = db_conn.cursor()
+                
+                update_query = """
+                UPDATE candles_1h
+                SET 
+                    performance_rank_btc_1h = %s,
+                    performance_rank_eth_1h = %s,
+                    volume_rank_1h = %s,
+                    volatility_rank_1h = %s,
+                    btc_corr_24h = %s,
+                    prev_volume_rank = %s
+                WHERE pair = %s AND timestamp_utc = %s
+                """
+                
+                # Perform updates in batches without extras
+                updated_count = 0
+                for update in updates:
+                    cursor.execute(update_query, update)
+                    updated_count += cursor.rowcount
+                
+                db_conn.commit()
+                cursor.close()
+                
+                updated_rows = updated_count
+                logging.info(f"Updated {updated_rows} rows with cross-pair features (without extras)")
         
     except Exception as e:
         logging.error(f"Error computing cross-pair features: {e}", exc_info=True)
@@ -622,62 +783,11 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
     
     return updated_rows
 
-        
-# Modified batch processing in main function
-def process_batches(batches, all_pairs, batch_size, rolling_window, config_manager, debug_mode, perf_monitor, start_time_global):
-    """Process batches of pairs with proper connection and error handling"""
-    completed = 0
-    
-    for batch_idx, batch in enumerate(batches):
-        # Check if shutdown was requested
-        if shutdown_requested:
-            logging.info("Shutdown requested, stopping batch processing")
-            break
-            
-        logging.info(f"Processing batch {batch_idx+1}/{len(batches)} with {len(batch)} pairs")
-        
-        with ThreadPoolExecutor(max_workers=min(batch_size, len(batch))) as executor:
-            futures = {
-                executor.submit(
-                    process_pair_thread, 
-                    pair, rolling_window, 
-                    config_manager, debug_mode, perf_monitor
-                ): pair for pair in batch
-            }
-            
-            for future in as_completed(futures):
-                # Check if shutdown was requested
-                if shutdown_requested:
-                    logging.info("Shutdown requested, cancelling remaining futures")
-                    for f in futures:
-                        f.cancel()
-                    break
-                    
-                pair = futures[future]
-                try:
-                    rows_updated = future.result()
-                    completed += 1
-                    
-                    if completed % 25 == 0 or completed == len(all_pairs):
-                        elapsed = (datetime.now() - start_time_global).total_seconds()
-                        pairs_per_second = completed / elapsed if elapsed > 0 else 0
-                        remaining = (len(all_pairs) - completed) / pairs_per_second if pairs_per_second > 0 else 0
-                        logging.info(f"Progress: {completed}/{len(all_pairs)} pairs processed "
-                                    f"({pairs_per_second:.2f} pairs/sec, ~{remaining:.0f}s remaining)")
-                except Exception as e:
-                    logging.error(f"Error processing pair {pair}: {e}")
-        
-        # Cleanup between batches
-        gc.collect()
-    
-    return completed
 # ---------------------------
 # Main Function
 # ---------------------------
 def main():
     """Main execution function"""
-    global shutdown_requested
-    
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Compute technical indicators for crypto data')
     parser.add_argument('--mode', choices=['rolling_update', 'full_backfill'], 
@@ -700,14 +810,36 @@ def main():
     
     parser.add_argument('--use-gpu', action='store_true', help='Enable GPU acceleration (if available)')
     parser.add_argument('--no-gpu', action='store_true', help='Disable GPU acceleration')
+
     parser.add_argument('--disable-features', type=str, 
                        help='Comma-separated list of feature groups to disable (e.g., momentum,pattern)')
     
+    parser.add_argument('--min-conn', type=int, default=5,
+                       help='Minimum number of database connections in the pool')
+    parser.add_argument('--max-conn', type=int, default=20,
+                       help='Maximum number of database connections in the pool')
+    
     args = parser.parse_args()
+    
+    print(f"Starting computation with args: {args}")
+    
+    # Test imports early
+    if not test_imports():
+        sys.exit(1)
     
     # Set up logging
     logger = setup_logging(args.log_dir, args.log_level)
+
+    # Load credentials from env file
+    credentials_path = args.credentials or os.path.join(root_dir, "config", "credentials.env")
+    if os.path.exists(credentials_path):
+        load_dotenv(credentials_path)
+        logger.info(f"Loaded credentials from {credentials_path}")
+    else:
+        logger.warning(f"Credentials file not found: {credentials_path}")
+    
     # Set up performance monitoring
+    from features.utils import PerformanceMonitor
     perf_monitor = PerformanceMonitor(args.log_dir)
     
     # Track runtime
@@ -720,10 +852,16 @@ def main():
     configure_memory_settings()
     
     # Load configuration
-    config_manager = ConfigManager(
-        config_path=args.config,
-        credentials_path=args.credentials
-    )
+    try:
+        from features.config import ConfigManager
+        config_manager = ConfigManager(
+            config_path=args.config,
+            credentials_path=args.credentials
+        )
+    except Exception as e:
+        logger.critical(f"Failed to load configuration: {e}", exc_info=True)
+        sys.exit(1)
+
     # Override config with command line arguments
     if args.no_numba:
         config_manager.config['GENERAL']['USE_NUMBA'] = 'False'
@@ -752,14 +890,13 @@ def main():
     # Set batch size
     batch_size = args.batch_size if args.batch_size else config_manager.get_batch_size()
     
-    # Initialize connection pool with appropriate size
-    # Use more connections for larger batch sizes
-    min_conn = batch_size
-    max_conn = min(batch_size * 3, 50)  # Limit maximum connections
-    init_connection_pool(config_manager, min_conn, max_conn)
-    
-    # Get a connection for initial operations
-    db_conn = get_thread_connection()
+    # Initialize connection pool
+    if not initialize_connection_pool(
+        config_manager, 
+        min_conn=args.min_conn,
+        max_conn=args.max_conn
+    ):
+        logger.warning("Failed to initialize database connection pool. Using direct connections.")
     
     # Create runtime log path
     runtime_log_path = os.path.join(args.log_dir, "runtime_stats.log")
@@ -772,20 +909,28 @@ def main():
     
     if args.debug:
         logger.info("Debug mode enabled - detailed timing information will be logged")
-    
-    # Test database connection
+
     try:
+        # Test connection
+        db_conn = get_thread_connection()
         cursor = db_conn.cursor()
         cursor.execute("SELECT 1")
         cursor.close()
         logger.info("Database connection test successful")
+        # Don't release the connection here, it will be used in the next steps
     except Exception as e:
-        logger.critical(f"Unable to start due to database connection issue: {e}")
-        release_thread_connection()
+        logger.critical(f"Unable to start due to database connection issue: {e}", exc_info=True)
+        # Clean up the connection pool
+        global connection_pool
+        if connection_pool is not None:
+            try:
+                connection_pool.closeall()
+            except:
+                pass
         sys.exit(1)
-    
-    # Load pairs to process
+
     try:
+        # Get pairs to process
         cursor = db_conn.cursor()
         
         if args.pairs:
@@ -798,18 +943,27 @@ def main():
             
         cursor.close()
     except Exception as e:
-        logger.critical(f"Error loading pair list: {e}")
-        release_thread_connection()
+        logger.critical(f"Error loading pair list: {e}", exc_info=True)
+        # Don't close db_conn here, it will be released automatically
+        # Clean up the connection pool
+        global connection_pool
+        if connection_pool is not None:
+            try:
+                connection_pool.closeall()
+            except:
+                pass
         sys.exit(1)
-    
-    # Release the main connection back to the pool
-    release_thread_connection()
-    
+
     if not all_pairs:
         logger.warning("No pairs found in candles_1h. Exiting early.")
+        # Clean up the connection pool
+        global connection_pool
+        if connection_pool is not None:
+            try:
+                connection_pool.closeall() 
+            except:
+                pass
         sys.exit()
-    
-    completed_pairs = 0
 
     if mode == "rolling_update":
         logger.info(f"Rolling update mode: computing last {rolling_window} rows per pair")
@@ -844,58 +998,77 @@ def main():
             batches.append(batch)
             
         logger.info(f"Grouped {len(all_pairs)} pairs into {len(batches)} balanced batches")
+
+        # Process each batch with controlled parallelism
+        completed = 0
         
-        # Process batches using the new function
-        completed_pairs = process_batches(
-            batches, all_pairs, batch_size, rolling_window,
-            config_manager, args.debug, perf_monitor, start_time_global
-        )
-        
-        # Check if processing was interrupted
-        if shutdown_requested:
-            logger.info("Processing was interrupted. Skipping cross-pair features.")
-        else:
-            # Compute cross-pair features after all individual pairs are done
-            if config_manager.is_feature_enabled('cross_pair'):
-                try:
-                    # Get a new connection for cross-pair features
-                    cross_conn = get_thread_connection()
-                    compute_cross_pair_features(cross_conn, config_manager, args.debug, perf_monitor)
-                    release_thread_connection()  # Release cross-pair connection
-                except Exception as e:
-                    logger.error(f"Error computing cross-pair features: {e}")
-                    # Make sure we release the connection even on error
-                    release_thread_connection()
+        for batch_idx, batch in enumerate(batches):
+            logger.info(f"Processing batch {batch_idx+1}/{len(batches)} with {len(batch)} pairs")
             
-            # Save performance summary at the end
-            try:
-                summary_file, report_file = perf_monitor.save_summary()
-                logger.info(f"Performance summary saved to {summary_file}")
-                logger.info(f"Performance report saved to {report_file}")
-            except Exception as e:
-                logger.error(f"Error saving performance reports: {e}")
+            with ThreadPoolExecutor(max_workers=min(batch_size, len(batch))) as executor:
+                futures = {
+                    executor.submit(
+                        process_pair_thread, 
+                        pair, rolling_window, 
+                        config_manager, args.debug, perf_monitor
+                    ): pair for pair in batch
+                }
+                
+                for future in as_completed(futures):
+                    pair = futures[future]
+                    try:
+                        rows_updated = future.result()
+                        completed += 1
+                        
+                        if completed % 25 == 0 or completed == len(all_pairs):
+                            elapsed = (datetime.now() - start_time_global).total_seconds()
+                            pairs_per_second = completed / elapsed if elapsed > 0 else 0
+                            remaining = (len(all_pairs) - completed) / pairs_per_second if pairs_per_second > 0 else 0
+                            logger.info(f"Progress: {completed}/{len(all_pairs)} pairs processed "
+                                        f"({pairs_per_second:.2f} pairs/sec, ~{remaining:.0f}s remaining)")
+                    except Exception as e:
+                        logger.error(f"Error processing pair {pair}: {e}")
+            
+            # Cleanup between batches
+            gc.collect()
+
+        # Compute cross-pair features after all individual pairs are done
+        if config_manager.is_feature_enabled('cross_pair'):
+            compute_cross_pair_features(config_manager, args.debug, perf_monitor)
+
+        # Save performance summary at the end
+        summary_file, report_file = perf_monitor.save_summary()
+        logger.info(f"Performance summary saved to {summary_file}")
+        logger.info(f"Performance report saved to {report_file}")
         
-        logger.info(f"Rolling update completed with {completed_pairs}/{len(all_pairs)} pairs processed.")
-    
+        logger.info("Rolling update mode completed.")
+
     elif mode == "full_backfill":
         logger.info("Full backfill mode: computing all historical data")
         logger.warning("Full backfill mode is not fully implemented yet")
         # TODO: Implement full backfill if needed
-    
+
+    # Close the connection pool
+    if connection_pool is not None:
+        try:
+            connection_pool.closeall()
+            logger.info("Database connection pool closed")
+        except:
+            logger.warning("Failed to close connection pool")
+
     # Runtime logging
     end_time = datetime.now()
     duration = (end_time - start_time_global).total_seconds()
-    try:
-        with open(runtime_log_path, "a") as f:
-            f.write(f"[{end_time}] compute_features.py ({mode}) completed in {duration:.2f} seconds")
-            if shutdown_requested:
-                f.write(" (interrupted)")
-            f.write("\n")
-    except Exception as e:
-        logger.error(f"Error writing to runtime log: {e}")
+    with open(runtime_log_path, "a") as f:
+        f.write(f"[{end_time}] compute_features.py ({mode}) completed in {duration:.2f} seconds\n")
     
     logger.info(f"Total runtime: {duration:.2f} seconds")
-    
-    # Final cleanup
-    if shutdown_requested:
-        logger.info("Shutting down due to user interrupt")
+
+if __name__ == '__main__':
+    try:
+        print("Starting compute_features.py main function")
+        main()
+    except Exception as e:
+        print(f"CRITICAL ERROR in main: {e}")
+        print(traceback.format_exc())
+        sys.exit(1)
