@@ -62,8 +62,10 @@ class PerformanceMonitor:
     
     def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
+        global shutdown_requested
+        
         # Skip if shutdown is requested
-        if shutdown_requested:
+        if 'shutdown_requested' in globals() and shutdown_requested:
             return
             
         # Skip if no current pair is set
@@ -91,11 +93,13 @@ class PerformanceMonitor:
                     f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
             except Exception as e:
                 logging.warning(f"Failed to write to performance log: {e}")
-    
+
     def end_pair(self, total_duration):
         """Log the total processing time for the current pair"""
+        global shutdown_requested
+        
         # Skip if shutdown is requested
-        if shutdown_requested:
+        if 'shutdown_requested' in globals() and shutdown_requested:
             return
             
         # Skip if no current pair is set
