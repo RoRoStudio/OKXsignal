@@ -9,14 +9,14 @@ import time
 import numpy as np
 import pandas as pd
 
-from .base import BaseFeatureComputer
-from .config import LABEL_PARAMS
-from .optimized.numba_functions import (
+from database.processing.features.base import BaseFeatureComputer
+from database.processing.features.config import LABEL_PARAMS
+from database.processing.features.optimized.numba_functions import (
     compute_future_return_numba,
     compute_max_future_return_numba,
     compute_max_future_drawdown_numba
 )
-from .optimized.gpu_functions import (
+from database.processing.features.optimized.gpu_functions import (
     compute_future_return_gpu,
     compute_max_future_return_gpu,
     compute_max_future_drawdown_gpu

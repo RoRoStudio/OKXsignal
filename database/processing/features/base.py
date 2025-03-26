@@ -9,7 +9,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from .utils import safe_indicator_assign, check_gpu_available
+from database.processing.features.utils import safe_indicator_assign, check_gpu_available
 
 class BaseFeatureComputer:
     """Base class for all feature computers with common utilities"""

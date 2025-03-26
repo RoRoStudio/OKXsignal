@@ -34,8 +34,10 @@ def initialize_gpu():
         
         # Get device info
         device = cp.cuda.Device()
-        logging.info(f"Initialized GPU: {device.name}, "
-                    f"Memory: {device.mem_info[1]/1024**3:.2f} GB")
+        device_id = device.id
+        memory_total = device.mem_info[1]/1024**3
+        logging.info(f"Initialized GPU: Device #{device_id}, "
+                    f"Memory: {memory_total:.2f} GB")
         return True
     except Exception as e:
         logging.error(f"GPU initialization failed: {e}")
@@ -58,7 +60,10 @@ def is_gpu_available():
         free_memory = mem_info[0] / (1024**3)  # in GB
         total_memory = mem_info[1] / (1024**3)  # in GB
         
-        logging.info(f"GPU is available: {device.name}, "
+        # Get device properties in a safer way
+        device_id = device.id
+        
+        logging.info(f"GPU is available: Device #{device_id}, "
                     f"Free: {free_memory:.2f} GB / {total_memory:.2f} GB")
         return True
     except Exception as e:

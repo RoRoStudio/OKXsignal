@@ -62,10 +62,23 @@ class PerformanceMonitor:
     
     def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
+        # Skip if shutdown is requested
+        if shutdown_requested:
+            return
+            
+        # Skip if no current pair is set
         if not self.current_pair:
             return
             
         with self.lock:
+            # Make sure the pair exists in timings
+            if self.current_pair not in self.timings:
+                self.timings[self.current_pair] = {
+                    "total": 0,
+                    "operations": {}
+                }
+                
+            # Make sure the operation exists for this pair
             if operation not in self.timings[self.current_pair]["operations"]:
                 self.timings[self.current_pair]["operations"][operation] = []
                 
@@ -73,22 +86,42 @@ class PerformanceMonitor:
             
             # Write to log file immediately
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open(self.log_file, 'a') as f:
-                f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
+            try:
+                with open(self.log_file, 'a') as f:
+                    f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
+            except Exception as e:
+                logging.warning(f"Failed to write to performance log: {e}")
     
     def end_pair(self, total_duration):
         """Log the total processing time for the current pair"""
+        # Skip if shutdown is requested
+        if shutdown_requested:
+            return
+            
+        # Skip if no current pair is set
         if not self.current_pair:
             return
             
         with self.lock:
-            self.timings[self.current_pair]["total"] = total_duration
+            pair_name = self.current_pair
+            
+            # Make sure the pair exists in timings
+            if pair_name not in self.timings:
+                self.timings[pair_name] = {
+                    "total": 0,
+                    "operations": {}
+                }
+                
+            self.timings[pair_name]["total"] = total_duration
             
             # Write total to log file
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open(self.log_file, 'a') as f:
-                f.write(f"{timestamp},{self.current_pair},TOTAL,{total_duration:.6f}\n")
-            
+            try:
+                with open(self.log_file, 'a') as f:
+                    f.write(f"{timestamp},{pair_name},TOTAL,{total_duration:.6f}\n")
+            except Exception as e:
+                logging.warning(f"Failed to write to performance log: {e}")
+                
             # Reset current pair
             self.current_pair = None
     

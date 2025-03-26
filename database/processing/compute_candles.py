@@ -300,17 +300,21 @@ class PerformanceMonitor:
                     "operations": {}
                 }
     
-    def log_operation(self, operation: str, duration: float):
+    def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
-        if not self.current_pair or self.current_pair not in self.timings:
-            logging.warning(f"Skipping performance log: current_pair is None or not initialized")
-            return
-            
         with self.lock:
-            if self.current_pair is None or self.current_pair not in self.timings:
-                logging.warning(f"Skipping performance log: current_pair is None or not initialized")
+            # Skip if no current pair is set
+            if not self.current_pair:
                 return
-
+                
+            # Make sure the pair exists in timings
+            if self.current_pair not in self.timings:
+                self.timings[self.current_pair] = {
+                    "total": 0,
+                    "operations": {}
+                }
+                
+            # Make sure the operation exists for this pair
             if operation not in self.timings[self.current_pair]["operations"]:
                 self.timings[self.current_pair]["operations"][operation] = []
                 

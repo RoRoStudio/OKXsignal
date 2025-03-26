@@ -16,23 +16,27 @@ from pathlib import Path
 
 # Add the parent directory to sys.path for imports to work
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
+parent_dir = os.path.dirname(os.path.dirname(current_dir))  # Go up to database directory
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from .config import ConfigManager
-from features import (
-    PriceActionFeatures, 
-    MomentumFeatures,
-    VolatilityFeatures,
-    VolumeFeatures,
-    StatisticalFeatures,
-    PatternFeatures,
-    TimeFeatures,
-    MultiTimeframeFeatures,
-    CrossPairFeatures,
-    LabelFeatures
-)
+# Import configuration manager
+from database.processing.features.config import ConfigManager
+
+# Import feature classes
+from database.processing.features.price_action import PriceActionFeatures
+from database.processing.features.momentum import MomentumFeatures
+from database.processing.features.volatility import VolatilityFeatures
+from database.processing.features.volume import VolumeFeatures
+from database.processing.features.statistical import StatisticalFeatures
+from database.processing.features.pattern import PatternFeatures
+from database.processing.features.time import TimeFeatures
+from database.processing.features.multi_timeframe import MultiTimeframeFeatures
+from database.processing.features.cross_pair import CrossPairFeatures
+from database.processing.features.labels import LabelFeatures
+
+# Import utilities
+from database.processing.features.utils import PerformanceMonitor
 
 def setup_logging(log_level="INFO"):
     """Set up logging for the test script"""
@@ -45,7 +49,7 @@ def setup_logging(log_level="INFO"):
     )
     return logging.getLogger("test_features")
 
-def generate_test_data(rows=1000, pairs=["BTC-USDT"]):
+def generate_test_data(rows=30000, pairs=["BTC-USDT"]):
     """
     Generate synthetic OHLCV data for testing
     
@@ -170,6 +174,9 @@ def run_tests(use_numba=True, use_gpu=False, pairs=None):
     test_data = generate_test_data(rows=500, pairs=pairs)
     logger.info(f"Generated {len(test_data)} rows of test data")
     
+    # Create performance monitor for tracking
+    perf_monitor = PerformanceMonitor(log_dir="logs")
+    
     # Dict of feature computers to test
     feature_tests = {
         "Price Action": PriceActionFeatures,
@@ -191,6 +198,7 @@ def run_tests(use_numba=True, use_gpu=False, pairs=None):
     for feature_name, feature_class in feature_tests.items():
         try:
             logger.info(f"Testing {feature_name} features")
+            perf_monitor.start_pair(feature_name)
             result_df, compute_time = test_single_feature_group(
                 feature_class, feature_name, all_features_df, use_numba, use_gpu
             )
@@ -198,6 +206,7 @@ def run_tests(use_numba=True, use_gpu=False, pairs=None):
             # Update accumulated DataFrame and time
             all_features_df = result_df
             total_time += compute_time
+            perf_monitor.end_pair(compute_time)
             
         except Exception as e:
             logger.error(f"Error testing {feature_name} features: {e}")
@@ -206,6 +215,7 @@ def run_tests(use_numba=True, use_gpu=False, pairs=None):
     if len(pairs) > 1:
         try:
             logger.info("Testing Cross-Pair features")
+            perf_monitor.start_pair("Cross-Pair")
             cross_computer = CrossPairFeatures(use_numba=use_numba, use_gpu=use_gpu)
             
             start_time = time.time()
@@ -214,13 +224,19 @@ def run_tests(use_numba=True, use_gpu=False, pairs=None):
             
             logger.info(f"Cross-Pair features computed in {cross_time:.4f} seconds")
             total_time += cross_time
+            perf_monitor.end_pair(cross_time)
             
         except Exception as e:
             logger.error(f"Error testing Cross-Pair features: {e}")
     
+    # Save performance summary
+    summary_file, report_file = perf_monitor.save_summary()
+    
     # Log total computation time
     logger.info(f"All features computed in {total_time:.4f} seconds")
     logger.info(f"Final DataFrame has {len(all_features_df.columns)} columns")
+    logger.info(f"Performance summary saved to {summary_file}")
+    logger.info(f"Performance report saved to {report_file}")
     
     return all_features_df
 

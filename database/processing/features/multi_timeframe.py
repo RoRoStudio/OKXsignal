@@ -9,8 +9,8 @@ import time
 import numpy as np
 import pandas as pd
 
-from .base import BaseFeatureComputer
-from .config import MULTI_TIMEFRAME_PARAMS
+from database.processing.features.base import BaseFeatureComputer
+from database.processing.features.config import MULTI_TIMEFRAME_PARAMS
 
 class MultiTimeframeFeatures(BaseFeatureComputer):
     """Compute multi-timeframe features"""

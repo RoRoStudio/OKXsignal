@@ -1,9 +1,0 @@
-[2025-03-23 21:20:25] fetch_new_1h_candles.py        55.32 seconds
-[2025-03-23 21:20:27] compute_candles.py             2.12 seconds
-[2025-03-23 21:20:27] total_hourly_pipeline          57.44 seconds
-[2025-03-23 21:26:41] fetch_new_1h_candles.py        71.54 seconds
-[2025-03-23 21:26:42] compute_candles.py             0.65 seconds
-[2025-03-23 21:26:42] total_hourly_pipeline          72.20 seconds
-[2025-03-23 21:29:16] fetch_new_1h_candles.py        140.47 seconds
-[2025-03-23 21:29:17] compute_candles.py             0.65 seconds
-[2025-03-23 21:29:17] total_hourly_pipeline          141.12 seconds

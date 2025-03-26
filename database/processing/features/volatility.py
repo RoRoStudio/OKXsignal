@@ -9,8 +9,8 @@ import time
 import numpy as np
 import pandas as pd
 
-from .base import BaseFeatureComputer
-from .config import VOLATILITY_PARAMS
+from database.processing.features.base import BaseFeatureComputer
+from database.processing.features.config import VOLATILITY_PARAMS
 
 class VolatilityFeatures(BaseFeatureComputer):
     """Compute volatility-based technical indicators"""

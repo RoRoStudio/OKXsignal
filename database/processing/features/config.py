@@ -186,7 +186,8 @@ class ConfigManager:
             device = cupy.cuda.Device()
             mem_info = device.mem_info
             total_memory = mem_info[1] / (1024**3)  # Convert to GB
-            logging.info(f"GPU detected: {device.name}, Memory: {total_memory:.2f} GB")
+            device_id = device.id
+            logging.info(f"GPU detected: Device #{device_id}, Memory: {total_memory:.2f} GB")
             return True
         except (ImportError, Exception) as e:
             logging.warning(f"GPU acceleration not available: {str(e)}")

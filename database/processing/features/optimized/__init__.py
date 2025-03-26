@@ -5,7 +5,7 @@ Optimized functions for feature computation
 - GPU-accelerated functions using CuPy
 """
 
-from features.optimized.numba_functions import (
+from database.processing.features.optimized.numba_functions import (
     moving_average_numba,
     moving_std_numba,
     ewma_numba,
@@ -25,7 +25,7 @@ from features.optimized.numba_functions import (
 # Check if CuPy is available before importing GPU functions
 try:
     import cupy
-    from features.optimized.gpu_functions import (
+    from database.processing.features.optimized.gpu_functions import (
         initialize_gpu,
         is_gpu_available,
         compute_candle_body_features_gpu,

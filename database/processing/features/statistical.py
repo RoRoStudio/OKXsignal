@@ -10,10 +10,10 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from .base import BaseFeatureComputer
-from .config import STATISTICAL_PARAMS
-from .optimized.numba_functions import compute_z_score_numba, hurst_exponent_numba, shannon_entropy_numba
-from .optimized.gpu_functions import compute_z_score_gpu, hurst_exponent_gpu, shannon_entropy_gpu
+from database.processing.features.base import BaseFeatureComputer
+from database.processing.features.config import STATISTICAL_PARAMS
+from database.processing.features.optimized.numba_functions import compute_z_score_numba, hurst_exponent_numba, shannon_entropy_numba
+from database.processing.features.optimized.gpu_functions import compute_z_score_gpu, hurst_exponent_gpu, shannon_entropy_gpu
 
 class StatisticalFeatures(BaseFeatureComputer):
     """Compute statistical and microstructure features"""

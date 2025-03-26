@@ -14,8 +14,8 @@ from datetime import datetime
 from sqlalchemy import text
 from io import StringIO
 
-from features.config import SMALLINT_COLUMNS
-from features.utils import cast_for_sqlalchemy
+from database.processing.features.config import SMALLINT_COLUMNS
+from database.processing.features.utils import cast_for_sqlalchemy
 
 def get_optimized_connection(config_manager):
     """
@@ -141,44 +141,36 @@ def batch_update_features(db_conn, pair, timestamps, feature_data, columns):
     try:
         cursor = db_conn.cursor()
         
-        # Build update query
-        set_clause = ", ".join([f"{col} = data.{col}" for col in columns])
+        # Build update query - use named parameters instead of %s
+        set_clause = ", ".join([f"{col} = %(data_{col})s" for col in columns])
+        
         update_query = f"""
         UPDATE candles_1h
         SET {set_clause}
-        FROM (VALUES %s) AS data(timestamp_utc, {", ".join(columns)})
-        WHERE candles_1h.pair = %s AND candles_1h.timestamp_utc = data.timestamp_utc::timestamp with time zone
+        WHERE pair = %(pair)s AND timestamp_utc = %(timestamp)s
         """
         
-        # Prepare values
-        values = []
+        # Execute updates one by one
+        updated_rows = 0
+        
         for i, ts in enumerate(timestamps):
-            row = [ts]
+            params = {'pair': pair, 'timestamp': ts}
+            
+            # Add data parameters
             for col in columns:
                 if col in SMALLINT_COLUMNS:
                     # Convert to int
-                    value = int(round(feature_data[col][i]))
+                    params[f'data_{col}'] = int(round(feature_data[col][i]))
                 elif col in ['features_computed', 'targets_computed']:
                     # Convert to boolean
-                    value = bool(feature_data[col][i])
+                    params[f'data_{col}'] = bool(feature_data[col][i])
                 else:
                     # Convert to float
-                    value = float(feature_data[col][i])
-                row.append(value)
-            values.append(tuple(row))
-        
-        # Execute with psycopg2's optimized batch execution
-        psycopg2.extras.execute_values(
-            cursor,
-            update_query,
-            values,
-            template=None,
-            page_size=1000,
-            fetch=False
-        )
-        
-        # Get number of rows affected
-        updated_rows = cursor.rowcount
+                    params[f'data_{col}'] = float(feature_data[col][i])
+            
+            # Execute the query
+            cursor.execute(update_query, params)
+            updated_rows += cursor.rowcount
         
         # Commit changes
         db_conn.commit()
@@ -213,7 +205,8 @@ def bulk_copy_update(db_conn, pair, timestamps, feature_data, columns):
         cursor = db_conn.cursor()
         
         # Create a temporary table with the same structure
-        temp_table_name = f"temp_feature_update_{hash(pair)}_{int(datetime.now().timestamp())}"
+        # Use absolute value of hash to avoid negative numbers in table name
+        temp_table_name = f"temp_feature_update_{abs(hash(pair))}_{int(datetime.now().timestamp())}"
         
         # Determine column types
         column_defs = []

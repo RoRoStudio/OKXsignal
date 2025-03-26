@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime
 
 # Import optimized feature functions
-from features.optimized import (
+from database.processing.features.optimized import (
     compute_candle_body_features_numba,
     compute_price_features_numba,
     compute_rsi_numba,
@@ -29,7 +29,7 @@ from features.optimized import (
 
 # Import GPU functions if available
 if GPU_AVAILABLE:
-    from features.optimized import (
+    from database.processing.features.optimized import (
         initialize_gpu,
         is_gpu_available,
         compute_candle_body_features_gpu,
@@ -43,7 +43,7 @@ if GPU_AVAILABLE:
     )
 
 # Import feature parameters
-from features.config import (
+from database.processing.features.config import (
     PRICE_ACTION_PARAMS,
     MOMENTUM_PARAMS,
     VOLATILITY_PARAMS,
@@ -143,7 +143,19 @@ class OptimizedFeatureProcessor:
             self._compute_volume(closes, highs, lows, volumes, results, perf_monitor)
             
         if 'statistical' in enabled_features:
-            self._compute_statistical(closes, results.get('log_return', np.zeros_like(closes)), results, perf_monitor)
+            # Make sure we have log_return calculated
+            if 'log_return' not in results:
+                # Calculate log returns
+                log_return = np.zeros_like(closes)
+                log_return[1:] = np.log(np.maximum(closes[1:] / np.maximum(closes[:-1], 1e-8), 1e-8))
+                results['log_return'] = log_return
+                
+            # Pass highs and lows for estimating slippage and spread
+            self._compute_statistical(closes, results['log_return'], results, perf_monitor)
+            
+            # Add estimated slippage and spread here since they weren't added in _compute_statistical
+            results['estimated_slippage_1h'] = highs - lows
+            results['bid_ask_spread_1h'] = results['estimated_slippage_1h'] * 0.1  # Approximation
             
         if 'pattern' in enabled_features:
             self._compute_pattern(opens, highs, lows, closes, results, perf_monitor)
@@ -594,7 +606,7 @@ class OptimizedFeatureProcessor:
             window_size = STATISTICAL_PARAMS['window_size']
             
             # Standard deviation of returns
-            std_dev_returns = np.zeros(n)
+            std_dev_returns = np.zeros(n, dtype=np.float64)
             
             for i in range(window_size, n):
                 std_dev_returns[i] = np.std(log_returns[i-window_size+1:i+1])
@@ -602,7 +614,7 @@ class OptimizedFeatureProcessor:
             results['std_dev_returns_20'] = std_dev_returns
             
             # Skewness
-            skewness = np.zeros(n)
+            skewness = np.zeros(n, dtype=np.float64)
             
             for i in range(window_size, n):
                 window = log_returns[i-window_size+1:i+1]
@@ -619,7 +631,7 @@ class OptimizedFeatureProcessor:
             results['skewness_20'] = skewness
             
             # Kurtosis
-            kurtosis = np.zeros(n)
+            kurtosis = np.zeros(n, dtype=np.float64)
             
             for i in range(window_size, n):
                 window = log_returns[i-window_size+1:i+1]
@@ -664,7 +676,7 @@ class OptimizedFeatureProcessor:
                     logging.debug("Used Numba for z-score calculation")
                 except Exception as e:
                     logging.warning(f"Numba calculation failed for z-score: {e}")
-            
+                
             if 'z_score_20' not in results:
                 # Standard numpy implementation
                 z_score = np.zeros(n)
@@ -760,8 +772,9 @@ class OptimizedFeatureProcessor:
             results['autocorr_1'] = autocorr
             
             # Estimated slippage and bid-ask spread proxies
-            results['estimated_slippage_1h'] = highs - lows
-            results['bid_ask_spread_1h'] = results['estimated_slippage_1h'] * 0.1  # Approximation
+            # Remove references to highs and lows that aren't passed to this function
+            results['estimated_slippage_1h'] = np.zeros_like(closes)
+            results['bid_ask_spread_1h'] = np.zeros_like(closes)
             
         except Exception as e:
             logging.error(f"Error computing statistical features: {e}")

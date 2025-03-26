@@ -9,9 +9,9 @@ import time
 import numpy as np
 import pandas as pd
 
-from .base import BaseFeatureComputer
-from .optimized.numba_functions import compute_candle_body_features_numba
-from .optimized.gpu_functions import compute_candle_body_features_gpu
+from database.processing.features.base import BaseFeatureComputer
+from database.processing.features.optimized.numba_functions import compute_candle_body_features_numba
+from database.processing.features.optimized.gpu_functions import compute_candle_body_features_gpu
 
 class PriceActionFeatures(BaseFeatureComputer):
     """Compute price action features including candle characteristics"""
