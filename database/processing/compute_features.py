@@ -294,8 +294,17 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
             if config_manager.is_feature_enabled(feature_name)
         }
 
+        if price_data:
+            # Check that we get the full range of timestamps
+            timestamp_range = (
+                pd.to_datetime(min(price_data['raw_timestamps'])).strftime('%Y-%m-%d'),
+                pd.to_datetime(max(price_data['raw_timestamps'])).strftime('%Y-%m-%d')
+            )
+            logging.debug(f"{pair}: Data range from {timestamp_range[0]} to {timestamp_range[1]}")
+            
         if row_count < MIN_CANDLES_REQUIRED:
-            logging.warning(f"Skipping {pair}: only {row_count} candles, need >= {MIN_CANDLES_REQUIRED}")
+            logging.warning(f"Skipping {pair}: only {row_count} candles, need >= {MIN_CANDLES_REQUIRED}. "
+                            f"Data range: {timestamp_range if 'timestamp_range' in locals() else 'unknown'}")
             log_skipped_features(pair, row_count, FEATURE_GROUP_REQUIREMENTS, enabled_features)
             return 0
         

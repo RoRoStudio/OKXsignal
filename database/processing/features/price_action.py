@@ -47,7 +47,9 @@ class PriceActionFeatures(BaseFeatureComputer):
                 body_features = compute_candle_body_features_gpu(
                     open_prices, high_prices, low_prices, close_prices
                 )
-                df['candle_body_size'] = body_features[0:len(df)]
+                # FIX: Use body_size consistently and provide candle_body_size for compatibility
+                df['body_size'] = body_features[0:len(df)]
+                df['candle_body_size'] = df['body_size']  # For backward compatibility
                 df['upper_shadow'] = body_features[len(df):2*len(df)]
                 df['lower_shadow'] = body_features[2*len(df):3*len(df)]
                 df['relative_close_position'] = body_features[3*len(df):4*len(df)]
@@ -62,7 +64,9 @@ class PriceActionFeatures(BaseFeatureComputer):
                 body_features = compute_candle_body_features_numba(
                     open_prices, high_prices, low_prices, close_prices
                 )
-                df['candle_body_size'] = body_features[0:len(df)]
+                # FIX: Use body_size consistently and provide candle_body_size for compatibility
+                df['body_size'] = body_features[0:len(df)]
+                df['candle_body_size'] = df['body_size']  # For backward compatibility
                 df['upper_shadow'] = body_features[len(df):2*len(df)]
                 df['lower_shadow'] = body_features[2*len(df):3*len(df)]
                 df['relative_close_position'] = body_features[3*len(df):4*len(df)]
@@ -75,6 +79,7 @@ class PriceActionFeatures(BaseFeatureComputer):
         if not self.use_gpu and not self.use_numba:
             # Calculate candle body features directly
             df['body_size'] = np.abs(df['close_1h'] - df['open_1h'])
+            df['candle_body_size'] = df['body_size']  # For backward compatibility
             df['upper_shadow'] = df['high_1h'] - np.maximum(df['open_1h'], df['close_1h'])
             df['lower_shadow'] = np.minimum(df['open_1h'], df['close_1h']) - df['low_1h']
             

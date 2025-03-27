@@ -1,0 +1,1331 @@
+[INFO] 2025-03-27 21:19:48,944 | GPU monitoring initialized for 1 GPUs: Unknown GPU
+[INFO] 2025-03-27 21:19:48,945 | Resource monitor initialized: CPU cores: 8 physical / 16 logical, RAM: 23.43 GB
+[INFO] 2025-03-27 21:19:49,263 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-03-27 21:19:49,263 | System memory: 20.20 GB available / 23.43 GB total
+[INFO] 2025-03-27 21:19:49,268 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-03-27 21:19:49,271 | Loaded config from /root/OKXsignal/config/config.ini
+[INFO] 2025-03-27 21:19:49,416 | GPU detected: Device 0, Memory: 12.00 GB
+[INFO] 2025-03-27 21:19:49,416 | GPU acceleration is available
+[INFO] 2025-03-27 21:19:49,604 | Database connection pool initialized with 3-29 connections
+[INFO] 2025-03-27 21:19:49,604 | Starting compute_features.py in ROLLING_UPDATE mode with rolling_window=450
+[INFO] 2025-03-27 21:19:49,604 | Using 24 parallel workers with max 29 database connections
+[INFO] 2025-03-27 21:19:49,604 | Numba: enabled, GPU: disabled
+[INFO] 2025-03-27 21:19:49,605 | Database connection test successful
+[INFO] 2025-03-27 21:19:50,339 | Found 303 pairs
+[INFO] 2025-03-27 21:19:50,340 | Rolling update mode: computing last 450 rows per pair
+[INFO] 2025-03-27 21:19:50,340 | Calibrating optimal batch size...
+[INFO] 2025-03-27 21:19:51,336 | Testing batch size 4...
+[INFO] 2025-03-27 21:19:51,337 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 21:19:51,337 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 21:19:51,338 | Computing features for ACA-USDT
+[INFO] 2025-03-27 21:19:51,338 | Computing features for ACE-USDT
+[INFO] 2025-03-27 21:19:51,398 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:51,423 | Skipping 1INCH-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,423 | 1INCH-USDT: Updated 0/0 rows in 0.09s
+[INFO] 2025-03-27 21:19:51,460 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:51,484 | Skipping AAVE-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,484 | AAVE-USDT: Updated 0/0 rows in 0.15s
+[INFO] 2025-03-27 21:19:51,527 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:51,545 | Skipping ACA-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,546 | ACA-USDT: Updated 0/0 rows in 0.21s
+[INFO] 2025-03-27 21:19:51,735 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:51,753 | Skipping ACE-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,753 | ACE-USDT: Updated 0/0 rows in 0.41s
+[INFO] 2025-03-27 21:19:51,797 | Batch size 4: 8.68 pairs/sec
+[INFO] 2025-03-27 21:19:51,846 | Testing batch size 8...
+[INFO] 2025-03-27 21:19:51,847 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 21:19:51,847 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 21:19:51,847 | Computing features for ACA-USDT
+[INFO] 2025-03-27 21:19:51,848 | Computing features for ACE-USDT
+[INFO] 2025-03-27 21:19:51,848 | Computing features for ACH-USDT
+[INFO] 2025-03-27 21:19:51,850 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:51,848 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:51,849 | Computing features for ADA-USDT
+[INFO] 2025-03-27 21:19:51,849 | Computing features for AERGO-USDT
+[INFO] 2025-03-27 21:19:51,850 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:51,849 | Computing features for ACT-USDT
+[WARNING] 2025-03-27 21:19:51,862 | Skipping ACA-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[WARNING] 2025-03-27 21:19:51,864 | Skipping AAVE-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[WARNING] 2025-03-27 21:19:51,866 | Skipping 1INCH-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,866 | ACA-USDT: Updated 0/0 rows in 0.02s
+[INFO] 2025-03-27 21:19:51,866 | AAVE-USDT: Updated 0/0 rows in 0.02s
+[INFO] 2025-03-27 21:19:51,867 | 1INCH-USDT: Updated 0/0 rows in 0.02s
+[INFO] 2025-03-27 21:19:51,911 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:51,926 | Skipping ACE-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,927 | ACE-USDT: Updated 0/0 rows in 0.08s
+[INFO] 2025-03-27 21:19:51,971 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:51,989 | Skipping ACH-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:51,989 | ACH-USDT: Updated 0/0 rows in 0.14s
+[INFO] 2025-03-27 21:19:52,030 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:52,055 | Skipping ADA-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:52,055 | ADA-USDT: Updated 0/0 rows in 0.21s
+[INFO] 2025-03-27 21:19:52,095 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:52,118 | Skipping AERGO-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:52,118 | AERGO-USDT: Updated 0/0 rows in 0.27s
+[INFO] 2025-03-27 21:19:52,295 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 21:19:52,484 | Skipping ACT-USDT: only 610 candles, need >= 640. Data range: ('2025-02-26', '2025-03-23')
+[INFO] 2025-03-27 21:19:52,484 | ACT-USDT: Updated 0/0 rows in 0.64s
+[INFO] 2025-03-27 21:19:52,539 | Batch size 8: 11.56 pairs/sec
+[INFO] 2025-03-27 21:19:52,595 | Optimal batch size determined: 8 (11.56 pairs/sec)
+[INFO] 2025-03-27 21:19:52,596 | Using auto-calibrated batch size: 8
+[INFO] 2025-03-27 21:19:52,596 | Grouped 303 pairs into 26 balanced batches
+[INFO] 2025-03-27 21:19:52,596 | Processing batch 1/26 with 12 pairs
+[INFO] 2025-03-27 21:19:52,596 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 21:19:52,596 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 21:19:52,596 | Computing features for ACA-USDT
+[INFO] 2025-03-27 21:19:52,597 | Computing features for ACE-USDT
+[INFO] 2025-03-27 21:19:52,598 | Computing features for ACH-USDT
+[INFO] 2025-03-27 21:19:52,598 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:52,599 | Computing features for ACT-USDT
+[INFO] 2025-03-27 21:19:52,600 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:52,600 | Computing features for ADA-USDT
+[INFO] 2025-03-27 21:19:52,600 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:52,600 | Computing features for AERGO-USDT
+[ERROR] 2025-03-27 21:19:52,677 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:52,733 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:52,782 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:52,783 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:52,824 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:52,856 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:52,936 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:53,006 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:53,026 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:53,028 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:53,089 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:53,169 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:53,225 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:56,649 | AAVE-USDT: Updated 450/450 rows in 4.05s
+[INFO] 2025-03-27 21:19:56,710 | Computing features for AEVO-USDT
+[INFO] 2025-03-27 21:19:56,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:56,785 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:56,797 | ACE-USDT: Updated 450/450 rows in 4.20s
+[INFO] 2025-03-27 21:19:56,813 | ACH-USDT: Updated 450/450 rows in 4.22s
+[INFO] 2025-03-27 21:19:56,813 | 1INCH-USDT: Updated 450/450 rows in 4.22s
+[INFO] 2025-03-27 21:19:56,813 | ACA-USDT: Updated 450/450 rows in 4.22s
+[INFO] 2025-03-27 21:19:56,814 | ADA-USDT: Updated 450/450 rows in 4.21s
+[INFO] 2025-03-27 21:19:56,814 | ACT-USDT: Updated 450/450 rows in 4.22s
+[INFO] 2025-03-27 21:19:56,814 | AERGO-USDT: Updated 450/450 rows in 4.21s
+[INFO] 2025-03-27 21:19:57,273 | Computing features for AGLD-USDT
+[INFO] 2025-03-27 21:19:57,273 | Computing features for AIDOGE-USDT
+[INFO] 2025-03-27 21:19:57,273 | Computing features for AIXBT-USDT
+[INFO] 2025-03-27 21:19:57,284 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:57,285 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:57,285 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:57,378 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:57,438 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:57,522 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:58,023 | AEVO-USDT: Updated 450/450 rows in 1.31s
+[INFO] 2025-03-27 21:19:58,381 | AIXBT-USDT: Updated 450/450 rows in 1.11s
+[INFO] 2025-03-27 21:19:58,381 | AGLD-USDT: Updated 450/450 rows in 1.11s
+[INFO] 2025-03-27 21:19:58,381 | AIDOGE-USDT: Updated 450/450 rows in 1.11s
+[INFO] 2025-03-27 21:19:58,590 | Processing batch 2/26 with 12 pairs
+[INFO] 2025-03-27 21:19:58,590 | Computing features for ALCX-USDT
+[INFO] 2025-03-27 21:19:58,590 | Computing features for ALGO-USDT
+[INFO] 2025-03-27 21:19:58,591 | Computing features for ALPHA-USDT
+[INFO] 2025-03-27 21:19:58,591 | Computing features for ANIME-USDT
+[INFO] 2025-03-27 21:19:58,591 | Computing features for APE-USDT
+[INFO] 2025-03-27 21:19:58,592 | Computing features for API3-USDT
+[INFO] 2025-03-27 21:19:58,593 | Computing features for APT-USDT
+[INFO] 2025-03-27 21:19:58,593 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:58,593 | Computing features for AR-USDT
+[INFO] 2025-03-27 21:19:58,594 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:58,595 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:58,680 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:58,748 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:58,815 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:58,816 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:58,819 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:58,827 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:19:58,929 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:59,000 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:59,086 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:59,159 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:19:59,197 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:19:59,460 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:19:59,589 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:00,970 | ALCX-USDT: Updated 450/450 rows in 2.38s
+[INFO] 2025-03-27 21:20:01,079 | ALPHA-USDT: Updated 450/450 rows in 2.49s
+[INFO] 2025-03-27 21:20:01,080 | ALGO-USDT: Updated 450/450 rows in 2.49s
+[INFO] 2025-03-27 21:20:01,227 | Computing features for ARB-USDT
+[INFO] 2025-03-27 21:20:01,254 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:01,254 | Computing features for ARG-USDT
+[INFO] 2025-03-27 21:20:01,255 | Computing features for ARKM-USDT
+[INFO] 2025-03-27 21:20:01,256 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:01,257 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:01,321 | ANIME-USDT: Updated 450/450 rows in 2.73s
+[INFO] 2025-03-27 21:20:01,321 | APE-USDT: Updated 450/450 rows in 2.73s
+[ERROR] 2025-03-27 21:20:01,513 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:01,564 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:01,564 | API3-USDT: Updated 450/450 rows in 2.97s
+[ERROR] 2025-03-27 21:20:01,622 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:01,622 | AR-USDT: Updated 450/450 rows in 3.03s
+[INFO] 2025-03-27 21:20:01,622 | APT-USDT: Updated 450/450 rows in 3.03s
+[INFO] 2025-03-27 21:20:01,622 | Computing features for ARTY-USDT
+[INFO] 2025-03-27 21:20:01,819 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:01,989 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:02,855 | ARKM-USDT: Updated 450/450 rows in 1.60s
+[INFO] 2025-03-27 21:20:02,856 | ARB-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:20:02,915 | ARG-USDT: Updated 450/450 rows in 1.66s
+[INFO] 2025-03-27 21:20:03,047 | ARTY-USDT: Updated 450/450 rows in 1.42s
+[INFO] 2025-03-27 21:20:03,171 | Processing batch 3/26 with 12 pairs
+[INFO] 2025-03-27 21:20:03,172 | Computing features for ASTR-USDT
+[INFO] 2025-03-27 21:20:03,172 | Computing features for ATH-USDT
+[INFO] 2025-03-27 21:20:03,173 | Computing features for ATOM-USDT
+[INFO] 2025-03-27 21:20:03,173 | Computing features for AUCTION-USDT
+[INFO] 2025-03-27 21:20:03,174 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:03,174 | Computing features for AVAX-USDT
+[INFO] 2025-03-27 21:20:03,174 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:03,175 | Computing features for AXS-USDT
+[INFO] 2025-03-27 21:20:03,175 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:03,175 | Computing features for BABYDOGE-USDT
+[INFO] 2025-03-27 21:20:03,175 | Computing features for BADGER-USDT
+[ERROR] 2025-03-27 21:20:03,259 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:03,333 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:03,335 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:03,335 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:03,398 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:03,429 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:03,541 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:03,651 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:03,655 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:03,747 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:03,752 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:04,025 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:04,178 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:05,469 | ATH-USDT: Updated 450/450 rows in 2.30s
+[INFO] 2025-03-27 21:20:05,605 | Progress: 25/303 pairs processed (1.50 pairs/sec, ~185s remaining)
+[INFO] 2025-03-27 21:20:05,614 | ASTR-USDT: Updated 450/450 rows in 2.44s
+[INFO] 2025-03-27 21:20:05,616 | Computing features for BAL-USDT
+[INFO] 2025-03-27 21:20:05,730 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:05,745 | Computing features for BANANA-USDT
+[INFO] 2025-03-27 21:20:05,750 | ATOM-USDT: Updated 450/450 rows in 2.58s
+[INFO] 2025-03-27 21:20:05,752 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:05,896 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:05,919 | AUCTION-USDT: Updated 450/450 rows in 2.75s
+[INFO] 2025-03-27 21:20:05,920 | Computing features for BAND-USDT
+[ERROR] 2025-03-27 21:20:06,014 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:06,088 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:06,100 | AVAX-USDT: Updated 450/450 rows in 2.93s
+[INFO] 2025-03-27 21:20:06,206 | Computing features for BAT-USDT
+[INFO] 2025-03-27 21:20:06,210 | AXS-USDT: Updated 450/450 rows in 3.04s
+[INFO] 2025-03-27 21:20:06,216 | BADGER-USDT: Updated 450/450 rows in 3.04s
+[ERROR] 2025-03-27 21:20:06,297 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:06,360 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:06,436 | BABYDOGE-USDT: Updated 450/450 rows in 3.26s
+[ERROR] 2025-03-27 21:20:06,712 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:07,380 | BAL-USDT: Updated 450/450 rows in 1.76s
+[INFO] 2025-03-27 21:20:07,382 | BANANA-USDT: Updated 450/450 rows in 1.64s
+[INFO] 2025-03-27 21:20:07,526 | BAND-USDT: Updated 450/450 rows in 1.61s
+[INFO] 2025-03-27 21:20:07,595 | BAT-USDT: Updated 450/450 rows in 1.39s
+[INFO] 2025-03-27 21:20:07,707 | Processing batch 4/26 with 12 pairs
+[INFO] 2025-03-27 21:20:07,707 | Computing features for BCH-USDT
+[INFO] 2025-03-27 21:20:07,708 | Computing features for BERA-USDT
+[INFO] 2025-03-27 21:20:07,708 | Computing features for BICO-USDT
+[INFO] 2025-03-27 21:20:07,708 | Computing features for BIGTIME-USDT
+[INFO] 2025-03-27 21:20:07,708 | Computing features for BIO-USDT
+[INFO] 2025-03-27 21:20:07,710 | Computing features for BLUR-USDT
+[INFO] 2025-03-27 21:20:07,711 | Computing features for BNB-USDT
+[INFO] 2025-03-27 21:20:07,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:07,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:07,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:07,711 | Computing features for BNT-USDT
+[ERROR] 2025-03-27 21:20:07,787 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:07,866 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:07,866 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:07,945 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:07,946 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:07,980 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:08,088 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:08,188 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:08,193 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:08,193 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:08,354 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:08,601 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:08,669 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:10,004 | BERA-USDT: Updated 450/450 rows in 2.30s
+[INFO] 2025-03-27 21:20:10,124 | Computing features for BOME-USDT
+[INFO] 2025-03-27 21:20:10,135 | BICO-USDT: Updated 450/450 rows in 2.43s
+[INFO] 2025-03-27 21:20:10,158 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:10,232 | BCH-USDT: Updated 450/450 rows in 2.52s
+[INFO] 2025-03-27 21:20:10,297 | Computing features for BONE-USDT
+[INFO] 2025-03-27 21:20:10,337 | Computing features for BONK-USDT
+[INFO] 2025-03-27 21:20:10,341 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:10,453 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:10,464 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:10,552 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:10,616 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:10,622 | BIO-USDT: Updated 450/450 rows in 2.91s
+[INFO] 2025-03-27 21:20:10,623 | BNB-USDT: Updated 450/450 rows in 2.91s
+[INFO] 2025-03-27 21:20:10,623 | BLUR-USDT: Updated 450/450 rows in 2.91s
+[INFO] 2025-03-27 21:20:10,624 | BIGTIME-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:10,883 | BNT-USDT: Updated 450/450 rows in 3.17s
+[INFO] 2025-03-27 21:20:10,969 | Computing features for BORA-USDT
+[INFO] 2025-03-27 21:20:11,052 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:11,272 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:11,823 | BOME-USDT: Updated 450/450 rows in 1.70s
+[INFO] 2025-03-27 21:20:11,928 | BONK-USDT: Updated 450/450 rows in 1.59s
+[INFO] 2025-03-27 21:20:11,928 | BONE-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:20:12,037 | BORA-USDT: Updated 450/450 rows in 1.07s
+[INFO] 2025-03-27 21:20:12,154 | Processing batch 5/26 with 12 pairs
+[INFO] 2025-03-27 21:20:12,155 | Computing features for BSV-USDT
+[INFO] 2025-03-27 21:20:12,155 | Computing features for BTT-USDT
+[INFO] 2025-03-27 21:20:12,156 | Computing features for CAT-USDT
+[INFO] 2025-03-27 21:20:12,156 | Computing features for CATI-USDT
+[INFO] 2025-03-27 21:20:12,157 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:12,157 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:12,157 | Computing features for CELO-USDT
+[INFO] 2025-03-27 21:20:12,158 | Computing features for CELR-USDT
+[INFO] 2025-03-27 21:20:12,158 | Computing features for CETUS-USDT
+[INFO] 2025-03-27 21:20:12,158 | Computing features for CFG-USDT
+[INFO] 2025-03-27 21:20:12,159 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:12,247 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:12,319 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:12,393 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:12,393 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:12,393 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:12,409 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:12,486 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:12,561 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:12,629 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:12,698 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:12,710 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:12,961 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:13,137 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:14,441 | CAT-USDT: Updated 450/450 rows in 2.29s
+[INFO] 2025-03-27 21:20:14,576 | BTT-USDT: Updated 450/450 rows in 2.42s
+[INFO] 2025-03-27 21:20:14,583 | Computing features for CFX-USDT
+[INFO] 2025-03-27 21:20:14,657 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:14,658 | Progress: 50/303 pairs processed (1.94 pairs/sec, ~130s remaining)
+[INFO] 2025-03-27 21:20:14,661 | Computing features for CHZ-USDT
+[INFO] 2025-03-27 21:20:14,662 | BSV-USDT: Updated 450/450 rows in 2.51s
+[INFO] 2025-03-27 21:20:14,663 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:14,775 | Computing features for CITY-USDT
+[INFO] 2025-03-27 21:20:14,803 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:14,886 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:14,946 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:15,045 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:15,061 | CETUS-USDT: Updated 450/450 rows in 2.90s
+[INFO] 2025-03-27 21:20:15,072 | CELR-USDT: Updated 450/450 rows in 2.91s
+[INFO] 2025-03-27 21:20:15,072 | CFG-USDT: Updated 450/450 rows in 2.91s
+[INFO] 2025-03-27 21:20:15,073 | CATI-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:15,073 | CELO-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:15,518 | Computing features for CLV-USDT
+[INFO] 2025-03-27 21:20:15,544 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:15,694 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:16,232 | CFX-USDT: Updated 450/450 rows in 1.65s
+[INFO] 2025-03-27 21:20:16,350 | CHZ-USDT: Updated 450/450 rows in 1.69s
+[INFO] 2025-03-27 21:20:16,415 | CITY-USDT: Updated 450/450 rows in 1.64s
+[INFO] 2025-03-27 21:20:16,510 | CLV-USDT: Updated 450/450 rows in 0.99s
+[INFO] 2025-03-27 21:20:16,635 | Processing batch 6/26 with 12 pairs
+[INFO] 2025-03-27 21:20:16,636 | Computing features for COMP-USDT
+[INFO] 2025-03-27 21:20:16,636 | Computing features for CORE-USDT
+[INFO] 2025-03-27 21:20:16,637 | Computing features for CRO-USDT
+[INFO] 2025-03-27 21:20:16,637 | Computing features for CRV-USDT
+[INFO] 2025-03-27 21:20:16,638 | Computing features for CSPR-USDT
+[INFO] 2025-03-27 21:20:16,638 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:16,638 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:16,639 | Computing features for CTC-USDT
+[INFO] 2025-03-27 21:20:16,639 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:16,639 | Computing features for CTXC-USDT
+[INFO] 2025-03-27 21:20:16,639 | Computing features for CVC-USDT
+[ERROR] 2025-03-27 21:20:16,715 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:16,784 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:16,851 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:16,851 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:16,853 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:16,854 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:16,999 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:17,006 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:17,028 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:17,097 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:17,171 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:17,431 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:17,576 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:18,918 | CORE-USDT: Updated 450/450 rows in 2.28s
+[INFO] 2025-03-27 21:20:19,063 | Computing features for CVX-USDT
+[INFO] 2025-03-27 21:20:19,064 | CRO-USDT: Updated 450/450 rows in 2.43s
+[INFO] 2025-03-27 21:20:19,065 | COMP-USDT: Updated 450/450 rows in 2.43s
+[INFO] 2025-03-27 21:20:19,124 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:19,186 | Computing features for CXT-USDT
+[INFO] 2025-03-27 21:20:19,186 | Computing features for DAI-USDT
+[INFO] 2025-03-27 21:20:19,203 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:19,203 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:19,265 | CRV-USDT: Updated 450/450 rows in 2.63s
+[INFO] 2025-03-27 21:20:19,338 | Computing features for DAO-USDT
+[INFO] 2025-03-27 21:20:19,346 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:19,411 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:19,477 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:19,536 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:19,536 | CTC-USDT: Updated 450/450 rows in 2.90s
+[INFO] 2025-03-27 21:20:19,537 | CSPR-USDT: Updated 450/450 rows in 2.90s
+[INFO] 2025-03-27 21:20:19,537 | CTXC-USDT: Updated 450/450 rows in 2.90s
+[INFO] 2025-03-27 21:20:19,754 | CVC-USDT: Updated 450/450 rows in 3.11s
+[ERROR] 2025-03-27 21:20:19,841 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:20,756 | DAI-USDT: Updated 450/450 rows in 1.57s
+[INFO] 2025-03-27 21:20:20,825 | CXT-USDT: Updated 450/450 rows in 1.64s
+[INFO] 2025-03-27 21:20:20,903 | CVX-USDT: Updated 450/450 rows in 1.84s
+[INFO] 2025-03-27 21:20:20,903 | DAO-USDT: Updated 450/450 rows in 1.57s
+[INFO] 2025-03-27 21:20:21,054 | Processing batch 7/26 with 12 pairs
+[INFO] 2025-03-27 21:20:21,054 | Computing features for DEGEN-USDT
+[INFO] 2025-03-27 21:20:21,054 | Computing features for DEP-USDT
+[INFO] 2025-03-27 21:20:21,055 | Computing features for DGB-USDT
+[INFO] 2025-03-27 21:20:21,056 | Computing features for DIA-USDT
+[INFO] 2025-03-27 21:20:21,056 | Computing features for DOGE-USDT
+[INFO] 2025-03-27 21:20:21,056 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:21,057 | Computing features for DOGS-USDT
+[INFO] 2025-03-27 21:20:21,057 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:21,058 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:21,058 | Computing features for DORA-USDT
+[INFO] 2025-03-27 21:20:21,058 | Computing features for DOT-USDT
+[ERROR] 2025-03-27 21:20:21,147 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:21,149 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:21,233 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:21,318 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:21,320 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:21,320 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:21,547 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:21,608 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:21,608 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:21,683 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:21,683 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:21,967 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:22,047 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:23,260 | DEGEN-USDT: Updated 450/450 rows in 2.21s
+[INFO] 2025-03-27 21:20:23,369 | Computing features for DUCK-USDT
+[INFO] 2025-03-27 21:20:23,379 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:23,435 | DEP-USDT: Updated 450/450 rows in 2.38s
+[ERROR] 2025-03-27 21:20:23,522 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:23,631 | DGB-USDT: Updated 450/450 rows in 2.58s
+[INFO] 2025-03-27 21:20:23,642 | Computing features for DYDX-USDT
+[INFO] 2025-03-27 21:20:23,743 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:23,744 | Progress: 75/303 pairs processed (2.16 pairs/sec, ~106s remaining)
+[INFO] 2025-03-27 21:20:23,746 | DIA-USDT: Updated 450/450 rows in 2.69s
+[INFO] 2025-03-27 21:20:23,778 | Computing features for EGLD-USDT
+[INFO] 2025-03-27 21:20:23,886 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:23,990 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:24,033 | Computing features for EIGEN-USDT
+[INFO] 2025-03-27 21:20:24,042 | DOGS-USDT: Updated 450/450 rows in 2.99s
+[ERROR] 2025-03-27 21:20:24,109 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:24,120 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:24,195 | DORA-USDT: Updated 450/450 rows in 3.14s
+[INFO] 2025-03-27 21:20:24,218 | DOGE-USDT: Updated 450/450 rows in 3.16s
+[INFO] 2025-03-27 21:20:24,305 | DOT-USDT: Updated 450/450 rows in 3.25s
+[ERROR] 2025-03-27 21:20:24,433 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:25,099 | DUCK-USDT: Updated 450/450 rows in 1.73s
+[INFO] 2025-03-27 21:20:25,309 | EGLD-USDT: Updated 450/450 rows in 1.53s
+[INFO] 2025-03-27 21:20:25,385 | EIGEN-USDT: Updated 450/450 rows in 1.35s
+[INFO] 2025-03-27 21:20:25,452 | DYDX-USDT: Updated 450/450 rows in 1.81s
+[INFO] 2025-03-27 21:20:25,559 | Processing batch 8/26 with 12 pairs
+[INFO] 2025-03-27 21:20:25,560 | Computing features for ELF-USDT
+[INFO] 2025-03-27 21:20:25,560 | Computing features for ELON-USDT
+[INFO] 2025-03-27 21:20:25,561 | Computing features for ENJ-USDT
+[INFO] 2025-03-27 21:20:25,561 | Computing features for ENS-USDT
+[INFO] 2025-03-27 21:20:25,562 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:25,562 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:25,562 | Computing features for EOS-USDT
+[INFO] 2025-03-27 21:20:25,563 | Computing features for ERN-USDT
+[INFO] 2025-03-27 21:20:25,563 | Computing features for ETC-USDT
+[INFO] 2025-03-27 21:20:25,563 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:25,564 | Computing features for FET-USDT
+[ERROR] 2025-03-27 21:20:25,638 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:25,705 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:25,767 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:25,767 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:25,770 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:25,842 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:25,936 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:26,018 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:26,030 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:26,037 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:26,317 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:26,456 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:26,520 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:27,898 | ENJ-USDT: Updated 450/450 rows in 2.34s
+[INFO] 2025-03-27 21:20:27,904 | ELON-USDT: Updated 450/450 rows in 2.34s
+[INFO] 2025-03-27 21:20:27,990 | ELF-USDT: Updated 450/450 rows in 2.43s
+[INFO] 2025-03-27 21:20:28,133 | Computing features for FIL-USDT
+[INFO] 2025-03-27 21:20:28,134 | Computing features for FLM-USDT
+[INFO] 2025-03-27 21:20:28,135 | Computing features for FLOKI-USDT
+[INFO] 2025-03-27 21:20:28,165 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:28,170 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:28,175 | ERN-USDT: Updated 450/450 rows in 2.61s
+[INFO] 2025-03-27 21:20:28,177 | EOS-USDT: Updated 450/450 rows in 2.61s
+[INFO] 2025-03-27 21:20:28,177 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:28,328 | Computing features for FLOW-USDT
+[INFO] 2025-03-27 21:20:28,329 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:28,400 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:28,406 | ENS-USDT: Updated 450/450 rows in 2.84s
+[ERROR] 2025-03-27 21:20:28,467 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:28,468 | FET-USDT: Updated 450/450 rows in 2.90s
+[ERROR] 2025-03-27 21:20:28,529 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:28,529 | ETC-USDT: Updated 450/450 rows in 2.97s
+[ERROR] 2025-03-27 21:20:28,589 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:29,698 | FIL-USDT: Updated 450/450 rows in 1.57s
+[INFO] 2025-03-27 21:20:29,764 | FLOW-USDT: Updated 450/450 rows in 1.44s
+[INFO] 2025-03-27 21:20:29,764 | FLOKI-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:20:29,872 | FLM-USDT: Updated 450/450 rows in 1.74s
+[INFO] 2025-03-27 21:20:29,973 | Processing batch 9/26 with 12 pairs
+[INFO] 2025-03-27 21:20:29,973 | Computing features for FLR-USDT
+[INFO] 2025-03-27 21:20:29,973 | Computing features for FORTH-USDT
+[INFO] 2025-03-27 21:20:29,974 | Computing features for FOXY-USDT
+[INFO] 2025-03-27 21:20:29,974 | Computing features for FXS-USDT
+[INFO] 2025-03-27 21:20:29,975 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:29,975 | Computing features for G-USDT
+[INFO] 2025-03-27 21:20:29,975 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:29,976 | Computing features for GALA-USDT
+[INFO] 2025-03-27 21:20:29,977 | Computing features for GALFT-USDT
+[INFO] 2025-03-27 21:20:29,977 | Computing features for GAS-USDT
+[INFO] 2025-03-27 21:20:29,977 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:30,059 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:30,135 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:30,203 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:30,205 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:30,207 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:30,207 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:30,309 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:30,387 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:30,455 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:30,523 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:30,536 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:30,821 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:30,990 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:32,329 | FORTH-USDT: Updated 450/450 rows in 2.36s
+[INFO] 2025-03-27 21:20:32,493 | FOXY-USDT: Updated 450/450 rows in 2.52s
+[INFO] 2025-03-27 21:20:32,504 | FLR-USDT: Updated 450/450 rows in 2.53s
+[INFO] 2025-03-27 21:20:32,505 | Computing features for GEAR-USDT
+[INFO] 2025-03-27 21:20:32,633 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:32,634 | Computing features for GHST-USDT
+[INFO] 2025-03-27 21:20:32,636 | Computing features for GLM-USDT
+[INFO] 2025-03-27 21:20:32,641 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:32,657 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:32,814 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:32,886 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:32,961 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:32,967 | G-USDT: Updated 450/450 rows in 2.99s
+[INFO] 2025-03-27 21:20:32,979 | GALFT-USDT: Updated 450/450 rows in 3.00s
+[INFO] 2025-03-27 21:20:32,980 | GAS-USDT: Updated 450/450 rows in 3.00s
+[INFO] 2025-03-27 21:20:32,980 | GALA-USDT: Updated 450/450 rows in 3.00s
+[INFO] 2025-03-27 21:20:33,036 | FXS-USDT: Updated 450/450 rows in 3.06s
+[INFO] 2025-03-27 21:20:33,271 | Progress: 100/303 pairs processed (2.26 pairs/sec, ~90s remaining)
+[INFO] 2025-03-27 21:20:33,362 | Computing features for GLMR-USDT
+[INFO] 2025-03-27 21:20:33,436 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:33,652 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:34,206 | GHST-USDT: Updated 450/450 rows in 1.57s
+[INFO] 2025-03-27 21:20:34,325 | GLM-USDT: Updated 450/450 rows in 1.69s
+[INFO] 2025-03-27 21:20:34,411 | GEAR-USDT: Updated 450/450 rows in 1.91s
+[INFO] 2025-03-27 21:20:34,491 | GLMR-USDT: Updated 450/450 rows in 1.13s
+[INFO] 2025-03-27 21:20:34,610 | Processing batch 10/26 with 12 pairs
+[INFO] 2025-03-27 21:20:34,611 | Computing features for GMT-USDT
+[INFO] 2025-03-27 21:20:34,611 | Computing features for GMX-USDT
+[INFO] 2025-03-27 21:20:34,611 | Computing features for GOAT-USDT
+[INFO] 2025-03-27 21:20:34,612 | Computing features for GODS-USDT
+[INFO] 2025-03-27 21:20:34,613 | Computing features for GOG-USDT
+[INFO] 2025-03-27 21:20:34,613 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:34,613 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:34,614 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:34,614 | Computing features for GRT-USDT
+[INFO] 2025-03-27 21:20:34,614 | Computing features for HBAR-USDT
+[INFO] 2025-03-27 21:20:34,614 | Computing features for HMSTR-USDT
+[ERROR] 2025-03-27 21:20:34,692 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:34,760 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:34,824 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:34,824 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:34,828 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:34,964 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:34,981 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:34,998 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:35,068 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:35,175 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:35,368 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:35,499 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:35,587 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:36,928 | GOAT-USDT: Updated 450/450 rows in 2.32s
+[INFO] 2025-03-27 21:20:37,018 | GMX-USDT: Updated 450/450 rows in 2.41s
+[INFO] 2025-03-27 21:20:37,036 | Computing features for ICE-USDT
+[INFO] 2025-03-27 21:20:37,130 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:37,139 | GMT-USDT: Updated 450/450 rows in 2.53s
+[INFO] 2025-03-27 21:20:37,144 | Computing features for ICP-USDT
+[INFO] 2025-03-27 21:20:37,218 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:37,218 | Computing features for ICX-USDT
+[INFO] 2025-03-27 21:20:37,263 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:37,265 | GODS-USDT: Updated 450/450 rows in 2.65s
+[ERROR] 2025-03-27 21:20:37,346 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:37,536 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:37,536 | GOG-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:37,537 | GRT-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:37,537 | HBAR-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:37,537 | HMSTR-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:20:37,541 | Computing features for ID-USDT
+[ERROR] 2025-03-27 21:20:37,825 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:37,826 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:38,006 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:38,793 | ICP-USDT: Updated 450/450 rows in 1.65s
+[INFO] 2025-03-27 21:20:38,794 | ICE-USDT: Updated 450/450 rows in 1.76s
+[INFO] 2025-03-27 21:20:38,934 | ICX-USDT: Updated 450/450 rows in 1.72s
+[INFO] 2025-03-27 21:20:38,999 | ID-USDT: Updated 450/450 rows in 1.46s
+[INFO] 2025-03-27 21:20:39,108 | Processing batch 11/26 with 12 pairs
+[INFO] 2025-03-27 21:20:39,108 | Computing features for ILV-USDT
+[INFO] 2025-03-27 21:20:39,108 | Computing features for IMX-USDT
+[INFO] 2025-03-27 21:20:39,109 | Computing features for INJ-USDT
+[INFO] 2025-03-27 21:20:39,109 | Computing features for IOST-USDT
+[INFO] 2025-03-27 21:20:39,110 | Computing features for IOTA-USDT
+[INFO] 2025-03-27 21:20:39,110 | Computing features for IP-USDT
+[INFO] 2025-03-27 21:20:39,110 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:39,111 | Computing features for IQ-USDT
+[INFO] 2025-03-27 21:20:39,111 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:39,111 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:39,112 | Computing features for J-USDT
+[ERROR] 2025-03-27 21:20:39,193 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:39,255 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:39,312 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:39,312 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:39,315 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:39,461 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:39,462 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:39,537 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:39,559 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:39,564 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:39,840 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:39,996 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:40,069 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:41,479 | INJ-USDT: Updated 450/450 rows in 2.37s
+[INFO] 2025-03-27 21:20:41,482 | ILV-USDT: Updated 450/450 rows in 2.37s
+[INFO] 2025-03-27 21:20:41,488 | IMX-USDT: Updated 450/450 rows in 2.38s
+[INFO] 2025-03-27 21:20:41,664 | IOST-USDT: Updated 450/450 rows in 2.55s
+[INFO] 2025-03-27 21:20:41,665 | IOTA-USDT: Updated 450/450 rows in 2.56s
+[INFO] 2025-03-27 21:20:41,665 | Computing features for JOE-USDT
+[INFO] 2025-03-27 21:20:41,721 | Computing features for JST-USDT
+[INFO] 2025-03-27 21:20:41,721 | Computing features for JTO-USDT
+[INFO] 2025-03-27 21:20:41,800 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:41,808 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:41,808 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:41,830 | Computing features for JUP-USDT
+[INFO] 2025-03-27 21:20:41,830 | Progress: 125/303 pairs processed (2.36 pairs/sec, ~75s remaining)
+[INFO] 2025-03-27 21:20:41,845 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:41,920 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:41,978 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:42,039 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:42,097 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:42,097 | IQ-USDT: Updated 450/450 rows in 2.99s
+[INFO] 2025-03-27 21:20:42,097 | J-USDT: Updated 450/450 rows in 2.99s
+[INFO] 2025-03-27 21:20:42,098 | IP-USDT: Updated 450/450 rows in 2.99s
+[INFO] 2025-03-27 21:20:43,215 | JOE-USDT: Updated 450/450 rows in 1.55s
+[INFO] 2025-03-27 21:20:43,286 | JUP-USDT: Updated 450/450 rows in 1.46s
+[INFO] 2025-03-27 21:20:43,286 | JTO-USDT: Updated 450/450 rows in 1.57s
+[INFO] 2025-03-27 21:20:43,400 | JST-USDT: Updated 450/450 rows in 1.68s
+[INFO] 2025-03-27 21:20:43,508 | Processing batch 12/26 with 12 pairs
+[INFO] 2025-03-27 21:20:43,508 | Computing features for KAIA-USDT
+[INFO] 2025-03-27 21:20:43,508 | Computing features for KAITO-USDT
+[INFO] 2025-03-27 21:20:43,509 | Computing features for KDA-USDT
+[INFO] 2025-03-27 21:20:43,509 | Computing features for KISHU-USDT
+[INFO] 2025-03-27 21:20:43,511 | Computing features for KNC-USDT
+[INFO] 2025-03-27 21:20:43,511 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:43,511 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:43,512 | Computing features for KSM-USDT
+[INFO] 2025-03-27 21:20:43,512 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:43,512 | Computing features for LAT-USDT
+[INFO] 2025-03-27 21:20:43,513 | Computing features for LDO-USDT
+[ERROR] 2025-03-27 21:20:43,591 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:43,652 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:43,722 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:43,724 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:43,725 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:43,725 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:43,818 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:43,888 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:43,964 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:43,991 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:44,088 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:44,229 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:44,388 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:45,756 | KAITO-USDT: Updated 450/450 rows in 2.25s
+[INFO] 2025-03-27 21:20:45,878 | Computing features for LEO-USDT
+[INFO] 2025-03-27 21:20:45,892 | KAIA-USDT: Updated 450/450 rows in 2.38s
+[INFO] 2025-03-27 21:20:45,897 | KDA-USDT: Updated 450/450 rows in 2.39s
+[INFO] 2025-03-27 21:20:45,913 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:46,035 | Computing features for LINK-USDT
+[INFO] 2025-03-27 21:20:46,035 | Computing features for LOOKS-USDT
+[INFO] 2025-03-27 21:20:46,051 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:46,117 | KNC-USDT: Updated 450/450 rows in 2.61s
+[INFO] 2025-03-27 21:20:46,117 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:46,180 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:46,302 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:46,309 | Computing features for LPT-USDT
+[INFO] 2025-03-27 21:20:46,334 | LDO-USDT: Updated 450/450 rows in 2.82s
+[INFO] 2025-03-27 21:20:46,335 | KISHU-USDT: Updated 450/450 rows in 2.83s
+[INFO] 2025-03-27 21:20:46,341 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:46,404 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:46,404 | LAT-USDT: Updated 450/450 rows in 2.89s
+[INFO] 2025-03-27 21:20:46,420 | KSM-USDT: Updated 450/450 rows in 2.91s
+[ERROR] 2025-03-27 21:20:46,805 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:47,585 | LINK-USDT: Updated 450/450 rows in 1.55s
+[INFO] 2025-03-27 21:20:47,641 | LEO-USDT: Updated 450/450 rows in 1.76s
+[INFO] 2025-03-27 21:20:47,717 | LPT-USDT: Updated 450/450 rows in 1.41s
+[INFO] 2025-03-27 21:20:47,717 | LOOKS-USDT: Updated 450/450 rows in 1.68s
+[INFO] 2025-03-27 21:20:47,880 | Processing batch 13/26 with 12 pairs
+[INFO] 2025-03-27 21:20:47,881 | Computing features for LQTY-USDT
+[INFO] 2025-03-27 21:20:47,881 | Computing features for LRC-USDT
+[INFO] 2025-03-27 21:20:47,882 | Computing features for LSK-USDT
+[INFO] 2025-03-27 21:20:47,882 | Computing features for LTC-USDT
+[INFO] 2025-03-27 21:20:47,883 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:47,883 | Computing features for LUNA-USDT
+[INFO] 2025-03-27 21:20:47,884 | Computing features for LUNC-USDT
+[INFO] 2025-03-27 21:20:47,884 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:47,884 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:47,884 | Computing features for MAGIC-USDT
+[INFO] 2025-03-27 21:20:47,884 | Computing features for MAJOR-USDT
+[ERROR] 2025-03-27 21:20:47,966 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:48,028 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:48,031 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:48,093 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:48,094 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:48,097 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:48,195 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:48,259 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:48,336 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:48,410 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:48,421 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:48,708 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:48,898 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:50,273 | LRC-USDT: Updated 450/450 rows in 2.39s
+[INFO] 2025-03-27 21:20:50,276 | LQTY-USDT: Updated 450/450 rows in 2.40s
+[INFO] 2025-03-27 21:20:50,440 | LTC-USDT: Updated 450/450 rows in 2.56s
+[INFO] 2025-03-27 21:20:50,441 | Computing features for MANA-USDT
+[INFO] 2025-03-27 21:20:50,539 | Computing features for MASK-USDT
+[INFO] 2025-03-27 21:20:50,560 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:50,561 | LSK-USDT: Updated 450/450 rows in 2.68s
+[INFO] 2025-03-27 21:20:50,562 | LUNC-USDT: Updated 450/450 rows in 2.68s
+[INFO] 2025-03-27 21:20:50,563 | Computing features for MAX-USDT
+[INFO] 2025-03-27 21:20:50,627 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:50,690 | Computing features for MDT-USDT
+[INFO] 2025-03-27 21:20:50,691 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:50,691 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:50,763 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:50,832 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:50,832 | MAGIC-USDT: Updated 450/450 rows in 2.95s
+[INFO] 2025-03-27 21:20:50,833 | MAJOR-USDT: Updated 450/450 rows in 2.95s
+[ERROR] 2025-03-27 21:20:50,891 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:50,958 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:50,958 | LUNA-USDT: Updated 450/450 rows in 3.08s
+[INFO] 2025-03-27 21:20:51,194 | Progress: 150/303 pairs processed (2.41 pairs/sec, ~63s remaining)
+[INFO] 2025-03-27 21:20:52,106 | MASK-USDT: Updated 450/450 rows in 1.57s
+[INFO] 2025-03-27 21:20:52,167 | MANA-USDT: Updated 450/450 rows in 1.73s
+[INFO] 2025-03-27 21:20:52,227 | MAX-USDT: Updated 450/450 rows in 1.66s
+[INFO] 2025-03-27 21:20:52,294 | MDT-USDT: Updated 450/450 rows in 1.60s
+[INFO] 2025-03-27 21:20:52,414 | Processing batch 14/26 with 12 pairs
+[INFO] 2025-03-27 21:20:52,414 | Computing features for ME-USDT
+[INFO] 2025-03-27 21:20:52,414 | Computing features for MEME-USDT
+[INFO] 2025-03-27 21:20:52,415 | Computing features for MEMEFI-USDT
+[INFO] 2025-03-27 21:20:52,416 | Computing features for MENGO-USDT
+[INFO] 2025-03-27 21:20:52,416 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:52,416 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:52,416 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:52,416 | Computing features for MERL-USDT
+[INFO] 2025-03-27 21:20:52,417 | Computing features for METIS-USDT
+[INFO] 2025-03-27 21:20:52,417 | Computing features for MEW-USDT
+[INFO] 2025-03-27 21:20:52,417 | Computing features for MILO-USDT
+[ERROR] 2025-03-27 21:20:52,498 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:52,571 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:52,650 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:52,650 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:52,652 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:52,652 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:52,809 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:52,816 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:52,882 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:52,974 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:52,980 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:53,306 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:53,435 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:54,687 | ME-USDT: Updated 450/450 rows in 2.27s
+[INFO] 2025-03-27 21:20:54,809 | Computing features for MINA-USDT
+[INFO] 2025-03-27 21:20:54,854 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:54,863 | MEMEFI-USDT: Updated 450/450 rows in 2.45s
+[ERROR] 2025-03-27 21:20:55,035 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:55,054 | MEME-USDT: Updated 450/450 rows in 2.64s
+[INFO] 2025-03-27 21:20:55,056 | Computing features for MKR-USDT
+[INFO] 2025-03-27 21:20:55,133 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:55,155 | MENGO-USDT: Updated 450/450 rows in 2.74s
+[INFO] 2025-03-27 21:20:55,155 | Computing features for MLN-USDT
+[INFO] 2025-03-27 21:20:55,297 | METIS-USDT: Updated 450/450 rows in 2.88s
+[INFO] 2025-03-27 21:20:55,297 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:55,365 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:55,497 | Computing features for MOODENG-USDT
+[INFO] 2025-03-27 21:20:55,525 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:55,597 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:55,597 | MERL-USDT: Updated 450/450 rows in 3.18s
+[INFO] 2025-03-27 21:20:55,597 | MEW-USDT: Updated 450/450 rows in 3.18s
+[INFO] 2025-03-27 21:20:55,598 | MILO-USDT: Updated 450/450 rows in 3.18s
+[ERROR] 2025-03-27 21:20:55,824 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:56,497 | MINA-USDT: Updated 450/450 rows in 1.69s
+[INFO] 2025-03-27 21:20:56,688 | MOODENG-USDT: Updated 450/450 rows in 1.19s
+[INFO] 2025-03-27 21:20:56,689 | MLN-USDT: Updated 450/450 rows in 1.53s
+[INFO] 2025-03-27 21:20:56,689 | MKR-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:20:56,903 | Processing batch 15/26 with 12 pairs
+[INFO] 2025-03-27 21:20:56,903 | Computing features for MORPHO-USDT
+[INFO] 2025-03-27 21:20:56,904 | Computing features for MOVE-USDT
+[INFO] 2025-03-27 21:20:56,904 | Computing features for MOVR-USDT
+[INFO] 2025-03-27 21:20:56,905 | Computing features for MXC-USDT
+[INFO] 2025-03-27 21:20:56,905 | Computing features for NC-USDT
+[INFO] 2025-03-27 21:20:56,905 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:56,906 | Computing features for NEAR-USDT
+[INFO] 2025-03-27 21:20:56,906 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:56,906 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:56,907 | Computing features for NEIRO-USDT
+[INFO] 2025-03-27 21:20:56,907 | Computing features for NEO-USDT
+[ERROR] 2025-03-27 21:20:56,989 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:57,053 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:57,110 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:57,119 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:57,125 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:57,257 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:57,263 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:57,284 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:57,353 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:57,407 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:57,564 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:57,760 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:20:57,876 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:59,174 | MOVE-USDT: Updated 450/450 rows in 2.27s
+[INFO] 2025-03-27 21:20:59,265 | MOVR-USDT: Updated 450/450 rows in 2.36s
+[INFO] 2025-03-27 21:20:59,269 | Computing features for NFT-USDT
+[INFO] 2025-03-27 21:20:59,367 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:59,381 | MORPHO-USDT: Updated 450/450 rows in 2.48s
+[INFO] 2025-03-27 21:20:59,403 | Computing features for NMR-USDT
+[INFO] 2025-03-27 21:20:59,540 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:20:59,541 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:59,543 | Computing features for NOT-USDT
+[INFO] 2025-03-27 21:20:59,597 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:20:59,632 | MXC-USDT: Updated 450/450 rows in 2.73s
+[ERROR] 2025-03-27 21:20:59,780 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:59,853 | Computing features for NULS-USDT
+[ERROR] 2025-03-27 21:20:59,854 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:20:59,855 | NEIRO-USDT: Updated 450/450 rows in 2.95s
+[INFO] 2025-03-27 21:20:59,882 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:00,011 | NEO-USDT: Updated 450/450 rows in 3.10s
+[INFO] 2025-03-27 21:21:00,021 | NEAR-USDT: Updated 450/450 rows in 3.12s
+[INFO] 2025-03-27 21:21:00,029 | NC-USDT: Updated 450/450 rows in 3.12s
+[ERROR] 2025-03-27 21:21:00,307 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:00,308 | Progress: 175/303 pairs processed (2.45 pairs/sec, ~52s remaining)
+[INFO] 2025-03-27 21:21:00,995 | NFT-USDT: Updated 450/450 rows in 1.73s
+[INFO] 2025-03-27 21:21:01,137 | NMR-USDT: Updated 450/450 rows in 1.73s
+[INFO] 2025-03-27 21:21:01,211 | NULS-USDT: Updated 450/450 rows in 1.36s
+[INFO] 2025-03-27 21:21:01,273 | NOT-USDT: Updated 450/450 rows in 1.73s
+[INFO] 2025-03-27 21:21:01,397 | Processing batch 16/26 with 12 pairs
+[INFO] 2025-03-27 21:21:01,398 | Computing features for OAS-USDT
+[INFO] 2025-03-27 21:21:01,398 | Computing features for OKB-USDT
+[INFO] 2025-03-27 21:21:01,398 | Computing features for OKSOL-USDT
+[INFO] 2025-03-27 21:21:01,399 | Computing features for OKT-USDT
+[INFO] 2025-03-27 21:21:01,399 | Computing features for OL-USDT
+[INFO] 2025-03-27 21:21:01,400 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:01,400 | Computing features for OM-USDT
+[INFO] 2025-03-27 21:21:01,400 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:01,400 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:01,401 | Computing features for OMI-USDT
+[INFO] 2025-03-27 21:21:01,402 | Computing features for ONDO-USDT
+[ERROR] 2025-03-27 21:21:01,486 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:01,562 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:01,563 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:01,632 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:01,634 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:01,799 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:01,800 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:01,867 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:01,873 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:01,887 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:02,224 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:02,311 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:02,392 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:03,775 | OAS-USDT: Updated 450/450 rows in 2.38s
+[INFO] 2025-03-27 21:21:03,788 | OKB-USDT: Updated 450/450 rows in 2.39s
+[INFO] 2025-03-27 21:21:03,800 | OKSOL-USDT: Updated 450/450 rows in 2.40s
+[INFO] 2025-03-27 21:21:04,060 | OKT-USDT: Updated 450/450 rows in 2.66s
+[INFO] 2025-03-27 21:21:04,063 | Computing features for ONE-USDT
+[INFO] 2025-03-27 21:21:04,063 | Computing features for ONT-USDT
+[INFO] 2025-03-27 21:21:04,066 | Computing features for OP-USDT
+[INFO] 2025-03-27 21:21:04,133 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:04,133 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:04,133 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:04,134 | Computing features for ORBS-USDT
+[INFO] 2025-03-27 21:21:04,135 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:04,280 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:04,352 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:04,413 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:04,496 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:04,513 | OM-USDT: Updated 450/450 rows in 3.11s
+[INFO] 2025-03-27 21:21:04,514 | OMI-USDT: Updated 450/450 rows in 3.11s
+[INFO] 2025-03-27 21:21:04,521 | ONDO-USDT: Updated 450/450 rows in 3.12s
+[INFO] 2025-03-27 21:21:04,536 | OL-USDT: Updated 450/450 rows in 3.14s
+[INFO] 2025-03-27 21:21:05,686 | ONE-USDT: Updated 450/450 rows in 1.62s
+[INFO] 2025-03-27 21:21:05,764 | ONT-USDT: Updated 450/450 rows in 1.70s
+[INFO] 2025-03-27 21:21:05,822 | OP-USDT: Updated 450/450 rows in 1.76s
+[INFO] 2025-03-27 21:21:05,882 | ORBS-USDT: Updated 450/450 rows in 1.75s
+[INFO] 2025-03-27 21:21:05,994 | Processing batch 17/26 with 12 pairs
+[INFO] 2025-03-27 21:21:05,995 | Computing features for ORDI-USDT
+[INFO] 2025-03-27 21:21:05,995 | Computing features for OXT-USDT
+[INFO] 2025-03-27 21:21:05,995 | Computing features for PENDLE-USDT
+[INFO] 2025-03-27 21:21:05,996 | Computing features for PENGU-USDT
+[INFO] 2025-03-27 21:21:05,996 | Computing features for PEOPLE-USDT
+[INFO] 2025-03-27 21:21:05,997 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:05,997 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:05,997 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:05,997 | Computing features for PEPE-USDT
+[INFO] 2025-03-27 21:21:05,997 | Computing features for PERP-USDT
+[INFO] 2025-03-27 21:21:05,998 | Computing features for PHA-USDT
+[ERROR] 2025-03-27 21:21:06,087 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:06,166 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:06,234 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:06,236 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:06,237 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:06,244 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:06,341 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:06,411 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:06,489 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:06,506 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:06,576 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:06,889 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:06,984 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:08,211 | PENDLE-USDT: Updated 450/450 rows in 2.22s
+[INFO] 2025-03-27 21:21:08,315 | Computing features for PI-USDT
+[INFO] 2025-03-27 21:21:08,354 | ORDI-USDT: Updated 450/450 rows in 2.36s
+[INFO] 2025-03-27 21:21:08,365 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:08,554 | Computing features for PIXEL-USDT
+[ERROR] 2025-03-27 21:21:08,555 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:08,566 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:08,642 | OXT-USDT: Updated 450/450 rows in 2.65s
+[ERROR] 2025-03-27 21:21:08,708 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:08,892 | Computing features for PNUT-USDT
+[INFO] 2025-03-27 21:21:08,893 | PEPE-USDT: Updated 450/450 rows in 2.90s
+[INFO] 2025-03-27 21:21:08,920 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:09,056 | Computing features for POL-USDT
+[ERROR] 2025-03-27 21:21:09,163 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:09,176 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:09,194 | PENGU-USDT: Updated 450/450 rows in 3.20s
+[INFO] 2025-03-27 21:21:09,198 | PHA-USDT: Updated 450/450 rows in 3.20s
+[INFO] 2025-03-27 21:21:09,199 | PEOPLE-USDT: Updated 450/450 rows in 3.20s
+[INFO] 2025-03-27 21:21:09,435 | PERP-USDT: Updated 450/450 rows in 3.44s
+[ERROR] 2025-03-27 21:21:09,512 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:09,592 | Progress: 200/303 pairs processed (2.48 pairs/sec, ~42s remaining)
+[INFO] 2025-03-27 21:21:10,012 | PI-USDT: Updated 450/450 rows in 1.70s
+[INFO] 2025-03-27 21:21:10,207 | PIXEL-USDT: Updated 450/450 rows in 1.65s
+[INFO] 2025-03-27 21:21:10,343 | POL-USDT: Updated 450/450 rows in 1.29s
+[INFO] 2025-03-27 21:21:10,344 | PNUT-USDT: Updated 450/450 rows in 1.45s
+[INFO] 2025-03-27 21:21:10,514 | Processing batch 18/26 with 12 pairs
+[INFO] 2025-03-27 21:21:10,514 | Computing features for POLYDOGE-USDT
+[INFO] 2025-03-27 21:21:10,514 | Computing features for POR-USDT
+[INFO] 2025-03-27 21:21:10,515 | Computing features for PRCL-USDT
+[INFO] 2025-03-27 21:21:10,515 | Computing features for PRQ-USDT
+[INFO] 2025-03-27 21:21:10,516 | Computing features for PSTAKE-USDT
+[INFO] 2025-03-27 21:21:10,516 | Computing features for PYTH-USDT
+[INFO] 2025-03-27 21:21:10,517 | Computing features for PYUSD-USDT
+[INFO] 2025-03-27 21:21:10,518 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:10,518 | Computing features for QTUM-USDT
+[INFO] 2025-03-27 21:21:10,518 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:10,518 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:10,633 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:10,700 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:10,772 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:10,774 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:10,775 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:10,781 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:10,936 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:10,942 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:11,006 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:11,077 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:11,084 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:11,403 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:11,536 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:12,866 | POR-USDT: Updated 450/450 rows in 2.35s
+[INFO] 2025-03-27 21:21:12,986 | PRCL-USDT: Updated 450/450 rows in 2.47s
+[INFO] 2025-03-27 21:21:12,987 | Computing features for RACA-USDT
+[INFO] 2025-03-27 21:21:12,993 | POLYDOGE-USDT: Updated 450/450 rows in 2.48s
+[INFO] 2025-03-27 21:21:13,074 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:13,161 | Computing features for RADAR-USDT
+[INFO] 2025-03-27 21:21:13,162 | Computing features for RAY-USDT
+[INFO] 2025-03-27 21:21:13,173 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:13,173 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:13,286 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:13,286 | PSTAKE-USDT: Updated 450/450 rows in 2.77s
+[INFO] 2025-03-27 21:21:13,292 | PRQ-USDT: Updated 450/450 rows in 2.78s
+[ERROR] 2025-03-27 21:21:13,410 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:13,556 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:13,557 | PYTH-USDT: Updated 450/450 rows in 3.04s
+[INFO] 2025-03-27 21:21:13,557 | QTUM-USDT: Updated 450/450 rows in 3.04s
+[INFO] 2025-03-27 21:21:13,557 | PYUSD-USDT: Updated 450/450 rows in 3.04s
+[INFO] 2025-03-27 21:21:13,557 | Computing features for RDNT-USDT
+[INFO] 2025-03-27 21:21:13,761 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:14,022 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:14,729 | RACA-USDT: Updated 450/450 rows in 1.74s
+[INFO] 2025-03-27 21:21:14,791 | RADAR-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:21:14,792 | RAY-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:21:14,946 | RDNT-USDT: Updated 450/450 rows in 1.39s
+[INFO] 2025-03-27 21:21:15,068 | Processing batch 19/26 with 12 pairs
+[INFO] 2025-03-27 21:21:15,068 | Computing features for RENDER-USDT
+[INFO] 2025-03-27 21:21:15,068 | Computing features for RIO-USDT
+[INFO] 2025-03-27 21:21:15,069 | Computing features for RON-USDT
+[INFO] 2025-03-27 21:21:15,070 | Computing features for RPL-USDT
+[INFO] 2025-03-27 21:21:15,070 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:15,071 | Computing features for RSR-USDT
+[INFO] 2025-03-27 21:21:15,071 | Computing features for RSS3-USDT
+[INFO] 2025-03-27 21:21:15,071 | Computing features for RUNECOIN-USDT
+[INFO] 2025-03-27 21:21:15,072 | Computing features for RVN-USDT
+[INFO] 2025-03-27 21:21:15,075 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:15,075 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:15,150 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:15,152 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:15,255 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:15,330 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:15,337 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:15,338 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:15,439 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:15,534 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:15,618 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:15,619 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:15,703 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:15,809 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:16,058 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:17,177 | RENDER-USDT: Updated 450/450 rows in 2.11s
+[INFO] 2025-03-27 21:21:17,276 | Computing features for S-USDT
+[INFO] 2025-03-27 21:21:17,296 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:17,427 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:17,586 | RIO-USDT: Updated 450/450 rows in 2.52s
+[INFO] 2025-03-27 21:21:17,606 | RON-USDT: Updated 450/450 rows in 2.54s
+[INFO] 2025-03-27 21:21:17,845 | Computing features for SAFE-USDT
+[INFO] 2025-03-27 21:21:17,881 | Computing features for SAMO-USDT
+[INFO] 2025-03-27 21:21:17,894 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:17,895 | RPL-USDT: Updated 450/450 rows in 2.83s
+[INFO] 2025-03-27 21:21:17,896 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:18,009 | RSR-USDT: Updated 450/450 rows in 2.94s
+[ERROR] 2025-03-27 21:21:18,072 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:18,077 | Computing features for SAND-USDT
+[INFO] 2025-03-27 21:21:18,079 | RSS3-USDT: Updated 450/450 rows in 3.01s
+[ERROR] 2025-03-27 21:21:18,201 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:18,203 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:18,318 | RUNECOIN-USDT: Updated 450/450 rows in 3.25s
+[INFO] 2025-03-27 21:21:18,333 | RVN-USDT: Updated 450/450 rows in 3.26s
+[ERROR] 2025-03-27 21:21:18,531 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:18,956 | S-USDT: Updated 450/450 rows in 1.68s
+[INFO] 2025-03-27 21:21:19,059 | Progress: 225/303 pairs processed (2.50 pairs/sec, ~31s remaining)
+[INFO] 2025-03-27 21:21:19,330 | SAFE-USDT: Updated 450/450 rows in 1.48s
+[INFO] 2025-03-27 21:21:19,412 | SAMO-USDT: Updated 450/450 rows in 1.53s
+[INFO] 2025-03-27 21:21:19,412 | SAND-USDT: Updated 450/450 rows in 1.34s
+[INFO] 2025-03-27 21:21:19,605 | Processing batch 20/26 with 12 pairs
+[INFO] 2025-03-27 21:21:19,606 | Computing features for SATS-USDT
+[INFO] 2025-03-27 21:21:19,606 | Computing features for SC-USDT
+[INFO] 2025-03-27 21:21:19,606 | Computing features for SCR-USDT
+[INFO] 2025-03-27 21:21:19,607 | Computing features for SD-USDT
+[INFO] 2025-03-27 21:21:19,607 | Computing features for SHIB-USDT
+[INFO] 2025-03-27 21:21:19,608 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:19,608 | Computing features for SKL-USDT
+[INFO] 2025-03-27 21:21:19,608 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:19,608 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:19,609 | Computing features for SLERF-USDT
+[INFO] 2025-03-27 21:21:19,609 | Computing features for SLP-USDT
+[ERROR] 2025-03-27 21:21:19,704 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:19,778 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:19,842 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:19,842 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:19,846 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:19,944 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:20,016 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:20,082 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:20,099 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:20,158 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:20,336 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:20,500 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:20,609 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:21,829 | SCR-USDT: Updated 450/450 rows in 2.22s
+[INFO] 2025-03-27 21:21:21,961 | Computing features for SNT-USDT
+[INFO] 2025-03-27 21:21:21,997 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:22,129 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:22,134 | SATS-USDT: Updated 450/450 rows in 2.53s
+[INFO] 2025-03-27 21:21:22,178 | SC-USDT: Updated 450/450 rows in 2.57s
+[INFO] 2025-03-27 21:21:22,331 | SHIB-USDT: Updated 450/450 rows in 2.72s
+[INFO] 2025-03-27 21:21:22,342 | SD-USDT: Updated 450/450 rows in 2.74s
+[INFO] 2025-03-27 21:21:22,343 | Computing features for SNX-USDT
+[INFO] 2025-03-27 21:21:22,484 | Computing features for SOL-USDT
+[INFO] 2025-03-27 21:21:22,491 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:22,559 | Computing features for SONIC-USDT
+[INFO] 2025-03-27 21:21:22,559 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:22,606 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:22,675 | SKL-USDT: Updated 450/450 rows in 3.07s
+[ERROR] 2025-03-27 21:21:22,675 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:22,802 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:22,860 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:22,871 | SLP-USDT: Updated 450/450 rows in 3.26s
+[INFO] 2025-03-27 21:21:22,884 | SLERF-USDT: Updated 450/450 rows in 3.28s
+[INFO] 2025-03-27 21:21:23,655 | SNT-USDT: Updated 450/450 rows in 1.69s
+[INFO] 2025-03-27 21:21:23,891 | SOL-USDT: Updated 450/450 rows in 1.41s
+[INFO] 2025-03-27 21:21:23,958 | SNX-USDT: Updated 450/450 rows in 1.61s
+[INFO] 2025-03-27 21:21:24,017 | SONIC-USDT: Updated 450/450 rows in 1.46s
+[INFO] 2025-03-27 21:21:24,121 | Processing batch 21/26 with 12 pairs
+[INFO] 2025-03-27 21:21:24,121 | Computing features for SPURS-USDT
+[INFO] 2025-03-27 21:21:24,121 | Computing features for SSV-USDT
+[INFO] 2025-03-27 21:21:24,122 | Computing features for SSWP-USDT
+[INFO] 2025-03-27 21:21:24,122 | Computing features for STORJ-USDT
+[INFO] 2025-03-27 21:21:24,123 | Computing features for STRK-USDT
+[INFO] 2025-03-27 21:21:24,124 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:24,124 | Computing features for STX-USDT
+[INFO] 2025-03-27 21:21:24,124 | Computing features for SUI-USDT
+[INFO] 2025-03-27 21:21:24,124 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:24,125 | Computing features for SUSHI-USDT
+[INFO] 2025-03-27 21:21:24,125 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:24,207 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:24,270 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:24,332 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:24,334 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:24,335 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:24,336 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:24,495 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:24,503 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:24,572 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:24,634 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:24,646 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:24,897 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:25,084 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:26,442 | SSV-USDT: Updated 450/450 rows in 2.32s
+[INFO] 2025-03-27 21:21:26,457 | SSWP-USDT: Updated 450/450 rows in 2.33s
+[INFO] 2025-03-27 21:21:26,617 | SPURS-USDT: Updated 450/450 rows in 2.50s
+[INFO] 2025-03-27 21:21:26,690 | Computing features for SWEAT-USDT
+[INFO] 2025-03-27 21:21:26,694 | Computing features for SWFTC-USDT
+[INFO] 2025-03-27 21:21:26,713 | STRK-USDT: Updated 450/450 rows in 2.59s
+[INFO] 2025-03-27 21:21:26,714 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:26,734 | Computing features for T-USDT
+[INFO] 2025-03-27 21:21:26,797 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:26,801 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:26,801 | Computing features for THETA-USDT
+[INFO] 2025-03-27 21:21:26,807 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:26,904 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:26,909 | STX-USDT: Updated 450/450 rows in 2.78s
+[ERROR] 2025-03-27 21:21:26,967 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:26,969 | STORJ-USDT: Updated 450/450 rows in 2.85s
+[ERROR] 2025-03-27 21:21:27,104 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:27,235 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:27,256 | SUI-USDT: Updated 450/450 rows in 3.13s
+[INFO] 2025-03-27 21:21:27,273 | SUSHI-USDT: Updated 450/450 rows in 3.15s
+[INFO] 2025-03-27 21:21:28,321 | SWFTC-USDT: Updated 450/450 rows in 1.63s
+[INFO] 2025-03-27 21:21:28,380 | T-USDT: Updated 450/450 rows in 1.65s
+[INFO] 2025-03-27 21:21:28,380 | SWEAT-USDT: Updated 450/450 rows in 1.69s
+[INFO] 2025-03-27 21:21:28,501 | THETA-USDT: Updated 450/450 rows in 1.70s
+[INFO] 2025-03-27 21:21:28,501 | Progress: 250/303 pairs processed (2.51 pairs/sec, ~21s remaining)
+[INFO] 2025-03-27 21:21:28,617 | Processing batch 22/26 with 12 pairs
+[INFO] 2025-03-27 21:21:28,618 | Computing features for TIA-USDT
+[INFO] 2025-03-27 21:21:28,618 | Computing features for TNSR-USDT
+[INFO] 2025-03-27 21:21:28,618 | Computing features for TON-USDT
+[INFO] 2025-03-27 21:21:28,619 | Computing features for TRA-USDT
+[INFO] 2025-03-27 21:21:28,619 | Computing features for TRB-USDT
+[INFO] 2025-03-27 21:21:28,620 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:28,620 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:28,620 | Computing features for TRUMP-USDT
+[INFO] 2025-03-27 21:21:28,621 | Computing features for TRX-USDT
+[INFO] 2025-03-27 21:21:28,621 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:28,621 | Computing features for TURBO-USDT
+[ERROR] 2025-03-27 21:21:28,711 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:28,785 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:28,856 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:28,857 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:28,858 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:28,916 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:29,004 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:29,104 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:29,110 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:29,142 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:29,273 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:29,538 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:29,629 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:30,963 | TNSR-USDT: Updated 450/450 rows in 2.35s
+[INFO] 2025-03-27 21:21:31,071 | TIA-USDT: Updated 450/450 rows in 2.45s
+[INFO] 2025-03-27 21:21:31,171 | Computing features for ULTI-USDT
+[INFO] 2025-03-27 21:21:31,189 | TRA-USDT: Updated 450/450 rows in 2.57s
+[INFO] 2025-03-27 21:21:31,195 | Computing features for UMA-USDT
+[INFO] 2025-03-27 21:21:31,198 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:31,284 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:31,290 | TON-USDT: Updated 450/450 rows in 2.67s
+[INFO] 2025-03-27 21:21:31,292 | Computing features for UNI-USDT
+[ERROR] 2025-03-27 21:21:31,436 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:31,437 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:31,438 | Computing features for USDC-USDT
+[INFO] 2025-03-27 21:21:31,473 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:31,483 | TRB-USDT: Updated 450/450 rows in 2.86s
+[ERROR] 2025-03-27 21:21:31,554 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:31,572 | TRUMP-USDT: Updated 450/450 rows in 2.95s
+[ERROR] 2025-03-27 21:21:31,784 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:31,795 | TURBO-USDT: Updated 450/450 rows in 3.17s
+[INFO] 2025-03-27 21:21:31,811 | TRX-USDT: Updated 450/450 rows in 3.19s
+[ERROR] 2025-03-27 21:21:31,913 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:32,846 | ULTI-USDT: Updated 450/450 rows in 1.68s
+[INFO] 2025-03-27 21:21:32,914 | UMA-USDT: Updated 450/450 rows in 1.72s
+[INFO] 2025-03-27 21:21:33,016 | UNI-USDT: Updated 450/450 rows in 1.72s
+[INFO] 2025-03-27 21:21:33,088 | USDC-USDT: Updated 450/450 rows in 1.65s
+[INFO] 2025-03-27 21:21:33,213 | Processing batch 23/26 with 12 pairs
+[INFO] 2025-03-27 21:21:33,213 | Computing features for USTC-USDT
+[INFO] 2025-03-27 21:21:33,213 | Computing features for UXLINK-USDT
+[INFO] 2025-03-27 21:21:33,214 | Computing features for VELO-USDT
+[INFO] 2025-03-27 21:21:33,214 | Computing features for VELODROME-USDT
+[INFO] 2025-03-27 21:21:33,215 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:33,215 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:33,215 | Computing features for VENOM-USDT
+[INFO] 2025-03-27 21:21:33,216 | Computing features for VINE-USDT
+[INFO] 2025-03-27 21:21:33,216 | Computing features for VRA-USDT
+[INFO] 2025-03-27 21:21:33,216 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:33,217 | Computing features for W-USDT
+[ERROR] 2025-03-27 21:21:33,306 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:33,372 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:33,372 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:33,436 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:33,439 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:33,442 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:33,570 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:33,646 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:33,666 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:33,730 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:33,747 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:34,100 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:34,202 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:35,512 | UXLINK-USDT: Updated 450/450 rows in 2.30s
+[INFO] 2025-03-27 21:21:35,665 | Computing features for WAXP-USDT
+[INFO] 2025-03-27 21:21:35,685 | VELO-USDT: Updated 450/450 rows in 2.47s
+[INFO] 2025-03-27 21:21:35,690 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:35,866 | USTC-USDT: Updated 450/450 rows in 2.65s
+[ERROR] 2025-03-27 21:21:35,945 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:35,951 | Computing features for WIF-USDT
+[INFO] 2025-03-27 21:21:36,036 | VELODROME-USDT: Updated 450/450 rows in 2.82s
+[INFO] 2025-03-27 21:21:36,038 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:36,125 | Computing features for WIN-USDT
+[INFO] 2025-03-27 21:21:36,137 | VINE-USDT: Updated 450/450 rows in 2.92s
+[INFO] 2025-03-27 21:21:36,138 | Computing features for WLD-USDT
+[INFO] 2025-03-27 21:21:36,203 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:36,245 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:36,255 | VENOM-USDT: Updated 450/450 rows in 3.04s
+[ERROR] 2025-03-27 21:21:36,324 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:36,537 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:36,537 | W-USDT: Updated 450/450 rows in 3.32s
+[ERROR] 2025-03-27 21:21:36,698 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:36,698 | VRA-USDT: Updated 450/450 rows in 3.48s
+[INFO] 2025-03-27 21:21:37,467 | WAXP-USDT: Updated 450/450 rows in 1.80s
+[INFO] 2025-03-27 21:21:37,662 | WIF-USDT: Updated 450/450 rows in 1.71s
+[INFO] 2025-03-27 21:21:37,734 | WLD-USDT: Updated 450/450 rows in 1.60s
+[INFO] 2025-03-27 21:21:37,803 | WIN-USDT: Updated 450/450 rows in 1.68s
+[INFO] 2025-03-27 21:21:37,804 | Progress: 275/303 pairs processed (2.53 pairs/sec, ~11s remaining)
+[INFO] 2025-03-27 21:21:37,922 | Processing batch 24/26 with 12 pairs
+[INFO] 2025-03-27 21:21:37,922 | Computing features for WOO-USDT
+[INFO] 2025-03-27 21:21:37,923 | Computing features for X-USDT
+[INFO] 2025-03-27 21:21:37,923 | Computing features for XAUT-USDT
+[INFO] 2025-03-27 21:21:37,924 | Computing features for XCH-USDT
+[INFO] 2025-03-27 21:21:37,925 | Computing features for XLM-USDT
+[INFO] 2025-03-27 21:21:37,925 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:37,925 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:37,925 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:37,925 | Computing features for XNO-USDT
+[INFO] 2025-03-27 21:21:37,926 | Computing features for XRP-USDT
+[INFO] 2025-03-27 21:21:37,926 | Computing features for XTZ-USDT
+[ERROR] 2025-03-27 21:21:38,012 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:38,085 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:38,086 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:38,086 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:38,157 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:38,172 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:38,297 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:38,393 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:38,469 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:38,469 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:38,497 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:38,802 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:38,949 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:40,337 | X-USDT: Updated 450/450 rows in 2.41s
+[INFO] 2025-03-27 21:21:40,429 | Computing features for YFI-USDT
+[INFO] 2025-03-27 21:21:40,456 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:40,457 | WOO-USDT: Updated 450/450 rows in 2.53s
+[INFO] 2025-03-27 21:21:40,564 | XAUT-USDT: Updated 450/450 rows in 2.64s
+[ERROR] 2025-03-27 21:21:40,628 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:40,629 | Computing features for YGG-USDT
+[INFO] 2025-03-27 21:21:40,744 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:40,745 | XLM-USDT: Updated 450/450 rows in 2.82s
+[INFO] 2025-03-27 21:21:40,760 | Computing features for ZBCN-USDT
+[INFO] 2025-03-27 21:21:40,875 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:40,875 | XCH-USDT: Updated 450/450 rows in 2.95s
+[INFO] 2025-03-27 21:21:40,876 | XRP-USDT: Updated 450/450 rows in 2.95s
+[INFO] 2025-03-27 21:21:40,877 | Computing features for ZENT-USDT
+[ERROR] 2025-03-27 21:21:41,070 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:41,070 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:41,071 | XNO-USDT: Updated 450/450 rows in 3.15s
+[INFO] 2025-03-27 21:21:41,120 | XTZ-USDT: Updated 450/450 rows in 3.19s
+[ERROR] 2025-03-27 21:21:41,256 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:41,425 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:42,135 | YFI-USDT: Updated 450/450 rows in 1.71s
+[INFO] 2025-03-27 21:21:42,312 | YGG-USDT: Updated 450/450 rows in 1.68s
+[INFO] 2025-03-27 21:21:42,376 | ZBCN-USDT: Updated 450/450 rows in 1.62s
+[INFO] 2025-03-27 21:21:42,439 | ZENT-USDT: Updated 450/450 rows in 1.56s
+[INFO] 2025-03-27 21:21:42,554 | Processing batch 25/26 with 10 pairs
+[INFO] 2025-03-27 21:21:42,554 | Computing features for ZERO-USDT
+[INFO] 2025-03-27 21:21:42,554 | Computing features for ZETA-USDT
+[INFO] 2025-03-27 21:21:42,555 | Computing features for ZEUS-USDT
+[INFO] 2025-03-27 21:21:42,556 | Computing features for ZIL-USDT
+[INFO] 2025-03-27 21:21:42,556 | Computing features for ZK-USDT
+[INFO] 2025-03-27 21:21:42,556 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:42,557 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:42,557 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:42,557 | Computing features for ZKJ-USDT
+[INFO] 2025-03-27 21:21:42,557 | Computing features for ZRO-USDT
+[INFO] 2025-03-27 21:21:42,557 | Computing features for ZRX-USDT
+[ERROR] 2025-03-27 21:21:42,638 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:42,699 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:42,765 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:42,767 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:42,768 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:42,768 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:42,874 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:42,942 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:43,021 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:43,111 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:43,112 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:43,284 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:43,531 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:44,865 | ZERO-USDT: Updated 450/450 rows in 2.31s
+[INFO] 2025-03-27 21:21:44,977 | Computing features for BETH-USDT
+[INFO] 2025-03-27 21:21:44,994 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:44,997 | ZETA-USDT: Updated 450/450 rows in 2.44s
+[INFO] 2025-03-27 21:21:45,109 | ZEUS-USDT: Updated 450/450 rows in 2.55s
+[ERROR] 2025-03-27 21:21:45,208 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:45,283 | Computing features for BTC-USDT
+[INFO] 2025-03-27 21:21:45,302 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:45,378 | ZK-USDT: Updated 450/450 rows in 2.82s
+[ERROR] 2025-03-27 21:21:45,539 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:45,545 | ZKJ-USDT: Updated 450/450 rows in 2.99s
+[INFO] 2025-03-27 21:21:45,545 | ZRO-USDT: Updated 450/450 rows in 2.99s
+[INFO] 2025-03-27 21:21:45,746 | ZRX-USDT: Updated 450/450 rows in 3.19s
+[INFO] 2025-03-27 21:21:45,763 | ZIL-USDT: Updated 450/450 rows in 3.21s
+[INFO] 2025-03-27 21:21:46,223 | BETH-USDT: Updated 450/450 rows in 1.25s
+[INFO] 2025-03-27 21:21:46,290 | BTC-USDT: Updated 450/450 rows in 1.01s
+[INFO] 2025-03-27 21:21:46,420 | Processing batch 26/26 with 5 pairs
+[INFO] 2025-03-27 21:21:46,420 | Computing features for ETH-USDT
+[INFO] 2025-03-27 21:21:46,420 | Computing features for ETHFI-USDT
+[INFO] 2025-03-27 21:21:46,421 | Computing features for ETHW-USDT
+[INFO] 2025-03-27 21:21:46,421 | Computing features for STETH-USDT
+[INFO] 2025-03-27 21:21:46,422 | Computing features for WBTC-USDT
+[INFO] 2025-03-27 21:21:46,422 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:46,423 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:46,423 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:46,506 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:46,586 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:46,667 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 21:21:46,667 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[ERROR] 2025-03-27 21:21:46,667 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:46,832 | Error computing price action features: 'body_size'
+[ERROR] 2025-03-27 21:21:46,916 | Error computing price action features: 'body_size'
+[INFO] 2025-03-27 21:21:47,882 | ETHFI-USDT: Updated 450/450 rows in 1.46s
+[INFO] 2025-03-27 21:21:48,070 | ETH-USDT: Updated 450/450 rows in 1.65s
+[INFO] 2025-03-27 21:21:48,137 | Progress: 300/303 pairs processed (2.52 pairs/sec, ~1s remaining)
+[INFO] 2025-03-27 21:21:48,153 | ETHW-USDT: Updated 450/450 rows in 1.73s
+[INFO] 2025-03-27 21:21:48,215 | WBTC-USDT: Updated 450/450 rows in 1.79s
+[INFO] 2025-03-27 21:21:48,276 | STETH-USDT: Updated 450/450 rows in 1.85s
+[INFO] 2025-03-27 21:21:48,334 | Progress: 303/303 pairs processed (2.54 pairs/sec, ~0s remaining)
+[INFO] 2025-03-27 21:21:48,394 | Computing cross-pair features
+[INFO] 2025-03-27 21:21:55,610 | Updated 1 rows with cross-pair features
+[INFO] 2025-03-27 21:21:55,614 | Performance summary saved to logs/performance_summary_2025-03-27_212155.json
+[INFO] 2025-03-27 21:21:55,614 | Performance report saved to logs/performance_report_2025-03-27_212155.txt
+[INFO] 2025-03-27 21:21:55,614 | Performance summary saved to logs/performance_summary_2025-03-27_212155.json
+[INFO] 2025-03-27 21:21:55,614 | Performance report saved to logs/performance_report_2025-03-27_212155.txt
+[INFO] 2025-03-27 21:21:55,614 | Rolling update mode completed.
+[INFO] 2025-03-27 21:21:55,614 | Total runtime: 126.67 seconds
+[INFO] 2025-03-27 21:21:55,615 | All connections in the pool have been closed

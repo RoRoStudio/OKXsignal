@@ -377,14 +377,36 @@ class OptimizedFeatureProcessor:
                 rsi_slope[3:] = (rsi[3:] - rsi[:-3]) / 3
                 results['rsi_slope_1h'] = rsi_slope
                 
-                # MACD would be implemented here
-                # Skipping for brevity
-            
-            # Additional momentum indicators would be computed here
-            # Stochastic, Williams %R, etc.
+                # Stochastic Oscillator
+                k_period = MOMENTUM_PARAMS['stoch_k']
+                d_period = MOMENTUM_PARAMS['stoch_d']
+                
+                # Calculate %K
+                lowest_low = np.zeros(n)
+                highest_high = np.zeros(n)
+                
+                for i in range(k_period - 1, n):
+                    lowest_low[i] = np.min(lows[i-k_period+1:i+1])
+                    highest_high[i] = np.max(highs[i-k_period+1:i+1])
+                
+                # Calculate %K
+                stoch_k = np.zeros(n)
+                valid_range = (highest_high - lowest_low) > 0
+                stoch_k[valid_range] = 100 * ((closes[valid_range] - lowest_low[valid_range]) / 
+                                            (highest_high[valid_range] - lowest_low[valid_range]))
+                
+                # Calculate %D (simple moving average of %K)
+                stoch_d = np.zeros(n)
+                for i in range(d_period - 1, n):
+                    stoch_d[i] = np.mean(stoch_k[i-d_period+1:i+1])
+
+                results['stoch_k_14'] = stoch_k
+                results['stoch_d_14'] = stoch_d
             
         except Exception as e:
             logging.error(f"Error computing momentum features: {e}")
+            results['stoch_k_14'] = np.zeros(n)
+            results['stoch_d_14'] = np.zeros(n)
             
         if perf_monitor:
             perf_monitor.log_operation("momentum_features", time.time() - start_time)

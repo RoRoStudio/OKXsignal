@@ -68,13 +68,23 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
         Dictionary with OHLCV arrays
     """
     cursor = db_conn.cursor()
-    
+        
     try:
         if rolling_window:
+            # FIX: Use different query approach to get correct row count
+            # First get the total count to check if we have enough data
+            count_query = "SELECT COUNT(*) FROM candles_1h WHERE pair = %s"
+            cursor.execute(count_query, (pair,))
+            total_rows = cursor.fetchone()[0]
+            
+            # Log the total number of rows
+            logging.debug(f"{pair}: Total rows in database: {total_rows}")
+            
             # Add extra padding for indicators that need more data
             lookback_padding = 300
             limit = rolling_window + lookback_padding
             
+            # Get the most recent data in proper chronological order
             query = """
                 SELECT timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h
                 FROM candles_1h
@@ -109,14 +119,34 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
         closes = np.array([row[4] for row in rows], dtype=np.float64)
         volumes = np.array([row[5] for row in rows], dtype=np.float64)
         
-        # If fetched in DESC order, reverse the arrays
+        # Log the range of dates for debugging
+        first_date = pd.to_datetime(timestamps[0], unit='s')
+        last_date = pd.to_datetime(timestamps[-1], unit='s')
+        logging.debug(f"{pair}: Fetched data from {first_date} to {last_date}")
+        
+        # If fetched in DESC order, reverse the arrays for chronological order
         if rolling_window:
+            # Log array shapes before reversing
+            logging.debug(f"{pair}: Before reversing: {len(timestamps)} timestamps")
+            
             timestamps = timestamps[::-1]
             opens = opens[::-1]
             highs = highs[::-1]
             lows = lows[::-1]
             closes = closes[::-1]
             volumes = volumes[::-1]
+            raw_timestamps = [row[0] for row in rows][::-1]
+            
+            # Log after reversing for verification
+            logging.debug(f"{pair}: After reversing: {len(timestamps)} timestamps, "
+                            f"range: {pd.to_datetime(timestamps[0], unit='s')} to "
+                            f"{pd.to_datetime(timestamps[-1], unit='s')}")
+        else:
+            raw_timestamps = [row[0] for row in rows]
+        
+        # Log the actual vs requested number of rows
+        if rolling_window:
+            logging.debug(f"{pair}: Requested {rolling_window+300} rows, got {len(timestamps)} rows")
         
         return {
             'pair': pair,
@@ -126,7 +156,7 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
             'lows': lows,
             'closes': closes,
             'volumes': volumes,
-            'raw_timestamps': [row[0] for row in rows][::-1] if rolling_window else [row[0] for row in rows]
+            'raw_timestamps': raw_timestamps
         }
     except Exception as e:
         logging.error(f"Error fetching data for {pair}: {e}")

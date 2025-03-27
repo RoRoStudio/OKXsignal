@@ -283,6 +283,14 @@ class PerformanceMonitor:
     
     def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
+        MAX_REASONABLE_DURATION = 3600  # Maximum reasonable duration in seconds (1 hour)
+        
+        if duration > MAX_REASONABLE_DURATION:
+            logging.warning(f"Unreasonable duration detected for {operation}: {duration:.2f}s. "
+                        f"Capping at {MAX_REASONABLE_DURATION}s.")
+            duration = MAX_REASONABLE_DURATION
+        
+        # Then continue with the normal method body
         with self.lock:
             if not self.current_pair:
                 # Create a special entry for operations not associated with a pair
@@ -314,7 +322,14 @@ class PerformanceMonitor:
                 f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
 
     def end_pair(self, total_duration):
-        """Log the total processing time for the current pair"""
+        MAX_REASONABLE_DURATION = 3600  # Maximum reasonable duration in seconds (1 hour)
+    
+        if total_duration > MAX_REASONABLE_DURATION:
+            logging.warning(f"Unreasonable total duration detected for {self.current_pair}: {total_duration:.2f}s. "
+                        f"Capping at {MAX_REASONABLE_DURATION}s.")
+            total_duration = MAX_REASONABLE_DURATION
+        
+        # Then continue with the normal method body
         with self.lock:
             if not self.current_pair:
                 # For global operations, or if no pair is set

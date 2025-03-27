@@ -69,7 +69,15 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
         # Ensure all multi-timeframe columns are properly typed as floats
         self._ensure_feature_types(df)
         
-        self._log_performance("multi_timeframe_features_total", time.time() - start_time, perf_monitor)
+        # FIX: Use a reasonable duration for performance monitoring
+        duration = time.time() - start_time
+        if perf_monitor:
+            # Add sanity check for timing
+            if duration > 1000:  # If over 1000 seconds, likely a bug
+                logging.warning(f"Unusually long duration for multi_timeframe_features_total: {duration}s, capping at 1000s")
+                duration = 1000.0
+            perf_monitor.log_operation("multi_timeframe_features_total", duration)
+            
         return df
     
     def _ensure_feature_types(self, df):
@@ -128,6 +136,9 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
             return result_df
             
         try:
+            # FIX: Add improved error handling and diagnostics
+            self._debug_log(f"Starting computation for {tf_label} features with {len(df)} rows", debug_mode)
+            
             # Make a temporary copy with the timestamp as index for resampling
             df_with_ts = df.copy()
             
@@ -374,7 +385,14 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
                 logging.error(traceback.format_exc())
             # Keep the initialized zero values for all expected columns
         
-        self._log_performance(f"compute_{tf_label}_features", time.time() - resample_start, perf_monitor)
+        # FIX: Use a reasonable duration for performance monitoring
+        duration = time.time() - resample_start
+        if perf_monitor:
+            # Add sanity check for timing
+            if duration > 1000:  # If over 1000 seconds, likely a bug
+                logging.warning(f"Unusually long duration for compute_{tf_label}_features: {duration}s, capping at 1000s")
+                duration = 1000.0
+            perf_monitor.log_operation(f"compute_{tf_label}_features", duration)
         
         # Validate all expected columns are present and numeric
         for col in expected_columns:

@@ -507,6 +507,7 @@ def compute_batch_features_gpu(price_data):
         # Compute price action features
         # Body size
         results['body_size'] = cp.asnumpy(cp.abs(cp_closes - cp_opens))
+        results['candle_body_size'] = results['body_size']
         
         # Shadows
         results['upper_shadow'] = cp.asnumpy(cp_highs - cp.maximum(cp_opens, cp_closes))
