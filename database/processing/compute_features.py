@@ -48,6 +48,7 @@ from database.processing.features.db_operations import (
     bulk_copy_update,
     get_database_columns
 )
+from features.db_pool import get_thread_connection, release_thread_connection, get_connection
 
 # ---------------------------
 # Logging Setup
@@ -232,14 +233,15 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
     start_process = time.time()
     logging.info(f"Computing features for {pair}")
     updated_rows = 0
+    db_conn = None
     
     try:
+        # Get a connection from the thread pool
+        db_conn = get_thread_connection()
+        
         # Start performance monitoring for this pair
         if perf_monitor:
             perf_monitor.start_pair(pair)
-        
-        # Get a database connection for this thread
-        db_conn = get_thread_connection()
         
         # Create feature processor with GPU acceleration if enabled
         feature_processor = OptimizedFeatureProcessor(
@@ -338,24 +340,22 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
     
     except Exception as e:
         logging.error(f"Error processing {pair}: {e}", exc_info=True)
-        # Don't re-raise the exception - just log it and return
-        return 0
+        # Make sure we don't lose the exception
+        raise
     finally:
-        # Release the connection back to the pool
-        try:
-            release_thread_connection(db_conn)
-        except Exception as e:
-            logging.warning(f"Error releasing connection for {pair}: {e}")
-            
         total_time = time.time() - start_process
         logging.info(f"{pair}: Updated {updated_rows}/{len(update_timestamps) if 'update_timestamps' in locals() else 0} rows in {total_time:.2f}s")
         
         # End performance monitoring for this pair
         if perf_monitor:
+            perf_monitor.end_pair(total_time)
+        
+        # Release connection back to pool
+        if db_conn:
             try:
-                perf_monitor.end_pair(total_time)
+                release_thread_connection()
             except Exception as e:
-                logging.debug(f"Error ending performance monitoring for {pair}: {e}")
+                logging.warning(f"Error releasing connection for {pair}: {str(e)}")
         
         # Clear memory
         gc.collect()
@@ -371,16 +371,13 @@ def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, 
             
         start_time = time.time()
         
-        # Process the pair
+        # Process the pair (now passes pair without db_conn)
         result = process_pair(pair, rolling_window, config_manager, debug_mode, perf_monitor)
         
         # End timing for this pair
         total_time = time.time() - start_time
         if perf_monitor:
-            try:
-                perf_monitor.end_pair(total_time)
-            except Exception as e:
-                logging.debug(f"Error ending performance monitoring for {pair}: {e}")
+            perf_monitor.end_pair(total_time)
             
         return result
         
@@ -390,12 +387,6 @@ def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, 
         return 0
     except Exception as e:
         logging.error(f"Thread error for pair {pair}: {e}", exc_info=True)
-        # Make sure to end performance monitoring even on error
-        if perf_monitor:
-            try:
-                perf_monitor.end_pair(0)  # Use 0 duration for error case
-            except Exception:
-                pass
         return 0
 
 # ---------------------------
@@ -821,9 +812,16 @@ def main():
     # Set max connections for the pool
     max_connections = args.max_connections if hasattr(args, 'max_connections') and args.max_connections is not None else batch_size + 5
     
-    # Initialize the connection pool
+    # Get database connection parameters
     db_params = config_manager.get_db_params()
-    initialize_connection_pool(db_params, min_connections=2, max_connections=max_connections)
+    
+    # Initialize connection pool
+    from features.db_pool import initialize_pool
+    initialize_pool(
+        db_params, 
+        min_connections=max(2, batch_size // 8),
+        max_connections=batch_size + 5
+    )
     
     # Create runtime log path
     runtime_log_path = os.path.join(args.log_dir, "runtime_stats.log")
@@ -837,13 +835,13 @@ def main():
     if args.debug:
         logger.info("Debug mode enabled - detailed timing information will be logged")
 
+    # Test connection
     try:
-        # Test connection
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            cursor.close()
-            logger.info("Database connection test successful")
+        with get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+        logger.info("Database connection test successful")
     except Exception as e:
         logger.critical(f"Unable to start due to database connection issue: {e}")
         sys.exit(1)
@@ -917,13 +915,7 @@ def main():
         for batch_idx, batch in enumerate(batches):
             logger.info(f"Processing batch {batch_idx+1}/{len(batches)} with {len(batch)} pairs")
             
-            # Use a thread pool size that won't exhaust connections
-            # Allow 2 extra connections for overhead/monitoring
-            max_pool_size = max_connections - 2
-            thread_pool_size = min(batch_size, len(batch), max_pool_size)
-            logger.info(f"Using thread pool size of {thread_pool_size} for this batch")
-            
-            with ThreadPoolExecutor(max_workers=thread_pool_size) as executor:
+            with ThreadPoolExecutor(max_workers=min(batch_size, len(batch))) as executor:
                 futures = {
                     executor.submit(
                         process_pair_thread, 
@@ -938,11 +930,6 @@ def main():
                         rows_updated = future.result()
                         completed += 1
                         
-                        # Log pool status every 10 pairs
-                        if completed % 10 == 0:
-                            pool_status = get_pool_status()
-                            logger.info(f"Connection pool status: {pool_status}")
-                        
                         if completed % 25 == 0 or completed == len(all_pairs):
                             elapsed = (datetime.now() - start_time_global).total_seconds()
                             pairs_per_second = completed / elapsed if elapsed > 0 else 0
@@ -951,10 +938,6 @@ def main():
                                         f"({pairs_per_second:.2f} pairs/sec, ~{remaining:.0f}s remaining)")
                     except Exception as e:
                         logger.error(f"Error processing pair {pair}: {e}")
-            
-            # Log pool status after each batch
-            pool_status = get_pool_status()
-            logger.info(f"Connection pool status after batch: {pool_status}")
             
             # Cleanup between batches
             gc.collect()
@@ -983,6 +966,10 @@ def main():
         f.write(f"[{end_time}] compute_features.py ({mode}) completed in {duration:.2f} seconds\n")
     
     logger.info(f"Total runtime: {duration:.2f} seconds")
+
+    # Close database connection pool
+    from features.db_pool import close_pool
+    close_pool()
 
 if __name__ == "__main__":
     main()

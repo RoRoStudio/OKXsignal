@@ -1,5 +1,0 @@
-[INFO] 2025-03-26 23:39:35,166 | GPU memory: 10.98 GB free / 12.00 GB total
-[INFO] 2025-03-26 23:39:35,167 | System memory: 18.87 GB available / 23.43 GB total
-[INFO] 2025-03-26 23:39:35,171 | Loaded credentials from /root/OKXsignal/config/credentials.env
-[INFO] 2025-03-26 23:39:35,175 | Loaded config from /root/OKXsignal/config/config.ini
-[WARNING] 2025-03-26 23:39:35,328 | Unexpected error checking GPU: module 'cupy.cuda' has no attribute 'CUDARuntimeError'

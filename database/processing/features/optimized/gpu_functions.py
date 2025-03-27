@@ -18,32 +18,38 @@ except ImportError:
 # Core GPU Functions
 # -------------------------------
 
-def initialize_gpu():
-    """Initialize GPU and configure memory pool"""
+def is_gpu_available():
+    """Check if GPU is available"""
     if not CUPY_AVAILABLE:
         return False
         
     try:
-        # Create memory pool with unified management
-        memory_pool = cp.cuda.MemoryPool(cp.cuda.malloc_managed)
-        cp.cuda.set_allocator(memory_pool.malloc)
-        
-        # Set pinned memory for faster transfers
-        pinned_memory_pool = cp.cuda.PinnedMemoryPool()
-        cp.cuda.set_pinned_memory_allocator(pinned_memory_pool.malloc)
-        
-        # Test GPU with a small operation
-        test_array = cp.array([1, 2, 3])
-        test_result = test_array * 2
+        # Test GPU with a small array
+        a = cp.array([1, 2, 3])
+        b = a * 2
         cp.cuda.Stream.null.synchronize()
         
-        # Get device info
+        # Log device info
         device = cp.cuda.Device()
-        logging.info(f"Initialized GPU: {device.name}, "
-                    f"Memory: {device.mem_info[1]/1024**3:.2f} GB")
+        mem_info = device.mem_info
+        free_memory = mem_info[0] / (1024**3)  # in GB
+        total_memory = mem_info[1] / (1024**3)  # in GB
+        
+        # Get device info safely - some CuPy versions don't have the 'name' attribute
+        device_info = f"Device {device.id}"
+        try:
+            # Try to get more detailed information if available
+            props = cp.cuda.runtime.getDeviceProperties(device.id)
+            if hasattr(props, 'name'):
+                device_info = props.name
+        except:
+            pass
+            
+        logging.info(f"GPU is available: {device_info}, "
+                    f"Free: {free_memory:.2f} GB / {total_memory:.2f} GB")
         return True
     except Exception as e:
-        logging.warning(f"GPU initialization failed: {e}")
+        logging.warning(f"GPU test failed: {e}")
         return False
 
 def is_gpu_available():
