@@ -286,8 +286,17 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
         if debug_mode:
             logging.debug(f"{pair}: Fetched {row_count} rows in {time.time() - start_fetch:.3f}s")
         
+        # Determine enabled feature groups (move this up)
+        enabled_features = {
+            feature_name.lower() for feature_name 
+            in ['price_action', 'momentum', 'volatility', 'volume', 
+                'statistical', 'pattern', 'time', 'labels']
+            if config_manager.is_feature_enabled(feature_name)
+        }
+
         if row_count < MIN_CANDLES_REQUIRED:
             logging.warning(f"Skipping {pair}: only {row_count} candles, need >= {MIN_CANDLES_REQUIRED}")
+            log_skipped_features(pair, row_count, FEATURE_GROUP_REQUIREMENTS, enabled_features)
             return 0
         
         log_skipped_features(pair, row_count, FEATURE_GROUP_REQUIREMENTS, enabled_features)
