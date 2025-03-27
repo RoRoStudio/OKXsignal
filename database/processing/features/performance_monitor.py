@@ -44,9 +44,23 @@ class PerformanceMonitor:
     def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
         with self.lock:
-            # Check if current_pair is None before accessing
-            if self.current_pair is None:
-                logging.warning(f"Attempted to log operation '{operation}' but current_pair is None")
+            if not self.current_pair:
+                # Create a special entry for operations not associated with a pair
+                if 'global' not in self.timings:
+                    self.timings['global'] = {
+                        "total": 0,
+                        "operations": {}
+                    }
+                
+                if operation not in self.timings['global']["operations"]:
+                    self.timings['global']["operations"][operation] = []
+                    
+                self.timings['global']["operations"][operation].append(duration)
+                
+                # Write to log file immediately
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open(self.log_file, 'a') as f:
+                    f.write(f"{timestamp},global,{operation},{duration:.6f}\n")
                 return
                 
             if operation not in self.timings[self.current_pair]["operations"]:
@@ -58,13 +72,19 @@ class PerformanceMonitor:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(self.log_file, 'a') as f:
                 f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
-    
+
     def end_pair(self, total_duration):
         """Log the total processing time for the current pair"""
         with self.lock:
-            # Check if current_pair is None before accessing
-            if self.current_pair is None:
-                logging.warning(f"Attempted to end timing but current_pair is None")
+            if not self.current_pair:
+                # For global operations, or if no pair is set
+                if 'global' in self.timings:
+                    self.timings['global']["total"] += total_duration
+                    
+                    # Write total to log file
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    with open(self.log_file, 'a') as f:
+                        f.write(f"{timestamp},global,TOTAL,{total_duration:.6f}\n")
                 return
                 
             self.timings[self.current_pair]["total"] = total_duration

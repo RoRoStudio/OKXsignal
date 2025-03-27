@@ -1,0 +1,24 @@
+PERFORMANCE SUMMARY REPORT
+=========================
+
+Pairs Processed: 305
+Total Processing Time: 791.59 seconds
+Average Time Per Pair: 2.60 seconds
+
+OPERATION BREAKDOWN (Sorted by Total Time)
+----------------------------------------
+Operation                      Total Time (s)  Avg Time (s)    Calls      % of Total
+--------------------------------------------------------------------------------
+compute_features_total         216.00          0.712883        303        27.29     
+database_update                35.28           0.116449        303        4.46      
+volatility_features            19.03           0.062798        303        2.40      
+statistical_features           18.89           0.062341        303        2.39      
+volume_features                10.35           0.034156        303        1.31      
+cross_pair_features            7.45            7.450917        1          0.94      
+fetch_data                     6.74            0.022261        303        0.85      
+db_get_columns                 6.33            0.020897        303        0.80      
+time_features                  4.02            0.013260        303        0.51      
+pattern_features               2.71            0.008956        303        0.34      
+label_features                 1.34            0.004437        303        0.17      
+momentum_features              0.73            0.002421        303        0.09      
+price_action_features          0.04            0.000130        303        0.00      

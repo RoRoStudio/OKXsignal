@@ -1,0 +1,1012 @@
+[INFO] 2025-03-27 13:43:39,642 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-03-27 13:43:39,643 | System memory: 20.40 GB available / 23.43 GB total
+[INFO] 2025-03-27 13:43:39,647 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-03-27 13:43:39,651 | Loaded config from /root/OKXsignal/config/config.ini
+[INFO] 2025-03-27 13:43:39,794 | GPU detected: Device 0, Memory: 12.00 GB
+[INFO] 2025-03-27 13:43:39,794 | GPU acceleration is available
+[INFO] 2025-03-27 13:43:40,098 | Database connection pool initialized with 3-29 connections
+[INFO] 2025-03-27 13:43:40,098 | Starting compute_features.py in ROLLING_UPDATE mode with rolling_window=128
+[INFO] 2025-03-27 13:43:40,098 | Using 24 parallel workers with max 29 database connections
+[INFO] 2025-03-27 13:43:40,098 | Numba: enabled, GPU: disabled
+[INFO] 2025-03-27 13:43:40,099 | Database connection test successful
+[INFO] 2025-03-27 13:43:41,174 | Found 303 pairs
+[INFO] 2025-03-27 13:43:41,174 | Rolling update mode: computing last 128 rows per pair
+[INFO] 2025-03-27 13:43:41,174 | Calibrating optimal batch size...
+[INFO] 2025-03-27 13:43:44,323 | Testing batch size 4...
+[INFO] 2025-03-27 13:43:44,324 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 13:43:44,324 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 13:43:44,324 | Computing features for ACA-USDT
+[INFO] 2025-03-27 13:43:44,325 | Computing features for ACE-USDT
+[INFO] 2025-03-27 13:43:44,384 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:44,474 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:44,560 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:44,654 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:46,915 | 1INCH-USDT: Updated 10/10 rows in 2.59s
+[INFO] 2025-03-27 13:43:46,915 | AAVE-USDT: Updated 10/10 rows in 2.59s
+[INFO] 2025-03-27 13:43:46,993 | ACE-USDT: Updated 10/10 rows in 2.67s
+[INFO] 2025-03-27 13:43:46,993 | ACA-USDT: Updated 10/10 rows in 2.67s
+[INFO] 2025-03-27 13:43:47,169 | Batch size 4: 1.41 pairs/sec
+[INFO] 2025-03-27 13:43:47,222 | Testing batch size 8...
+[INFO] 2025-03-27 13:43:47,223 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 13:43:47,223 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 13:43:47,223 | Computing features for ACA-USDT
+[INFO] 2025-03-27 13:43:47,224 | Computing features for ACE-USDT
+[INFO] 2025-03-27 13:43:47,225 | Computing features for ACH-USDT
+[INFO] 2025-03-27 13:43:47,225 | Computing features for ACT-USDT
+[INFO] 2025-03-27 13:43:47,226 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,226 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,226 | Computing features for ADA-USDT
+[INFO] 2025-03-27 13:43:47,226 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,226 | Computing features for AERGO-USDT
+[INFO] 2025-03-27 13:43:47,421 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,532 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,623 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,753 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:47,893 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:48,133 | 1INCH-USDT: Updated 10/10 rows in 0.91s
+[INFO] 2025-03-27 13:43:48,214 | ACA-USDT: Updated 10/10 rows in 0.99s
+[INFO] 2025-03-27 13:43:48,309 | AAVE-USDT: Updated 10/10 rows in 1.09s
+[INFO] 2025-03-27 13:43:48,456 | ACE-USDT: Updated 10/10 rows in 1.23s
+[INFO] 2025-03-27 13:43:48,515 | ACH-USDT: Updated 10/10 rows in 1.29s
+[INFO] 2025-03-27 13:43:48,625 | ACT-USDT: Updated 10/10 rows in 1.40s
+[INFO] 2025-03-27 13:43:48,688 | ADA-USDT: Updated 10/10 rows in 1.46s
+[INFO] 2025-03-27 13:43:48,750 | AERGO-USDT: Updated 10/10 rows in 1.52s
+[INFO] 2025-03-27 13:43:48,805 | Batch size 8: 5.05 pairs/sec
+[INFO] 2025-03-27 13:43:48,862 | Optimal batch size determined: 8 (5.05 pairs/sec)
+[INFO] 2025-03-27 13:43:48,863 | Using auto-calibrated batch size: 8
+[INFO] 2025-03-27 13:43:48,863 | Grouped 303 pairs into 26 balanced batches
+[INFO] 2025-03-27 13:43:48,863 | Processing batch 1/26 with 12 pairs
+[INFO] 2025-03-27 13:43:48,863 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 13:43:48,864 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 13:43:48,864 | Computing features for ACA-USDT
+[INFO] 2025-03-27 13:43:48,865 | Computing features for ACE-USDT
+[INFO] 2025-03-27 13:43:48,865 | Computing features for ACH-USDT
+[INFO] 2025-03-27 13:43:48,865 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:48,866 | Computing features for ACT-USDT
+[INFO] 2025-03-27 13:43:48,866 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:48,866 | Computing features for ADA-USDT
+[INFO] 2025-03-27 13:43:48,867 | Computing features for AERGO-USDT
+[INFO] 2025-03-27 13:43:48,867 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:49,080 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:49,082 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:49,084 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:49,337 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:49,343 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:50,050 | 1INCH-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:43:50,050 | ACA-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:43:50,051 | AAVE-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:43:50,292 | ACH-USDT: Updated 128/128 rows in 1.43s
+[INFO] 2025-03-27 13:43:50,293 | Computing features for AEVO-USDT
+[INFO] 2025-03-27 13:43:50,293 | Computing features for AGLD-USDT
+[INFO] 2025-03-27 13:43:50,293 | Computing features for AIDOGE-USDT
+[INFO] 2025-03-27 13:43:50,367 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:50,368 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:50,369 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:50,369 | ACE-USDT: Updated 128/128 rows in 1.50s
+[INFO] 2025-03-27 13:43:50,370 | Computing features for AIXBT-USDT
+[INFO] 2025-03-27 13:43:50,451 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:50,655 | ACT-USDT: Updated 128/128 rows in 1.79s
+[INFO] 2025-03-27 13:43:50,655 | ADA-USDT: Updated 128/128 rows in 1.79s
+[INFO] 2025-03-27 13:43:50,656 | AERGO-USDT: Updated 128/128 rows in 1.79s
+[INFO] 2025-03-27 13:43:51,259 | AIDOGE-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:43:51,259 | AGLD-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:43:51,260 | AIXBT-USDT: Updated 128/128 rows in 0.89s
+[INFO] 2025-03-27 13:43:51,260 | AEVO-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:43:51,552 | Processing batch 2/26 with 12 pairs
+[INFO] 2025-03-27 13:43:51,552 | Computing features for ALCX-USDT
+[INFO] 2025-03-27 13:43:51,553 | Computing features for ALGO-USDT
+[INFO] 2025-03-27 13:43:51,553 | Computing features for ALPHA-USDT
+[INFO] 2025-03-27 13:43:51,554 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:51,554 | Computing features for ANIME-USDT
+[INFO] 2025-03-27 13:43:51,554 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:51,555 | Computing features for APE-USDT
+[INFO] 2025-03-27 13:43:51,555 | Computing features for API3-USDT
+[INFO] 2025-03-27 13:43:51,555 | Computing features for APT-USDT
+[INFO] 2025-03-27 13:43:51,555 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:51,556 | Computing features for AR-USDT
+[INFO] 2025-03-27 13:43:51,754 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:51,756 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:51,942 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:51,948 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:52,224 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:52,675 | ALGO-USDT: Updated 128/128 rows in 1.12s
+[INFO] 2025-03-27 13:43:52,679 | ALCX-USDT: Updated 128/128 rows in 1.13s
+[INFO] 2025-03-27 13:43:52,861 | ALPHA-USDT: Updated 128/128 rows in 1.31s
+[INFO] 2025-03-27 13:43:52,869 | Computing features for ARG-USDT
+[INFO] 2025-03-27 13:43:52,876 | Computing features for ARB-USDT
+[INFO] 2025-03-27 13:43:52,938 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:52,939 | ANIME-USDT: Updated 128/128 rows in 1.39s
+[INFO] 2025-03-27 13:43:52,939 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:52,940 | APE-USDT: Updated 128/128 rows in 1.39s
+[INFO] 2025-03-27 13:43:52,940 | Computing features for ARKM-USDT
+[INFO] 2025-03-27 13:43:53,069 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:53,070 | Computing features for ARTY-USDT
+[INFO] 2025-03-27 13:43:53,071 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:53,196 | API3-USDT: Updated 128/128 rows in 1.64s
+[INFO] 2025-03-27 13:43:53,196 | APT-USDT: Updated 128/128 rows in 1.64s
+[INFO] 2025-03-27 13:43:53,464 | AR-USDT: Updated 128/128 rows in 1.91s
+[INFO] 2025-03-27 13:43:53,856 | ARG-USDT: Updated 128/128 rows in 0.99s
+[INFO] 2025-03-27 13:43:53,856 | ARB-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:43:53,856 | ARTY-USDT: Updated 128/128 rows in 0.79s
+[INFO] 2025-03-27 13:43:53,981 | ARKM-USDT: Updated 128/128 rows in 1.04s
+[INFO] 2025-03-27 13:43:54,167 | Processing batch 3/26 with 12 pairs
+[INFO] 2025-03-27 13:43:54,167 | Computing features for ASTR-USDT
+[INFO] 2025-03-27 13:43:54,167 | Computing features for ATH-USDT
+[INFO] 2025-03-27 13:43:54,167 | Computing features for ATOM-USDT
+[INFO] 2025-03-27 13:43:54,168 | Computing features for AUCTION-USDT
+[INFO] 2025-03-27 13:43:54,168 | Computing features for AVAX-USDT
+[INFO] 2025-03-27 13:43:54,168 | Computing features for AXS-USDT
+[INFO] 2025-03-27 13:43:54,169 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,169 | Computing features for BABYDOGE-USDT
+[INFO] 2025-03-27 13:43:54,169 | Computing features for BADGER-USDT
+[INFO] 2025-03-27 13:43:54,172 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,173 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,401 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,402 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,403 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,694 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:54,720 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:55,386 | ATH-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:43:55,408 | ASTR-USDT: Updated 128/128 rows in 1.24s
+[INFO] 2025-03-27 13:43:55,409 | ATOM-USDT: Updated 128/128 rows in 1.24s
+[INFO] 2025-03-27 13:43:55,595 | Progress: 25/303 pairs processed (1.54 pairs/sec, ~181s remaining)
+[INFO] 2025-03-27 13:43:55,599 | Computing features for BAL-USDT
+[INFO] 2025-03-27 13:43:55,600 | Computing features for BANANA-USDT
+[INFO] 2025-03-27 13:43:55,600 | Computing features for BAND-USDT
+[INFO] 2025-03-27 13:43:55,606 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:55,608 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:55,608 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:55,622 | AUCTION-USDT: Updated 128/128 rows in 1.45s
+[INFO] 2025-03-27 13:43:55,622 | AVAX-USDT: Updated 128/128 rows in 1.45s
+[INFO] 2025-03-27 13:43:55,879 | AXS-USDT: Updated 128/128 rows in 1.71s
+[INFO] 2025-03-27 13:43:55,940 | BADGER-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:43:55,941 | BABYDOGE-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:43:55,996 | Computing features for BAT-USDT
+[INFO] 2025-03-27 13:43:56,152 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:56,533 | BAL-USDT: Updated 128/128 rows in 0.93s
+[INFO] 2025-03-27 13:43:56,533 | BAND-USDT: Updated 128/128 rows in 0.93s
+[INFO] 2025-03-27 13:43:56,668 | BANANA-USDT: Updated 128/128 rows in 1.07s
+[INFO] 2025-03-27 13:43:56,735 | BAT-USDT: Updated 128/128 rows in 0.74s
+[INFO] 2025-03-27 13:43:56,857 | Processing batch 4/26 with 12 pairs
+[INFO] 2025-03-27 13:43:56,857 | Computing features for BCH-USDT
+[INFO] 2025-03-27 13:43:56,857 | Computing features for BERA-USDT
+[INFO] 2025-03-27 13:43:56,858 | Computing features for BICO-USDT
+[INFO] 2025-03-27 13:43:56,858 | Computing features for BIGTIME-USDT
+[INFO] 2025-03-27 13:43:56,859 | Computing features for BIO-USDT
+[INFO] 2025-03-27 13:43:56,860 | Computing features for BLUR-USDT
+[INFO] 2025-03-27 13:43:56,860 | Computing features for BNB-USDT
+[INFO] 2025-03-27 13:43:56,860 | Computing features for BNT-USDT
+[INFO] 2025-03-27 13:43:56,861 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:56,861 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:56,862 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:57,068 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:57,069 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:57,104 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:57,280 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:57,410 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:58,080 | BERA-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:43:58,081 | BCH-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:43:58,081 | BICO-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:43:58,273 | BIO-USDT: Updated 128/128 rows in 1.41s
+[INFO] 2025-03-27 13:43:58,274 | Computing features for BOME-USDT
+[INFO] 2025-03-27 13:43:58,341 | Computing features for BONE-USDT
+[INFO] 2025-03-27 13:43:58,342 | Computing features for BONK-USDT
+[INFO] 2025-03-27 13:43:58,344 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:58,344 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:58,344 | Computing features for BORA-USDT
+[INFO] 2025-03-27 13:43:58,344 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:58,350 | BIGTIME-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:43:58,415 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:58,419 | BLUR-USDT: Updated 128/128 rows in 1.56s
+[INFO] 2025-03-27 13:43:58,674 | BNT-USDT: Updated 128/128 rows in 1.81s
+[INFO] 2025-03-27 13:43:58,674 | BNB-USDT: Updated 128/128 rows in 1.81s
+[INFO] 2025-03-27 13:43:59,201 | BONK-USDT: Updated 128/128 rows in 0.86s
+[INFO] 2025-03-27 13:43:59,202 | BORA-USDT: Updated 128/128 rows in 0.86s
+[INFO] 2025-03-27 13:43:59,326 | BONE-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:43:59,326 | BOME-USDT: Updated 128/128 rows in 1.05s
+[INFO] 2025-03-27 13:43:59,486 | Processing batch 5/26 with 12 pairs
+[INFO] 2025-03-27 13:43:59,487 | Computing features for BSV-USDT
+[INFO] 2025-03-27 13:43:59,487 | Computing features for BTT-USDT
+[INFO] 2025-03-27 13:43:59,488 | Computing features for CAT-USDT
+[INFO] 2025-03-27 13:43:59,489 | Computing features for CATI-USDT
+[INFO] 2025-03-27 13:43:59,489 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,489 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,489 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,489 | Computing features for CELO-USDT
+[INFO] 2025-03-27 13:43:59,490 | Computing features for CELR-USDT
+[INFO] 2025-03-27 13:43:59,490 | Computing features for CETUS-USDT
+[INFO] 2025-03-27 13:43:59,491 | Computing features for CFG-USDT
+[INFO] 2025-03-27 13:43:59,699 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,699 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,700 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,897 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:43:59,989 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:00,722 | BSV-USDT: Updated 128/128 rows in 1.24s
+[INFO] 2025-03-27 13:44:00,723 | BTT-USDT: Updated 128/128 rows in 1.24s
+[INFO] 2025-03-27 13:44:00,723 | CAT-USDT: Updated 128/128 rows in 1.24s
+[INFO] 2025-03-27 13:44:00,931 | Progress: 50/303 pairs processed (2.32 pairs/sec, ~109s remaining)
+[INFO] 2025-03-27 13:44:00,931 | Computing features for CFX-USDT
+[INFO] 2025-03-27 13:44:00,932 | Computing features for CHZ-USDT
+[INFO] 2025-03-27 13:44:00,932 | Computing features for CITY-USDT
+[INFO] 2025-03-27 13:44:00,933 | CELR-USDT: Updated 128/128 rows in 1.44s
+[INFO] 2025-03-27 13:44:00,934 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:00,934 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:00,939 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:01,006 | CELO-USDT: Updated 128/128 rows in 1.52s
+[INFO] 2025-03-27 13:44:01,006 | Computing features for CLV-USDT
+[INFO] 2025-03-27 13:44:01,007 | CATI-USDT: Updated 128/128 rows in 1.52s
+[INFO] 2025-03-27 13:44:01,079 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:01,283 | CETUS-USDT: Updated 128/128 rows in 1.79s
+[INFO] 2025-03-27 13:44:01,353 | CFG-USDT: Updated 128/128 rows in 1.86s
+[INFO] 2025-03-27 13:44:01,908 | CFX-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:44:01,979 | CITY-USDT: Updated 128/128 rows in 1.05s
+[INFO] 2025-03-27 13:44:02,042 | CLV-USDT: Updated 128/128 rows in 1.04s
+[INFO] 2025-03-27 13:44:02,043 | CHZ-USDT: Updated 128/128 rows in 1.11s
+[INFO] 2025-03-27 13:44:02,227 | Processing batch 6/26 with 12 pairs
+[INFO] 2025-03-27 13:44:02,227 | Computing features for COMP-USDT
+[INFO] 2025-03-27 13:44:02,228 | Computing features for CORE-USDT
+[INFO] 2025-03-27 13:44:02,228 | Computing features for CRO-USDT
+[INFO] 2025-03-27 13:44:02,228 | Computing features for CRV-USDT
+[INFO] 2025-03-27 13:44:02,228 | Computing features for CSPR-USDT
+[INFO] 2025-03-27 13:44:02,229 | Computing features for CTC-USDT
+[INFO] 2025-03-27 13:44:02,229 | Computing features for CTXC-USDT
+[INFO] 2025-03-27 13:44:02,230 | Computing features for CVC-USDT
+[INFO] 2025-03-27 13:44:02,231 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,231 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,231 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,462 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,463 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,465 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,685 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:02,815 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:03,420 | CRO-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:44:03,433 | CORE-USDT: Updated 128/128 rows in 1.21s
+[INFO] 2025-03-27 13:44:03,484 | COMP-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:03,682 | Computing features for CVX-USDT
+[INFO] 2025-03-27 13:44:03,682 | Computing features for CXT-USDT
+[INFO] 2025-03-27 13:44:03,699 | Computing features for DAI-USDT
+[INFO] 2025-03-27 13:44:03,703 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:03,703 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:03,714 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:03,717 | CTC-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:03,718 | CRV-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:03,718 | CSPR-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:04,006 | CTXC-USDT: Updated 128/128 rows in 1.78s
+[INFO] 2025-03-27 13:44:04,007 | CVC-USDT: Updated 128/128 rows in 1.78s
+[INFO] 2025-03-27 13:44:04,007 | Computing features for DAO-USDT
+[INFO] 2025-03-27 13:44:04,137 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:04,616 | CVX-USDT: Updated 128/128 rows in 0.93s
+[INFO] 2025-03-27 13:44:04,680 | CXT-USDT: Updated 128/128 rows in 1.00s
+[INFO] 2025-03-27 13:44:04,744 | DAI-USDT: Updated 128/128 rows in 1.04s
+[INFO] 2025-03-27 13:44:04,744 | DAO-USDT: Updated 128/128 rows in 0.74s
+[INFO] 2025-03-27 13:44:04,927 | Processing batch 7/26 with 12 pairs
+[INFO] 2025-03-27 13:44:04,927 | Computing features for DEGEN-USDT
+[INFO] 2025-03-27 13:44:04,927 | Computing features for DEP-USDT
+[INFO] 2025-03-27 13:44:04,928 | Computing features for DGB-USDT
+[INFO] 2025-03-27 13:44:04,929 | Computing features for DIA-USDT
+[INFO] 2025-03-27 13:44:04,929 | Computing features for DOGE-USDT
+[INFO] 2025-03-27 13:44:04,929 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:04,929 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:04,930 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:04,930 | Computing features for DOGS-USDT
+[INFO] 2025-03-27 13:44:04,930 | Computing features for DORA-USDT
+[INFO] 2025-03-27 13:44:04,931 | Computing features for DOT-USDT
+[INFO] 2025-03-27 13:44:05,148 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:05,149 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:05,387 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:05,398 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:05,550 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:06,081 | DGB-USDT: Updated 128/128 rows in 1.15s
+[INFO] 2025-03-27 13:44:06,141 | DEP-USDT: Updated 128/128 rows in 1.21s
+[INFO] 2025-03-27 13:44:06,335 | DEGEN-USDT: Updated 128/128 rows in 1.41s
+[INFO] 2025-03-27 13:44:06,422 | Computing features for DUCK-USDT
+[INFO] 2025-03-27 13:44:06,423 | Computing features for DYDX-USDT
+[INFO] 2025-03-27 13:44:06,426 | Progress: 75/303 pairs processed (2.77 pairs/sec, ~82s remaining)
+[INFO] 2025-03-27 13:44:06,427 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:06,428 | DIA-USDT: Updated 128/128 rows in 1.50s
+[INFO] 2025-03-27 13:44:06,428 | Computing features for EGLD-USDT
+[INFO] 2025-03-27 13:44:06,429 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:06,508 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:06,509 | DOGE-USDT: Updated 128/128 rows in 1.58s
+[INFO] 2025-03-27 13:44:06,581 | Computing features for EIGEN-USDT
+[INFO] 2025-03-27 13:44:06,772 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:06,772 | DOGS-USDT: Updated 128/128 rows in 1.84s
+[INFO] 2025-03-27 13:44:06,773 | DORA-USDT: Updated 128/128 rows in 1.84s
+[INFO] 2025-03-27 13:44:06,785 | DOT-USDT: Updated 128/128 rows in 1.85s
+[INFO] 2025-03-27 13:44:07,382 | DUCK-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:07,447 | DYDX-USDT: Updated 128/128 rows in 1.02s
+[INFO] 2025-03-27 13:44:07,517 | EGLD-USDT: Updated 128/128 rows in 1.09s
+[INFO] 2025-03-27 13:44:07,517 | EIGEN-USDT: Updated 128/128 rows in 0.94s
+[INFO] 2025-03-27 13:44:07,727 | Processing batch 8/26 with 12 pairs
+[INFO] 2025-03-27 13:44:07,727 | Computing features for ELF-USDT
+[INFO] 2025-03-27 13:44:07,727 | Computing features for ELON-USDT
+[INFO] 2025-03-27 13:44:07,728 | Computing features for ENJ-USDT
+[INFO] 2025-03-27 13:44:07,729 | Computing features for ENS-USDT
+[INFO] 2025-03-27 13:44:07,729 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:07,729 | Computing features for EOS-USDT
+[INFO] 2025-03-27 13:44:07,729 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:07,729 | Computing features for ERN-USDT
+[INFO] 2025-03-27 13:44:07,730 | Computing features for ETC-USDT
+[INFO] 2025-03-27 13:44:07,730 | Computing features for FET-USDT
+[INFO] 2025-03-27 13:44:07,731 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:07,987 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:07,988 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:07,990 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:08,143 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:08,299 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:09,029 | ELON-USDT: Updated 128/128 rows in 1.30s
+[INFO] 2025-03-27 13:44:09,034 | ENJ-USDT: Updated 128/128 rows in 1.31s
+[INFO] 2025-03-27 13:44:09,162 | ELF-USDT: Updated 128/128 rows in 1.44s
+[INFO] 2025-03-27 13:44:09,222 | Computing features for FIL-USDT
+[INFO] 2025-03-27 13:44:09,232 | Computing features for FLM-USDT
+[INFO] 2025-03-27 13:44:09,241 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:09,241 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:09,241 | Computing features for FLOKI-USDT
+[INFO] 2025-03-27 13:44:09,242 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:09,256 | ERN-USDT: Updated 128/128 rows in 1.53s
+[INFO] 2025-03-27 13:44:09,256 | ENS-USDT: Updated 128/128 rows in 1.53s
+[INFO] 2025-03-27 13:44:09,262 | EOS-USDT: Updated 128/128 rows in 1.53s
+[INFO] 2025-03-27 13:44:09,661 | FET-USDT: Updated 128/128 rows in 1.93s
+[INFO] 2025-03-27 13:44:09,662 | ETC-USDT: Updated 128/128 rows in 1.93s
+[INFO] 2025-03-27 13:44:09,663 | Computing features for FLOW-USDT
+[INFO] 2025-03-27 13:44:09,825 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,199 | FIL-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:44:10,199 | FLOKI-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:10,321 | FLM-USDT: Updated 128/128 rows in 1.09s
+[INFO] 2025-03-27 13:44:10,398 | FLOW-USDT: Updated 128/128 rows in 0.74s
+[INFO] 2025-03-27 13:44:10,524 | Processing batch 9/26 with 12 pairs
+[INFO] 2025-03-27 13:44:10,524 | Computing features for FLR-USDT
+[INFO] 2025-03-27 13:44:10,525 | Computing features for FORTH-USDT
+[INFO] 2025-03-27 13:44:10,525 | Computing features for FOXY-USDT
+[INFO] 2025-03-27 13:44:10,526 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,526 | Computing features for FXS-USDT
+[INFO] 2025-03-27 13:44:10,526 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,526 | Computing features for G-USDT
+[INFO] 2025-03-27 13:44:10,527 | Computing features for GALA-USDT
+[INFO] 2025-03-27 13:44:10,527 | Computing features for GALFT-USDT
+[INFO] 2025-03-27 13:44:10,527 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,527 | Computing features for GAS-USDT
+[INFO] 2025-03-27 13:44:10,741 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,743 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,753 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:10,904 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:11,053 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:11,781 | FLR-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:11,781 | FORTH-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:11,781 | FOXY-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:11,985 | Computing features for GEAR-USDT
+[INFO] 2025-03-27 13:44:11,985 | Computing features for GHST-USDT
+[INFO] 2025-03-27 13:44:11,985 | Computing features for GLM-USDT
+[INFO] 2025-03-27 13:44:11,998 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:12,000 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:12,000 | FXS-USDT: Updated 128/128 rows in 1.47s
+[INFO] 2025-03-27 13:44:12,000 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:12,076 | Progress: 100/303 pairs processed (3.06 pairs/sec, ~66s remaining)
+[INFO] 2025-03-27 13:44:12,077 | G-USDT: Updated 128/128 rows in 1.55s
+[INFO] 2025-03-27 13:44:12,077 | Computing features for GLMR-USDT
+[INFO] 2025-03-27 13:44:12,147 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:12,328 | GALA-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:12,329 | GAS-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:12,329 | GALFT-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:12,951 | GEAR-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:44:13,014 | GLM-USDT: Updated 128/128 rows in 1.03s
+[INFO] 2025-03-27 13:44:13,014 | GHST-USDT: Updated 128/128 rows in 1.03s
+[INFO] 2025-03-27 13:44:13,133 | GLMR-USDT: Updated 128/128 rows in 1.06s
+[INFO] 2025-03-27 13:44:13,246 | Processing batch 10/26 with 12 pairs
+[INFO] 2025-03-27 13:44:13,246 | Computing features for GMT-USDT
+[INFO] 2025-03-27 13:44:13,247 | Computing features for GMX-USDT
+[INFO] 2025-03-27 13:44:13,247 | Computing features for GOAT-USDT
+[INFO] 2025-03-27 13:44:13,248 | Computing features for GODS-USDT
+[INFO] 2025-03-27 13:44:13,248 | Computing features for GOG-USDT
+[INFO] 2025-03-27 13:44:13,248 | Computing features for GRT-USDT
+[INFO] 2025-03-27 13:44:13,249 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,249 | Computing features for HBAR-USDT
+[INFO] 2025-03-27 13:44:13,249 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,250 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,250 | Computing features for HMSTR-USDT
+[INFO] 2025-03-27 13:44:13,473 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,474 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,474 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,752 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:13,762 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:14,500 | GMT-USDT: Updated 128/128 rows in 1.25s
+[INFO] 2025-03-27 13:44:14,505 | GMX-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:14,665 | GOAT-USDT: Updated 128/128 rows in 1.42s
+[INFO] 2025-03-27 13:44:14,665 | Computing features for ICE-USDT
+[INFO] 2025-03-27 13:44:14,729 | Computing features for ICP-USDT
+[INFO] 2025-03-27 13:44:14,741 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:14,742 | Computing features for ICX-USDT
+[INFO] 2025-03-27 13:44:14,742 | GOG-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:14,743 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:14,743 | GODS-USDT: Updated 128/128 rows in 1.50s
+[INFO] 2025-03-27 13:44:14,807 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:14,876 | GRT-USDT: Updated 128/128 rows in 1.63s
+[INFO] 2025-03-27 13:44:14,876 | HBAR-USDT: Updated 128/128 rows in 1.63s
+[INFO] 2025-03-27 13:44:14,877 | HMSTR-USDT: Updated 128/128 rows in 1.63s
+[INFO] 2025-03-27 13:44:14,877 | Computing features for ID-USDT
+[INFO] 2025-03-27 13:44:15,115 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:15,662 | ICE-USDT: Updated 128/128 rows in 1.00s
+[INFO] 2025-03-27 13:44:15,733 | ID-USDT: Updated 128/128 rows in 0.86s
+[INFO] 2025-03-27 13:44:15,733 | ICP-USDT: Updated 128/128 rows in 1.00s
+[INFO] 2025-03-27 13:44:15,796 | ICX-USDT: Updated 128/128 rows in 1.05s
+[INFO] 2025-03-27 13:44:15,995 | Processing batch 11/26 with 12 pairs
+[INFO] 2025-03-27 13:44:15,995 | Computing features for ILV-USDT
+[INFO] 2025-03-27 13:44:15,996 | Computing features for IMX-USDT
+[INFO] 2025-03-27 13:44:15,996 | Computing features for INJ-USDT
+[INFO] 2025-03-27 13:44:15,996 | Computing features for IOST-USDT
+[INFO] 2025-03-27 13:44:15,997 | Computing features for IOTA-USDT
+[INFO] 2025-03-27 13:44:15,997 | Computing features for IP-USDT
+[INFO] 2025-03-27 13:44:15,998 | Computing features for IQ-USDT
+[INFO] 2025-03-27 13:44:15,998 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:15,998 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:15,998 | Computing features for J-USDT
+[INFO] 2025-03-27 13:44:15,999 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:16,209 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:16,212 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:16,431 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:16,435 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:16,490 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:17,111 | INJ-USDT: Updated 128/128 rows in 1.11s
+[INFO] 2025-03-27 13:44:17,124 | IMX-USDT: Updated 128/128 rows in 1.13s
+[INFO] 2025-03-27 13:44:17,282 | ILV-USDT: Updated 128/128 rows in 1.29s
+[INFO] 2025-03-27 13:44:17,423 | Computing features for JOE-USDT
+[INFO] 2025-03-27 13:44:17,425 | Computing features for JST-USDT
+[INFO] 2025-03-27 13:44:17,437 | Computing features for JTO-USDT
+[INFO] 2025-03-27 13:44:17,438 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:17,440 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:17,441 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:17,461 | IOTA-USDT: Updated 128/128 rows in 1.46s
+[INFO] 2025-03-27 13:44:17,537 | IOST-USDT: Updated 128/128 rows in 1.54s
+[INFO] 2025-03-27 13:44:17,785 | J-USDT: Updated 128/128 rows in 1.79s
+[INFO] 2025-03-27 13:44:17,790 | IP-USDT: Updated 128/128 rows in 1.79s
+[INFO] 2025-03-27 13:44:17,799 | IQ-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:17,799 | Computing features for JUP-USDT
+[INFO] 2025-03-27 13:44:17,799 | Progress: 125/303 pairs processed (3.25 pairs/sec, ~55s remaining)
+[INFO] 2025-03-27 13:44:18,013 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:18,368 | JOE-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:18,451 | JST-USDT: Updated 128/128 rows in 1.03s
+[INFO] 2025-03-27 13:44:18,451 | JTO-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:18,575 | JUP-USDT: Updated 128/128 rows in 0.78s
+[INFO] 2025-03-27 13:44:18,700 | Processing batch 12/26 with 12 pairs
+[INFO] 2025-03-27 13:44:18,700 | Computing features for KAIA-USDT
+[INFO] 2025-03-27 13:44:18,700 | Computing features for KAITO-USDT
+[INFO] 2025-03-27 13:44:18,701 | Computing features for KDA-USDT
+[INFO] 2025-03-27 13:44:18,702 | Computing features for KISHU-USDT
+[INFO] 2025-03-27 13:44:18,702 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:18,702 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:18,703 | Computing features for KNC-USDT
+[INFO] 2025-03-27 13:44:18,703 | Computing features for KSM-USDT
+[INFO] 2025-03-27 13:44:18,703 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:18,703 | Computing features for LAT-USDT
+[INFO] 2025-03-27 13:44:18,704 | Computing features for LDO-USDT
+[INFO] 2025-03-27 13:44:18,915 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:18,915 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:18,922 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:19,140 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:19,301 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:19,925 | KAITO-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:44:19,927 | KAIA-USDT: Updated 128/128 rows in 1.23s
+[INFO] 2025-03-27 13:44:19,933 | KDA-USDT: Updated 128/128 rows in 1.23s
+[INFO] 2025-03-27 13:44:20,128 | KISHU-USDT: Updated 128/128 rows in 1.43s
+[INFO] 2025-03-27 13:44:20,128 | Computing features for LEO-USDT
+[INFO] 2025-03-27 13:44:20,128 | Computing features for LINK-USDT
+[INFO] 2025-03-27 13:44:20,128 | Computing features for LOOKS-USDT
+[INFO] 2025-03-27 13:44:20,197 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:20,197 | KNC-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:20,197 | Computing features for LPT-USDT
+[INFO] 2025-03-27 13:44:20,265 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:20,266 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:20,278 | KSM-USDT: Updated 128/128 rows in 1.58s
+[INFO] 2025-03-27 13:44:20,279 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:20,483 | LAT-USDT: Updated 128/128 rows in 1.78s
+[INFO] 2025-03-27 13:44:20,604 | LDO-USDT: Updated 128/128 rows in 1.90s
+[INFO] 2025-03-27 13:44:21,092 | LOOKS-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:21,093 | LINK-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:21,093 | LEO-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:21,276 | LPT-USDT: Updated 128/128 rows in 1.08s
+[INFO] 2025-03-27 13:44:21,394 | Processing batch 13/26 with 12 pairs
+[INFO] 2025-03-27 13:44:21,394 | Computing features for LQTY-USDT
+[INFO] 2025-03-27 13:44:21,395 | Computing features for LRC-USDT
+[INFO] 2025-03-27 13:44:21,395 | Computing features for LSK-USDT
+[INFO] 2025-03-27 13:44:21,395 | Computing features for LTC-USDT
+[INFO] 2025-03-27 13:44:21,396 | Computing features for LUNA-USDT
+[INFO] 2025-03-27 13:44:21,396 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,397 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,397 | Computing features for LUNC-USDT
+[INFO] 2025-03-27 13:44:21,397 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,397 | Computing features for MAGIC-USDT
+[INFO] 2025-03-27 13:44:21,397 | Computing features for MAJOR-USDT
+[INFO] 2025-03-27 13:44:21,624 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,626 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,626 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,914 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:21,936 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:22,646 | LSK-USDT: Updated 128/128 rows in 1.25s
+[INFO] 2025-03-27 13:44:22,646 | LRC-USDT: Updated 128/128 rows in 1.25s
+[INFO] 2025-03-27 13:44:22,654 | LQTY-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:22,859 | Computing features for MANA-USDT
+[INFO] 2025-03-27 13:44:22,859 | Computing features for MASK-USDT
+[INFO] 2025-03-27 13:44:22,860 | Computing features for MAX-USDT
+[INFO] 2025-03-27 13:44:22,872 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:22,872 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:22,873 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:22,881 | LTC-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:23,021 | LUNA-USDT: Updated 128/128 rows in 1.63s
+[INFO] 2025-03-27 13:44:23,149 | LUNC-USDT: Updated 128/128 rows in 1.75s
+[INFO] 2025-03-27 13:44:23,150 | MAGIC-USDT: Updated 128/128 rows in 1.75s
+[INFO] 2025-03-27 13:44:23,150 | Computing features for MDT-USDT
+[INFO] 2025-03-27 13:44:23,208 | MAJOR-USDT: Updated 128/128 rows in 1.81s
+[INFO] 2025-03-27 13:44:23,334 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:23,426 | Progress: 150/303 pairs processed (3.40 pairs/sec, ~45s remaining)
+[INFO] 2025-03-27 13:44:23,813 | MANA-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:23,877 | MAX-USDT: Updated 128/128 rows in 1.02s
+[INFO] 2025-03-27 13:44:23,940 | MDT-USDT: Updated 128/128 rows in 0.79s
+[INFO] 2025-03-27 13:44:23,998 | MASK-USDT: Updated 128/128 rows in 1.14s
+[INFO] 2025-03-27 13:44:24,119 | Processing batch 14/26 with 12 pairs
+[INFO] 2025-03-27 13:44:24,120 | Computing features for ME-USDT
+[INFO] 2025-03-27 13:44:24,120 | Computing features for MEME-USDT
+[INFO] 2025-03-27 13:44:24,120 | Computing features for MEMEFI-USDT
+[INFO] 2025-03-27 13:44:24,121 | Computing features for MENGO-USDT
+[INFO] 2025-03-27 13:44:24,121 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,121 | Computing features for MERL-USDT
+[INFO] 2025-03-27 13:44:24,122 | Computing features for METIS-USDT
+[INFO] 2025-03-27 13:44:24,122 | Computing features for MEW-USDT
+[INFO] 2025-03-27 13:44:24,123 | Computing features for MILO-USDT
+[INFO] 2025-03-27 13:44:24,123 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,123 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,328 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,329 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,473 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,558 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:24,743 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:25,248 | ME-USDT: Updated 128/128 rows in 1.13s
+[INFO] 2025-03-27 13:44:25,299 | MEME-USDT: Updated 128/128 rows in 1.18s
+[INFO] 2025-03-27 13:44:25,361 | MEMEFI-USDT: Updated 128/128 rows in 1.24s
+[INFO] 2025-03-27 13:44:25,523 | Computing features for MINA-USDT
+[INFO] 2025-03-27 13:44:25,551 | MERL-USDT: Updated 128/128 rows in 1.43s
+[INFO] 2025-03-27 13:44:25,551 | Computing features for MKR-USDT
+[INFO] 2025-03-27 13:44:25,552 | MENGO-USDT: Updated 128/128 rows in 1.43s
+[INFO] 2025-03-27 13:44:25,554 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:25,562 | Computing features for MLN-USDT
+[INFO] 2025-03-27 13:44:25,690 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:25,699 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:25,701 | Computing features for MOODENG-USDT
+[INFO] 2025-03-27 13:44:25,702 | METIS-USDT: Updated 128/128 rows in 1.58s
+[INFO] 2025-03-27 13:44:25,702 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:25,951 | MEW-USDT: Updated 128/128 rows in 1.83s
+[INFO] 2025-03-27 13:44:26,029 | MILO-USDT: Updated 128/128 rows in 1.91s
+[INFO] 2025-03-27 13:44:26,494 | MINA-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:44:26,560 | MOODENG-USDT: Updated 128/128 rows in 0.86s
+[INFO] 2025-03-27 13:44:26,560 | MLN-USDT: Updated 128/128 rows in 1.00s
+[INFO] 2025-03-27 13:44:26,560 | MKR-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:26,830 | Processing batch 15/26 with 12 pairs
+[INFO] 2025-03-27 13:44:26,830 | Computing features for MORPHO-USDT
+[INFO] 2025-03-27 13:44:26,830 | Computing features for MOVE-USDT
+[INFO] 2025-03-27 13:44:26,831 | Computing features for MOVR-USDT
+[INFO] 2025-03-27 13:44:26,831 | Computing features for MXC-USDT
+[INFO] 2025-03-27 13:44:26,831 | Computing features for NC-USDT
+[INFO] 2025-03-27 13:44:26,832 | Computing features for NEAR-USDT
+[INFO] 2025-03-27 13:44:26,832 | Computing features for NEIRO-USDT
+[INFO] 2025-03-27 13:44:26,833 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:26,833 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:26,833 | Computing features for NEO-USDT
+[INFO] 2025-03-27 13:44:26,834 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:27,027 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:27,151 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:27,309 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:27,309 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:27,442 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:27,820 | MOVR-USDT: Updated 128/128 rows in 0.99s
+[INFO] 2025-03-27 13:44:27,927 | MORPHO-USDT: Updated 128/128 rows in 1.10s
+[INFO] 2025-03-27 13:44:27,983 | MOVE-USDT: Updated 128/128 rows in 1.15s
+[INFO] 2025-03-27 13:44:28,169 | Computing features for NFT-USDT
+[INFO] 2025-03-27 13:44:28,182 | MXC-USDT: Updated 128/128 rows in 1.35s
+[INFO] 2025-03-27 13:44:28,290 | Computing features for NMR-USDT
+[INFO] 2025-03-27 13:44:28,290 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:28,298 | Computing features for NOT-USDT
+[INFO] 2025-03-27 13:44:28,306 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:28,308 | Computing features for NULS-USDT
+[INFO] 2025-03-27 13:44:28,312 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:28,324 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:28,447 | NC-USDT: Updated 128/128 rows in 1.62s
+[INFO] 2025-03-27 13:44:28,672 | NEAR-USDT: Updated 128/128 rows in 1.84s
+[INFO] 2025-03-27 13:44:28,672 | NEO-USDT: Updated 128/128 rows in 1.84s
+[INFO] 2025-03-27 13:44:28,672 | NEIRO-USDT: Updated 128/128 rows in 1.84s
+[INFO] 2025-03-27 13:44:28,990 | Progress: 175/303 pairs processed (3.53 pairs/sec, ~36s remaining)
+[INFO] 2025-03-27 13:44:29,184 | NFT-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:29,247 | NULS-USDT: Updated 128/128 rows in 0.94s
+[INFO] 2025-03-27 13:44:29,248 | NOT-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:29,374 | NMR-USDT: Updated 128/128 rows in 1.08s
+[INFO] 2025-03-27 13:44:29,496 | Processing batch 16/26 with 12 pairs
+[INFO] 2025-03-27 13:44:29,496 | Computing features for OAS-USDT
+[INFO] 2025-03-27 13:44:29,497 | Computing features for OKB-USDT
+[INFO] 2025-03-27 13:44:29,497 | Computing features for OKSOL-USDT
+[INFO] 2025-03-27 13:44:29,498 | Computing features for OKT-USDT
+[INFO] 2025-03-27 13:44:29,498 | Computing features for OL-USDT
+[INFO] 2025-03-27 13:44:29,499 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,499 | Computing features for OM-USDT
+[INFO] 2025-03-27 13:44:29,499 | Computing features for OMI-USDT
+[INFO] 2025-03-27 13:44:29,500 | Computing features for ONDO-USDT
+[INFO] 2025-03-27 13:44:29,500 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,501 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,713 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,715 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,936 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,941 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:29,977 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:30,662 | OKB-USDT: Updated 128/128 rows in 1.17s
+[INFO] 2025-03-27 13:44:30,663 | OAS-USDT: Updated 128/128 rows in 1.17s
+[INFO] 2025-03-27 13:44:30,839 | OKSOL-USDT: Updated 128/128 rows in 1.34s
+[INFO] 2025-03-27 13:44:30,918 | Computing features for ONE-USDT
+[INFO] 2025-03-27 13:44:30,921 | Computing features for ONT-USDT
+[INFO] 2025-03-27 13:44:30,922 | OKT-USDT: Updated 128/128 rows in 1.42s
+[INFO] 2025-03-27 13:44:30,923 | Computing features for OP-USDT
+[INFO] 2025-03-27 13:44:30,992 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:30,992 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:31,000 | Computing features for ORBS-USDT
+[INFO] 2025-03-27 13:44:31,001 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:31,001 | OL-USDT: Updated 128/128 rows in 1.50s
+[INFO] 2025-03-27 13:44:31,071 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:31,083 | OM-USDT: Updated 128/128 rows in 1.58s
+[INFO] 2025-03-27 13:44:31,391 | OMI-USDT: Updated 128/128 rows in 1.89s
+[INFO] 2025-03-27 13:44:31,391 | ONDO-USDT: Updated 128/128 rows in 1.89s
+[INFO] 2025-03-27 13:44:31,874 | OP-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:31,934 | ONE-USDT: Updated 128/128 rows in 1.02s
+[INFO] 2025-03-27 13:44:31,935 | ORBS-USDT: Updated 128/128 rows in 0.93s
+[INFO] 2025-03-27 13:44:31,935 | ONT-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:32,165 | Processing batch 17/26 with 12 pairs
+[INFO] 2025-03-27 13:44:32,165 | Computing features for ORDI-USDT
+[INFO] 2025-03-27 13:44:32,165 | Computing features for OXT-USDT
+[INFO] 2025-03-27 13:44:32,166 | Computing features for PENDLE-USDT
+[INFO] 2025-03-27 13:44:32,166 | Computing features for PENGU-USDT
+[INFO] 2025-03-27 13:44:32,167 | Computing features for PEOPLE-USDT
+[INFO] 2025-03-27 13:44:32,167 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,168 | Computing features for PEPE-USDT
+[INFO] 2025-03-27 13:44:32,168 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,168 | Computing features for PERP-USDT
+[INFO] 2025-03-27 13:44:32,168 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,168 | Computing features for PHA-USDT
+[INFO] 2025-03-27 13:44:32,386 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,386 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,426 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,625 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:32,804 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:33,387 | ORDI-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:44:33,390 | PENDLE-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:44:33,571 | OXT-USDT: Updated 128/128 rows in 1.41s
+[INFO] 2025-03-27 13:44:33,665 | Computing features for PI-USDT
+[INFO] 2025-03-27 13:44:33,665 | Computing features for PIXEL-USDT
+[INFO] 2025-03-27 13:44:33,672 | Computing features for PNUT-USDT
+[INFO] 2025-03-27 13:44:33,673 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:33,674 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:33,680 | PEOPLE-USDT: Updated 128/128 rows in 1.51s
+[INFO] 2025-03-27 13:44:33,686 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:33,687 | PENGU-USDT: Updated 128/128 rows in 1.52s
+[INFO] 2025-03-27 13:44:33,897 | PEPE-USDT: Updated 128/128 rows in 1.73s
+[INFO] 2025-03-27 13:44:33,966 | PHA-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:33,967 | PERP-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:33,967 | Computing features for POL-USDT
+[INFO] 2025-03-27 13:44:34,221 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:34,242 | Progress: 200/303 pairs processed (3.64 pairs/sec, ~28s remaining)
+[INFO] 2025-03-27 13:44:34,647 | PNUT-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:44:34,720 | PI-USDT: Updated 128/128 rows in 1.06s
+[INFO] 2025-03-27 13:44:34,720 | PIXEL-USDT: Updated 128/128 rows in 1.06s
+[INFO] 2025-03-27 13:44:34,852 | POL-USDT: Updated 128/128 rows in 0.88s
+[INFO] 2025-03-27 13:44:34,979 | Processing batch 18/26 with 12 pairs
+[INFO] 2025-03-27 13:44:34,979 | Computing features for POLYDOGE-USDT
+[INFO] 2025-03-27 13:44:34,979 | Computing features for POR-USDT
+[INFO] 2025-03-27 13:44:34,979 | Computing features for PRCL-USDT
+[INFO] 2025-03-27 13:44:34,980 | Computing features for PRQ-USDT
+[INFO] 2025-03-27 13:44:34,980 | Computing features for PSTAKE-USDT
+[INFO] 2025-03-27 13:44:34,981 | Computing features for PYTH-USDT
+[INFO] 2025-03-27 13:44:34,981 | Computing features for PYUSD-USDT
+[INFO] 2025-03-27 13:44:34,981 | Computing features for QTUM-USDT
+[INFO] 2025-03-27 13:44:34,982 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:34,982 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:34,983 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:35,197 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:35,199 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:35,426 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:35,439 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:35,615 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:36,252 | PRCL-USDT: Updated 128/128 rows in 1.27s
+[INFO] 2025-03-27 13:44:36,262 | POR-USDT: Updated 128/128 rows in 1.28s
+[INFO] 2025-03-27 13:44:36,274 | POLYDOGE-USDT: Updated 128/128 rows in 1.29s
+[INFO] 2025-03-27 13:44:36,469 | PRQ-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:36,470 | PSTAKE-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:36,471 | Computing features for RACA-USDT
+[INFO] 2025-03-27 13:44:36,471 | Computing features for RADAR-USDT
+[INFO] 2025-03-27 13:44:36,594 | Computing features for RAY-USDT
+[INFO] 2025-03-27 13:44:36,596 | Computing features for RDNT-USDT
+[INFO] 2025-03-27 13:44:36,596 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:36,596 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:36,602 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:36,603 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:36,878 | PYTH-USDT: Updated 128/128 rows in 1.90s
+[INFO] 2025-03-27 13:44:36,878 | QTUM-USDT: Updated 128/128 rows in 1.90s
+[INFO] 2025-03-27 13:44:36,878 | PYUSD-USDT: Updated 128/128 rows in 1.90s
+[INFO] 2025-03-27 13:44:37,428 | RADAR-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:37,429 | RACA-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:37,550 | RDNT-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:37,551 | RAY-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:37,757 | Processing batch 19/26 with 12 pairs
+[INFO] 2025-03-27 13:44:37,758 | Computing features for RENDER-USDT
+[INFO] 2025-03-27 13:44:37,758 | Computing features for RIO-USDT
+[INFO] 2025-03-27 13:44:37,758 | Computing features for RON-USDT
+[INFO] 2025-03-27 13:44:37,759 | Computing features for RPL-USDT
+[INFO] 2025-03-27 13:44:37,760 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:37,761 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:37,761 | Computing features for RSR-USDT
+[INFO] 2025-03-27 13:44:37,761 | Computing features for RSS3-USDT
+[INFO] 2025-03-27 13:44:37,762 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:37,762 | Computing features for RUNECOIN-USDT
+[INFO] 2025-03-27 13:44:37,762 | Computing features for RVN-USDT
+[INFO] 2025-03-27 13:44:37,992 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:37,992 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:37,993 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:38,217 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:38,290 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:39,021 | RIO-USDT: Updated 128/128 rows in 1.26s
+[INFO] 2025-03-27 13:44:39,026 | RON-USDT: Updated 128/128 rows in 1.27s
+[INFO] 2025-03-27 13:44:39,026 | RENDER-USDT: Updated 128/128 rows in 1.27s
+[INFO] 2025-03-27 13:44:39,234 | Computing features for S-USDT
+[INFO] 2025-03-27 13:44:39,234 | Computing features for SAFE-USDT
+[INFO] 2025-03-27 13:44:39,234 | Computing features for SAMO-USDT
+[INFO] 2025-03-27 13:44:39,236 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:39,242 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:39,247 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:39,251 | RSS3-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:39,251 | RSR-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:39,251 | RPL-USDT: Updated 128/128 rows in 1.49s
+[INFO] 2025-03-27 13:44:39,536 | RUNECOIN-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:44:39,536 | RVN-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:44:39,537 | Computing features for SAND-USDT
+[INFO] 2025-03-27 13:44:39,680 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:40,250 | S-USDT: Updated 128/128 rows in 1.02s
+[INFO] 2025-03-27 13:44:40,313 | Progress: 225/303 pairs processed (3.69 pairs/sec, ~21s remaining)
+[INFO] 2025-03-27 13:44:40,321 | SAMO-USDT: Updated 128/128 rows in 1.09s
+[INFO] 2025-03-27 13:44:40,322 | SAND-USDT: Updated 128/128 rows in 0.78s
+[INFO] 2025-03-27 13:44:40,322 | SAFE-USDT: Updated 128/128 rows in 1.09s
+[INFO] 2025-03-27 13:44:40,558 | Processing batch 20/26 with 12 pairs
+[INFO] 2025-03-27 13:44:40,559 | Computing features for SATS-USDT
+[INFO] 2025-03-27 13:44:40,559 | Computing features for SC-USDT
+[INFO] 2025-03-27 13:44:40,559 | Computing features for SCR-USDT
+[INFO] 2025-03-27 13:44:40,561 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:40,561 | Computing features for SD-USDT
+[INFO] 2025-03-27 13:44:40,561 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:40,561 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:40,561 | Computing features for SHIB-USDT
+[INFO] 2025-03-27 13:44:40,562 | Computing features for SKL-USDT
+[INFO] 2025-03-27 13:44:40,563 | Computing features for SLERF-USDT
+[INFO] 2025-03-27 13:44:40,563 | Computing features for SLP-USDT
+[INFO] 2025-03-27 13:44:40,770 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:40,911 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:41,054 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:41,107 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:41,195 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:41,588 | SATS-USDT: Updated 128/128 rows in 1.03s
+[INFO] 2025-03-27 13:44:41,617 | SC-USDT: Updated 128/128 rows in 1.06s
+[INFO] 2025-03-27 13:44:41,748 | SCR-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:44:41,977 | Computing features for SNT-USDT
+[INFO] 2025-03-27 13:44:41,984 | SD-USDT: Updated 128/128 rows in 1.42s
+[INFO] 2025-03-27 13:44:41,992 | Computing features for SNX-USDT
+[INFO] 2025-03-27 13:44:42,070 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:42,072 | Computing features for SOL-USDT
+[INFO] 2025-03-27 13:44:42,075 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:42,082 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:42,083 | Computing features for SONIC-USDT
+[INFO] 2025-03-27 13:44:42,084 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:42,237 | SHIB-USDT: Updated 128/128 rows in 1.68s
+[INFO] 2025-03-27 13:44:42,445 | SKL-USDT: Updated 128/128 rows in 1.88s
+[INFO] 2025-03-27 13:44:42,453 | SLP-USDT: Updated 128/128 rows in 1.89s
+[INFO] 2025-03-27 13:44:42,468 | SLERF-USDT: Updated 128/128 rows in 1.91s
+[INFO] 2025-03-27 13:44:42,972 | SNX-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:44:42,972 | SNT-USDT: Updated 128/128 rows in 1.00s
+[INFO] 2025-03-27 13:44:43,095 | SOL-USDT: Updated 128/128 rows in 1.02s
+[INFO] 2025-03-27 13:44:43,096 | SONIC-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:43,271 | Processing batch 21/26 with 12 pairs
+[INFO] 2025-03-27 13:44:43,272 | Computing features for SPURS-USDT
+[INFO] 2025-03-27 13:44:43,272 | Computing features for SSV-USDT
+[INFO] 2025-03-27 13:44:43,272 | Computing features for SSWP-USDT
+[INFO] 2025-03-27 13:44:43,272 | Computing features for STORJ-USDT
+[INFO] 2025-03-27 13:44:43,273 | Computing features for STRK-USDT
+[INFO] 2025-03-27 13:44:43,274 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,274 | Computing features for STX-USDT
+[INFO] 2025-03-27 13:44:43,275 | Computing features for SUI-USDT
+[INFO] 2025-03-27 13:44:43,275 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,275 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,275 | Computing features for SUSHI-USDT
+[INFO] 2025-03-27 13:44:43,483 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,485 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,691 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,695 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:43,969 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:44,435 | SSV-USDT: Updated 128/128 rows in 1.16s
+[INFO] 2025-03-27 13:44:44,447 | SSWP-USDT: Updated 128/128 rows in 1.17s
+[INFO] 2025-03-27 13:44:44,447 | SPURS-USDT: Updated 128/128 rows in 1.18s
+[INFO] 2025-03-27 13:44:44,709 | Computing features for SWEAT-USDT
+[INFO] 2025-03-27 13:44:44,709 | Computing features for SWFTC-USDT
+[INFO] 2025-03-27 13:44:44,715 | Computing features for T-USDT
+[INFO] 2025-03-27 13:44:44,718 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:44,718 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:44,718 | STORJ-USDT: Updated 128/128 rows in 1.45s
+[INFO] 2025-03-27 13:44:44,720 | STRK-USDT: Updated 128/128 rows in 1.45s
+[INFO] 2025-03-27 13:44:44,720 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:44,855 | Computing features for THETA-USDT
+[INFO] 2025-03-27 13:44:44,856 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:45,052 | STX-USDT: Updated 128/128 rows in 1.78s
+[INFO] 2025-03-27 13:44:45,053 | SUI-USDT: Updated 128/128 rows in 1.78s
+[INFO] 2025-03-27 13:44:45,054 | SUSHI-USDT: Updated 128/128 rows in 1.78s
+[INFO] 2025-03-27 13:44:45,661 | THETA-USDT: Updated 128/128 rows in 0.81s
+[INFO] 2025-03-27 13:44:45,662 | SWFTC-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:45,662 | SWEAT-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:45,839 | T-USDT: Updated 128/128 rows in 1.12s
+[INFO] 2025-03-27 13:44:45,840 | Progress: 250/303 pairs processed (3.76 pairs/sec, ~14s remaining)
+[INFO] 2025-03-27 13:44:45,968 | Processing batch 22/26 with 12 pairs
+[INFO] 2025-03-27 13:44:45,969 | Computing features for TIA-USDT
+[INFO] 2025-03-27 13:44:45,969 | Computing features for TNSR-USDT
+[INFO] 2025-03-27 13:44:45,969 | Computing features for TON-USDT
+[INFO] 2025-03-27 13:44:45,969 | Computing features for TRA-USDT
+[INFO] 2025-03-27 13:44:45,970 | Computing features for TRB-USDT
+[INFO] 2025-03-27 13:44:45,970 | Computing features for TRUMP-USDT
+[INFO] 2025-03-27 13:44:45,971 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:45,971 | Computing features for TRX-USDT
+[INFO] 2025-03-27 13:44:45,972 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:45,972 | Computing features for TURBO-USDT
+[INFO] 2025-03-27 13:44:45,972 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:46,191 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:46,192 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:46,193 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:46,419 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:46,497 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:47,222 | TNSR-USDT: Updated 128/128 rows in 1.25s
+[INFO] 2025-03-27 13:44:47,222 | TIA-USDT: Updated 128/128 rows in 1.25s
+[INFO] 2025-03-27 13:44:47,365 | TON-USDT: Updated 128/128 rows in 1.40s
+[INFO] 2025-03-27 13:44:47,366 | Computing features for ULTI-USDT
+[INFO] 2025-03-27 13:44:47,428 | Computing features for UMA-USDT
+[INFO] 2025-03-27 13:44:47,435 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:47,435 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:47,441 | TRA-USDT: Updated 128/128 rows in 1.47s
+[INFO] 2025-03-27 13:44:47,442 | Computing features for UNI-USDT
+[INFO] 2025-03-27 13:44:47,442 | TRUMP-USDT: Updated 128/128 rows in 1.47s
+[INFO] 2025-03-27 13:44:47,573 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:47,635 | TRB-USDT: Updated 128/128 rows in 1.66s
+[INFO] 2025-03-27 13:44:47,635 | TRX-USDT: Updated 128/128 rows in 1.66s
+[INFO] 2025-03-27 13:44:47,636 | Computing features for USDC-USDT
+[INFO] 2025-03-27 13:44:47,820 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:47,834 | TURBO-USDT: Updated 128/128 rows in 1.86s
+[INFO] 2025-03-27 13:44:48,372 | ULTI-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:48,441 | UMA-USDT: Updated 128/128 rows in 1.01s
+[INFO] 2025-03-27 13:44:48,513 | UNI-USDT: Updated 128/128 rows in 1.07s
+[INFO] 2025-03-27 13:44:48,584 | USDC-USDT: Updated 128/128 rows in 0.95s
+[INFO] 2025-03-27 13:44:48,707 | Processing batch 23/26 with 12 pairs
+[INFO] 2025-03-27 13:44:48,708 | Computing features for USTC-USDT
+[INFO] 2025-03-27 13:44:48,708 | Computing features for UXLINK-USDT
+[INFO] 2025-03-27 13:44:48,709 | Computing features for VELO-USDT
+[INFO] 2025-03-27 13:44:48,709 | Computing features for VELODROME-USDT
+[INFO] 2025-03-27 13:44:48,709 | Computing features for VENOM-USDT
+[INFO] 2025-03-27 13:44:48,711 | Computing features for VINE-USDT
+[INFO] 2025-03-27 13:44:48,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:48,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:48,711 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:48,712 | Computing features for VRA-USDT
+[INFO] 2025-03-27 13:44:48,712 | Computing features for W-USDT
+[INFO] 2025-03-27 13:44:48,932 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:48,932 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:49,147 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:49,149 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:49,188 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:49,929 | UXLINK-USDT: Updated 128/128 rows in 1.22s
+[INFO] 2025-03-27 13:44:49,935 | USTC-USDT: Updated 128/128 rows in 1.23s
+[INFO] 2025-03-27 13:44:49,935 | VELO-USDT: Updated 128/128 rows in 1.23s
+[INFO] 2025-03-27 13:44:50,154 | Computing features for WAXP-USDT
+[INFO] 2025-03-27 13:44:50,155 | Computing features for WIF-USDT
+[INFO] 2025-03-27 13:44:50,155 | Computing features for WIN-USDT
+[INFO] 2025-03-27 13:44:50,156 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:50,157 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:50,157 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:50,175 | VELODROME-USDT: Updated 128/128 rows in 1.47s
+[INFO] 2025-03-27 13:44:50,247 | VENOM-USDT: Updated 128/128 rows in 1.54s
+[INFO] 2025-03-27 13:44:50,482 | Computing features for WLD-USDT
+[INFO] 2025-03-27 13:44:50,483 | VINE-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:44:50,483 | W-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:44:50,483 | VRA-USDT: Updated 128/128 rows in 1.77s
+[INFO] 2025-03-27 13:44:50,561 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,118 | WIN-USDT: Updated 128/128 rows in 0.96s
+[INFO] 2025-03-27 13:44:51,178 | WIF-USDT: Updated 128/128 rows in 1.02s
+[INFO] 2025-03-27 13:44:51,242 | WAXP-USDT: Updated 128/128 rows in 1.09s
+[INFO] 2025-03-27 13:44:51,310 | WLD-USDT: Updated 128/128 rows in 0.83s
+[INFO] 2025-03-27 13:44:51,311 | Progress: 275/303 pairs processed (3.82 pairs/sec, ~7s remaining)
+[INFO] 2025-03-27 13:44:51,434 | Processing batch 24/26 with 12 pairs
+[INFO] 2025-03-27 13:44:51,434 | Computing features for WOO-USDT
+[INFO] 2025-03-27 13:44:51,435 | Computing features for X-USDT
+[INFO] 2025-03-27 13:44:51,435 | Computing features for XAUT-USDT
+[INFO] 2025-03-27 13:44:51,435 | Computing features for XCH-USDT
+[INFO] 2025-03-27 13:44:51,435 | Computing features for XLM-USDT
+[INFO] 2025-03-27 13:44:51,436 | Computing features for XNO-USDT
+[INFO] 2025-03-27 13:44:51,437 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,437 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,437 | Computing features for XRP-USDT
+[INFO] 2025-03-27 13:44:51,438 | Computing features for XTZ-USDT
+[INFO] 2025-03-27 13:44:51,438 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,650 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,652 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,896 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,902 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:51,935 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:52,611 | WOO-USDT: Updated 128/128 rows in 1.18s
+[INFO] 2025-03-27 13:44:52,664 | X-USDT: Updated 128/128 rows in 1.23s
+[INFO] 2025-03-27 13:44:52,665 | XAUT-USDT: Updated 128/128 rows in 1.23s
+[INFO] 2025-03-27 13:44:52,890 | Computing features for YFI-USDT
+[INFO] 2025-03-27 13:44:52,891 | Computing features for YGG-USDT
+[INFO] 2025-03-27 13:44:52,891 | Computing features for ZBCN-USDT
+[INFO] 2025-03-27 13:44:52,892 | XLM-USDT: Updated 128/128 rows in 1.46s
+[INFO] 2025-03-27 13:44:52,892 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:52,894 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:52,894 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:52,975 | XCH-USDT: Updated 128/128 rows in 1.54s
+[INFO] 2025-03-27 13:44:52,975 | Computing features for ZENT-USDT
+[INFO] 2025-03-27 13:44:53,112 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:53,235 | XNO-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:53,235 | XRP-USDT: Updated 128/128 rows in 1.80s
+[INFO] 2025-03-27 13:44:53,472 | XTZ-USDT: Updated 128/128 rows in 2.03s
+[INFO] 2025-03-27 13:44:53,856 | YFI-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:44:53,857 | YGG-USDT: Updated 128/128 rows in 0.97s
+[INFO] 2025-03-27 13:44:53,857 | ZENT-USDT: Updated 128/128 rows in 0.88s
+[INFO] 2025-03-27 13:44:53,989 | ZBCN-USDT: Updated 128/128 rows in 1.10s
+[INFO] 2025-03-27 13:44:54,162 | Processing batch 25/26 with 10 pairs
+[INFO] 2025-03-27 13:44:54,162 | Computing features for ZERO-USDT
+[INFO] 2025-03-27 13:44:54,162 | Computing features for ZETA-USDT
+[INFO] 2025-03-27 13:44:54,163 | Computing features for ZEUS-USDT
+[INFO] 2025-03-27 13:44:54,164 | Computing features for ZIL-USDT
+[INFO] 2025-03-27 13:44:54,165 | Computing features for ZK-USDT
+[INFO] 2025-03-27 13:44:54,165 | Computing features for ZKJ-USDT
+[INFO] 2025-03-27 13:44:54,165 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,165 | Computing features for ZRO-USDT
+[INFO] 2025-03-27 13:44:54,166 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,166 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,166 | Computing features for ZRX-USDT
+[INFO] 2025-03-27 13:44:54,386 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,388 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,388 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,656 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:54,738 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:55,351 | ZEUS-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:44:55,351 | ZERO-USDT: Updated 128/128 rows in 1.19s
+[INFO] 2025-03-27 13:44:55,520 | ZETA-USDT: Updated 128/128 rows in 1.36s
+[INFO] 2025-03-27 13:44:55,600 | Computing features for BETH-USDT
+[INFO] 2025-03-27 13:44:55,602 | Computing features for BTC-USDT
+[INFO] 2025-03-27 13:44:55,613 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:55,614 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:55,616 | ZIL-USDT: Updated 128/128 rows in 1.45s
+[INFO] 2025-03-27 13:44:55,616 | ZKJ-USDT: Updated 128/128 rows in 1.45s
+[INFO] 2025-03-27 13:44:55,746 | ZK-USDT: Updated 128/128 rows in 1.58s
+[INFO] 2025-03-27 13:44:55,813 | ZRO-USDT: Updated 128/128 rows in 1.65s
+[INFO] 2025-03-27 13:44:56,000 | ZRX-USDT: Updated 128/128 rows in 1.83s
+[INFO] 2025-03-27 13:44:56,247 | BTC-USDT: Updated 128/128 rows in 0.65s
+[INFO] 2025-03-27 13:44:56,247 | BETH-USDT: Updated 128/128 rows in 0.65s
+[INFO] 2025-03-27 13:44:56,431 | Processing batch 26/26 with 5 pairs
+[INFO] 2025-03-27 13:44:56,431 | Computing features for ETH-USDT
+[INFO] 2025-03-27 13:44:56,431 | Computing features for ETHFI-USDT
+[INFO] 2025-03-27 13:44:56,432 | Computing features for ETHW-USDT
+[INFO] 2025-03-27 13:44:56,432 | Computing features for STETH-USDT
+[INFO] 2025-03-27 13:44:56,432 | Computing features for WBTC-USDT
+[INFO] 2025-03-27 13:44:56,434 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:56,434 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:56,435 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:56,639 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:56,639 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 13:44:57,202 | ETH-USDT: Updated 128/128 rows in 0.77s
+[INFO] 2025-03-27 13:44:57,278 | ETHW-USDT: Updated 128/128 rows in 0.85s
+[INFO] 2025-03-27 13:44:57,345 | Progress: 300/303 pairs processed (3.85 pairs/sec, ~1s remaining)
+[INFO] 2025-03-27 13:44:57,346 | ETHFI-USDT: Updated 128/128 rows in 0.91s
+[INFO] 2025-03-27 13:44:57,409 | STETH-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:44:57,409 | WBTC-USDT: Updated 128/128 rows in 0.98s
+[INFO] 2025-03-27 13:44:57,526 | Progress: 303/303 pairs processed (3.88 pairs/sec, ~0s remaining)
+[INFO] 2025-03-27 13:44:57,586 | Computing cross-pair features
+[INFO] 2025-03-27 13:45:05,037 | Updated 1 rows with cross-pair features
+[INFO] 2025-03-27 13:45:05,041 | Performance summary saved to logs/performance_summary_2025-03-27_134505.json
+[INFO] 2025-03-27 13:45:05,041 | Performance report saved to logs/performance_report_2025-03-27_134505.txt
+[INFO] 2025-03-27 13:45:05,041 | Rolling update mode completed.
+[INFO] 2025-03-27 13:45:05,041 | Total runtime: 85.69 seconds
+[INFO] 2025-03-27 13:45:05,042 | All connections in the pool have been closed

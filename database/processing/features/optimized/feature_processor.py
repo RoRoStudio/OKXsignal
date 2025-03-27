@@ -68,53 +68,24 @@ class OptimizedFeatureProcessor:
             use_gpu: Whether to use GPU acceleration
         """
         self.use_numba = use_numba
-        self.gpu_available = False
         
-        # Check GPU availability
-        try:
-            import cupy as cp
-            x = cp.array([1, 2, 3])  # Simple test
-            y = x * 2
-            cp.cuda.Stream.null.synchronize()
-            
-            # Get GPU info
-            device = cp.cuda.Device(0)
-            mem_info = device.mem_info
-            free_memory = mem_info[0] / (1024**3)
-            total_memory = mem_info[1] / (1024**3)
-            
-            logging.info(f"GPU is available: Device #{device.id}, Free: {free_memory:.2f} GB / {total_memory:.2f} GB")
-            self.gpu_available = True
-        except Exception as e:
-            logging.info(f"GPU acceleration not available: {e}")
-            
-        # Only enable GPU if available and requested
+        # Check if GPU was already initialized
+        self.gpu_available = GPU_AVAILABLE and is_gpu_available() if GPU_AVAILABLE else False
         self.use_gpu = use_gpu and self.gpu_available
         
-        # Initialize GPU if needed
+        # Don't re-initialize GPU if it's already been initialized
         if self.use_gpu:
-            try:
-                # Additional GPU initialization
-                import cupy as cp
-                # Create a memory pool to reduce allocation overhead
-                memory_pool = cp.cuda.MemoryPool(cp.cuda.malloc_managed)
-                cp.cuda.set_allocator(memory_pool.malloc)
-                
-                # Use pinned memory for faster CPU-GPU transfers
-                pinned_memory_pool = cp.cuda.PinnedMemoryPool()
-                cp.cuda.set_pinned_memory_allocator(pinned_memory_pool.malloc)
-                
-                self.gpu_initialized = True
-                logging.info("GPU acceleration initialized for feature computation")
-            except Exception as e:
-                logging.warning(f"GPU initialization failed: {e}")
-                self.gpu_initialized = False
-                self.use_gpu = False
+            self.gpu_initialized = True  # Assume GPU is already initialized
+            logging.debug("Using pre-initialized GPU for computation")
         else:
             self.gpu_initialized = False
-            
-        logging.info(f"Optimized feature processor initialized: Numba: {'enabled' if use_numba else 'disabled'}, "
-                f"GPU: {'enabled' if self.use_gpu else 'disabled'}")
+            if use_gpu and not self.gpu_available:
+                logging.debug("GPU acceleration requested but not available")
+                
+        # Log initialization
+        logging.debug(f"Optimized feature processor initialized: "
+                    f"Numba: {'enabled' if use_numba else 'disabled'}, "
+                    f"GPU: {'enabled' if self.use_gpu else 'disabled'}")
                      
     def process_features(self, price_data, enabled_features=None, perf_monitor=None):
         """

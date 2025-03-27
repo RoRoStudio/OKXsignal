@@ -594,7 +594,7 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                     int(round(vol_ranks[i])),
                     int(round(atr_ranks[i] if i < len(atr_ranks) else 0)),
                     float(btc_corr[i]),
-                    float(vol_ranks[i-1] if i > 0 else 0),  # Previous volume rank
+                    float(vol_ranks[i - 1]) if i > 0 else 0.0,  # Previous volume rank
                     pair,
                     ts
                 ))
@@ -773,13 +773,6 @@ def main():
         credentials_path=args.credentials
     )
 
-    # Enable GPU if available and not explicitly disabled
-    if config_manager.gpu_available and not args.no_gpu:
-        if 'GENERAL' not in config_manager.config:
-            config_manager.config['GENERAL'] = {}
-        config_manager.config['GENERAL']['USE_GPU'] = 'True'
-        logger.info("GPU capabilities detected - enabling GPU acceleration")
-
     # Override config with command line arguments
     if args.no_numba:
         config_manager.config['GENERAL']['USE_NUMBA'] = 'False'
@@ -789,6 +782,21 @@ def main():
         config_manager.config['GENERAL']['USE_GPU'] = 'False'
     if args.batch_size:
         config_manager.config['GENERAL']['BATCH_SIZE'] = str(args.batch_size)
+    
+    # Initialize GPU once if enabled
+    use_gpu = config_manager.use_gpu()
+    if use_gpu:
+        try:
+            from features.optimized.gpu_functions import initialize_gpu
+            gpu_initialized = initialize_gpu()
+            if not gpu_initialized:
+                logger.warning("GPU initialization failed, falling back to CPU")
+                config_manager.config['GENERAL']['USE_GPU'] = 'False'
+                use_gpu = False
+        except Exception as e:
+            logger.warning(f"Error initializing GPU: {e}, falling back to CPU")
+            config_manager.config['GENERAL']['USE_GPU'] = 'False'
+            use_gpu = False
     
     # Handle disabled features
     if args.disable_features:

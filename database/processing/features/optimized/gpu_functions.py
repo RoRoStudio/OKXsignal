@@ -477,72 +477,70 @@ def compute_batch_features_gpu(price_data):
         
     try:
         # Extract arrays
-        opens = price_data.get('opens')
-        highs = price_data.get('highs')
-        lows = price_data.get('lows')
-        closes = price_data.get('closes')
+        opens = price_data['opens']
+        highs = price_data['highs']
+        lows = price_data['lows']
+        closes = price_data['closes']
         volumes = price_data.get('volumes')
         
-        if opens is None or highs is None or lows is None or closes is None:
-            logging.warning("Missing required price data for GPU batch computation")
+        # Safety check for array sizes before moving to GPU
+        if any(arr is None or len(arr) == 0 for arr in [opens, highs, lows, closes]):
             return {}
             
-        # Move data to GPU
-        try:
-            cp_opens = cp.asarray(opens)
-            cp_highs = cp.asarray(highs)
-            cp_lows = cp.asarray(lows)
-            cp_closes = cp.asarray(closes)
-            
-            # Synchronize to ensure data is on GPU
-            cp.cuda.Stream.null.synchronize()
-        except Exception as e:
-            logging.warning(f"Error transferring data to GPU: {e}")
+        # Check if arrays are compatible sizes
+        array_len = len(closes)
+        if any(len(arr) != array_len for arr in [opens, highs, lows]):
             return {}
+            
+        # Move data to GPU with explicit copy to ensure data is properly transferred
+        cp_opens = cp.asarray(opens, dtype=cp.float64)
+        cp_highs = cp.asarray(highs, dtype=cp.float64)
+        cp_lows = cp.asarray(lows, dtype=cp.float64)
+        cp_closes = cp.asarray(closes, dtype=cp.float64)
+        
+        # Synchronize to ensure data is moved to GPU before operations
+        cp.cuda.Stream.null.synchronize()
         
         # Results dictionary
         results = {}
         
         # Compute price action features
-        try:
-            # Body size
-            results['body_size'] = cp.asnumpy(cp.abs(cp_closes - cp_opens))
-            
-            # Shadows
-            results['upper_shadow'] = cp.asnumpy(cp_highs - cp.maximum(cp_opens, cp_closes))
-            results['lower_shadow'] = cp.asnumpy(cp.minimum(cp_opens, cp_closes) - cp_lows)
-            
-            # Relative close position
-            hl_range = cp_highs - cp_lows
-            mask = hl_range > 0
-            rel_pos = cp.where(
-                mask,
-                (cp_closes - cp_lows) / hl_range,
-                0.5  # Default to middle if no range
-            )
-            results['relative_close_position'] = cp.asnumpy(rel_pos)
-            
-            # Log returns
-            n = len(cp_closes)
-            log_returns = cp.zeros_like(cp_closes)
-            if n > 1:
-                # Avoid division by zero
-                mask = cp_closes[:-1] > 0
-                indices = cp.where(mask)[0]
-                if len(indices) > 0:
-                    log_returns[indices+1] = cp.log(cp_closes[indices+1] / cp_closes[indices])
-            
-            results['log_return'] = cp.asnumpy(log_returns)
-            
-            # Synchronize to ensure computation is complete
-            cp.cuda.Stream.null.synchronize()
-        except Exception as e:
-            logging.warning(f"Error in GPU batch computation: {e}")
-            # Continue with whatever we've computed so far
+        # Body size
+        results['body_size'] = cp.asnumpy(cp.abs(cp_closes - cp_opens))
+        
+        # Shadows
+        results['upper_shadow'] = cp.asnumpy(cp_highs - cp.maximum(cp_opens, cp_closes))
+        results['lower_shadow'] = cp.asnumpy(cp.minimum(cp_opens, cp_closes) - cp_lows)
+        
+        # Relative close position
+        hl_range = cp_highs - cp_lows
+        mask = hl_range > 0
+        rel_pos = cp.where(
+            mask,
+            (cp_closes - cp_lows) / hl_range,
+            0.5  # Default to middle if no range
+        )
+        results['relative_close_position'] = cp.asnumpy(rel_pos)
+        
+        # Log returns
+        n = len(cp_closes)
+        log_returns = cp.zeros_like(cp_closes)
+        if n > 1:
+            # Avoid division by zero
+            safe_closes = cp.maximum(cp_closes[:-1], 1e-8)
+            log_returns[1:] = cp.log(cp_closes[1:] / safe_closes)
+        
+        results['log_return'] = cp.asnumpy(log_returns)
+        
+        # Clean up GPU memory explicitly
+        del cp_opens, cp_highs, cp_lows, cp_closes, hl_range, mask, rel_pos, log_returns
+        cp.get_default_memory_pool().free_all_blocks()
         
         # Return results dictionary
         return results
     except Exception as e:
-        logging.error(f"Batch GPU computation failed: {e}")
+        logging.error(f"GPU calculation failed: {e}")
+        # Clean up GPU memory on error
+        cp.get_default_memory_pool().free_all_blocks()
         # Return empty dictionary on failure
         return {}

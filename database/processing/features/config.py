@@ -17,8 +17,8 @@ import psutil
 # Automatically determine optimal batch size based on CPU cores
 CPU_CORES = os.cpu_count() or 8
 BATCH_SIZE = max(8, min(24, CPU_CORES * 2))
-MIN_CANDLES_REQUIRED = 200  # Minimum candles needed for reliable calculation
-ROLLING_WINDOW = 128  # Default window size for rolling updates
+MIN_CANDLES_REQUIRED = 850  # Minimum candles needed for reliable calculation
+ROLLING_WINDOW = 400  # Default window size for rolling updates (set actual value in config.ini)
 
 # Default paths
 DEFAULT_CONFIG_PATH = os.path.expanduser("~/OKXsignal/config/config.ini")
