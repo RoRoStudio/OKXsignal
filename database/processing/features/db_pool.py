@@ -19,12 +19,12 @@ CONNECTION_POOL = None
 MAX_RETRIES = 5
 RETRY_BACKOFF = 1.5  # Seconds
 
-def initialize_pool(config_manager, min_connections=3, max_connections=None):
+def initialize_pool(config_or_params, min_connections=3, max_connections=None):
     """
     Initialize the database connection pool
     
     Args:
-        config_manager: Configuration manager with DB settings
+        config_or_params: Either a ConfigManager object or a dictionary with DB parameters
         min_connections: Minimum number of connections to keep in the pool
         max_connections: Maximum number of connections allowed (default: CPU count * 4)
         
@@ -37,8 +37,13 @@ def initialize_pool(config_manager, min_connections=3, max_connections=None):
     if CONNECTION_POOL is not None:
         return CONNECTION_POOL
     
-    # Get database parameters from config
-    db_params = config_manager.get_db_params()
+    # Check if we received a config manager or direct params
+    if hasattr(config_or_params, 'get_db_params'):
+        # It's a config manager
+        db_params = config_or_params.get_db_params()
+    else:
+        # It's already a dictionary with parameters
+        db_params = config_or_params
     
     # Add extra parameters for performance
     db_params.update({

@@ -1,0 +1,7 @@
+[INFO] 2025-03-27 12:04:23,721 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-03-27 12:04:23,721 | System memory: 20.38 GB available / 23.43 GB total
+[INFO] 2025-03-27 12:04:23,726 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-03-27 12:04:23,730 | Loaded config from /root/OKXsignal/config/config.ini
+[INFO] 2025-03-27 12:04:23,866 | GPU detected: Device 0, Memory: 12.00 GB
+[INFO] 2025-03-27 12:04:23,866 | GPU acceleration is available
+[INFO] 2025-03-27 12:04:23,866 | GPU capabilities detected - enabling GPU acceleration

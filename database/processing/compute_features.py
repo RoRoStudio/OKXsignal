@@ -815,7 +815,7 @@ def main():
     db_params = config_manager.get_db_params()
     
     # Initialize connection pool
-    from database.processing.features.db_pool import initialize_connection_pool as initialize_pool
+    from database.processing.features.db_pool import initialize_pool
     initialize_pool(
         db_params, 
         min_connections=max(2, batch_size // 8),
