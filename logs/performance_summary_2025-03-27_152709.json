@@ -1,0 +1,111 @@
+{
+  "pairs_processed": 305,
+  "total_processing_time": 967.4365510940552,
+  "average_pair_time": 3.1719231183411645,
+  "operation_summaries": {
+    "compute_features_total": {
+      "total_calls": 301,
+      "average_time": 0.962659991064737,
+      "min_time": 0.19821667671203613,
+      "max_time": 3.5135087966918945,
+      "total_time": 289.76065731048584,
+      "percentage_of_total": 29.951386164064314
+    },
+    "database_update": {
+      "total_calls": 301,
+      "average_time": 0.20473745891026088,
+      "min_time": 0.04051375389099121,
+      "max_time": 0.4577305316925049,
+      "total_time": 61.625975131988525,
+      "percentage_of_total": 6.370027580857568
+    },
+    "statistical_features": {
+      "total_calls": 301,
+      "average_time": 0.10471709938936455,
+      "min_time": 0.06879925727844238,
+      "max_time": 0.9133868217468262,
+      "total_time": 31.51984691619873,
+      "percentage_of_total": 3.2580789800171956
+    },
+    "volatility_features": {
+      "total_calls": 301,
+      "average_time": 0.09873090233913688,
+      "min_time": 0.025529861450195312,
+      "max_time": 0.9347925186157227,
+      "total_time": 29.7180016040802,
+      "percentage_of_total": 3.071829524165971
+    },
+    "volume_features": {
+      "total_calls": 301,
+      "average_time": 0.047379894510060055,
+      "min_time": 0.010180950164794922,
+      "max_time": 0.2872602939605713,
+      "total_time": 14.261348247528076,
+      "percentage_of_total": 1.4741378368845166
+    },
+    "price_action_features": {
+      "total_calls": 301,
+      "average_time": 0.045929075475547004,
+      "min_time": 0.00010585784912109375,
+      "max_time": 2.0388522148132324,
+      "total_time": 13.824651718139648,
+      "percentage_of_total": 1.4289982844358753
+    },
+    "db_get_columns": {
+      "total_calls": 303,
+      "average_time": 0.024056270964468274,
+      "min_time": 0.0022580623626708984,
+      "max_time": 0.08716201782226562,
+      "total_time": 7.289050102233887,
+      "percentage_of_total": 0.7534396022137929
+    },
+    "cross_pair_features": {
+      "total_calls": 1,
+      "average_time": 6.963666915893555,
+      "min_time": 6.963666915893555,
+      "max_time": 6.963666915893555,
+      "total_time": 6.963666915893555,
+      "percentage_of_total": 0.7198060594277195
+    },
+    "fetch_data": {
+      "total_calls": 303,
+      "average_time": 0.022049869247789036,
+      "min_time": 0.0042552947998046875,
+      "max_time": 0.09277129173278809,
+      "total_time": 6.681110382080078,
+      "percentage_of_total": 0.6905993343464789
+    },
+    "time_features": {
+      "total_calls": 301,
+      "average_time": 0.018140021352672894,
+      "min_time": 0.0019555091857910156,
+      "max_time": 0.11395144462585449,
+      "total_time": 5.460146427154541,
+      "percentage_of_total": 0.5643932329184552
+    },
+    "momentum_features": {
+      "total_calls": 301,
+      "average_time": 0.014719012567767273,
+      "min_time": 0.00015211105346679688,
+      "max_time": 0.5281891822814941,
+      "total_time": 4.430422782897949,
+      "percentage_of_total": 0.45795486824305637
+    },
+    "pattern_features": {
+      "total_calls": 301,
+      "average_time": 0.013301608570390365,
+      "min_time": 0.0062408447265625,
+      "max_time": 0.08135151863098145,
+      "total_time": 4.0037841796875,
+      "percentage_of_total": 0.41385496290787216
+    },
+    "label_features": {
+      "total_calls": 301,
+      "average_time": 0.007121501966964367,
+      "min_time": 0.00011038780212402344,
+      "max_time": 0.0975654125213623,
+      "total_time": 2.1435720920562744,
+      "percentage_of_total": 0.22157236974684802
+    }
+  }
+}
