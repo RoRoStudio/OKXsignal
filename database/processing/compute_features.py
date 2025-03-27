@@ -25,14 +25,12 @@ import psycopg2.extras
 
 # Import database connection pool
 from database.processing.features.db_pool import (
-    initialize_connection_pool,
+    initialize_pool, 
     get_connection,
-    release_connection,
-    close_all_connections,
-    get_optimized_connection_from_pool,
-    get_thread_connection,
-    release_thread_connection,
-    get_db_connection
+    get_db_connection,
+    get_thread_connection, 
+    close_thread_connection,
+    close_all_connections
 )
 
 # Import configuration
@@ -354,7 +352,7 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
         # Release connection back to pool
         if db_conn:
             try:
-                release_thread_connection()
+                close_thread_connection()
             except Exception as e:
                 logging.warning(f"Error releasing connection for {pair}: {str(e)}")
         

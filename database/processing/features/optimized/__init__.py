@@ -1,3 +1,4 @@
+# Fix for database/processing/features/optimized/__init__.py
 #!/usr/bin/env python3
 """
 Optimized functions for feature computation
@@ -72,7 +73,5 @@ if GPU_AVAILABLE:
         'compute_future_return_gpu',
         'compute_max_future_return_gpu',
         'compute_max_future_drawdown_gpu',
-        'compute_batch_features_gpu'
+        'compute_batch_features_gpu'  # Add missing function
     ])
-
-    

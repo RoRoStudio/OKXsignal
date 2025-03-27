@@ -1,8 +1,7 @@
+# database/processing/features/performance_monitor.py
 #!/usr/bin/env python3
 """
-Performance monitoring utilities
-- Tracks computation time and performance metrics
-- Produces performance reports for optimization
+Performance Monitoring for feature computation
 """
 
 import os
@@ -10,7 +9,6 @@ import logging
 import threading
 import time
 from datetime import datetime
-import json
 
 class PerformanceMonitor:
     """Class to track and log computation times for performance analysis"""
@@ -46,8 +44,9 @@ class PerformanceMonitor:
     def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
         with self.lock:
-            # Check if current_pair is None OR not in timings (double safety)
-            if not self.current_pair or self.current_pair not in self.timings:
+            # Check if current_pair is None before accessing
+            if self.current_pair is None:
+                logging.warning(f"Attempted to log operation '{operation}' but current_pair is None")
                 return
                 
             if operation not in self.timings[self.current_pair]["operations"]:
@@ -63,8 +62,9 @@ class PerformanceMonitor:
     def end_pair(self, total_duration):
         """Log the total processing time for the current pair"""
         with self.lock:
-            # Ensure current_pair is valid before accessing
-            if not self.current_pair or self.current_pair not in self.timings:
+            # Check if current_pair is None before accessing
+            if self.current_pair is None:
+                logging.warning(f"Attempted to end timing but current_pair is None")
                 return
                 
             self.timings[self.current_pair]["total"] = total_duration
@@ -78,10 +78,16 @@ class PerformanceMonitor:
             self.current_pair = None
     
     def save_summary(self):
-        """Save a summary of all timings to JSON file"""
+        """Save a summary of all timings to JSON and text files"""
+        import json
+        
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
         summary_file = os.path.join(self.log_dir, f"performance_summary_{timestamp}.json")
         
+        # Check if we have any data
+        if not self.timings:
+            logging.warning("No performance data collected. Summary will be empty.")
+            
         summary = {
             "pairs_processed": len(self.timings),
             "total_processing_time": sum(data["total"] for data in self.timings.values()),

@@ -17,7 +17,35 @@ except ImportError:
 # -------------------------------
 # Core GPU Functions
 # -------------------------------
-
+def initialize_gpu():
+    """Initialize GPU and configure memory pool"""
+    if not CUPY_AVAILABLE:
+        return False
+        
+    try:
+        # Create memory pool with unified management
+        memory_pool = cp.cuda.MemoryPool(cp.cuda.malloc_managed)
+        cp.cuda.set_allocator(memory_pool.malloc)
+        
+        # Set pinned memory for faster transfers
+        pinned_memory_pool = cp.cuda.PinnedMemoryPool()
+        cp.cuda.set_pinned_memory_allocator(pinned_memory_pool.malloc)
+        
+        # Get device info
+        device = cp.cuda.Device()
+        logging.info(f"Initialized GPU: {device.name}, "
+                    f"Memory: {device.mem_info[1]/1024**3:.2f} GB")
+                    
+        # Test basic operations to ensure GPU is working
+        test_array = cp.array([1, 2, 3])
+        test_result = cp.sum(test_array)
+        cp.cuda.Stream.null.synchronize()  # Ensure operation completes
+        
+        return True
+    except Exception as e:
+        logging.error(f"GPU initialization failed: {e}")
+        return False
+    
 def is_gpu_available():
     """Check if GPU is available"""
     if not CUPY_AVAILABLE:
@@ -449,51 +477,68 @@ def compute_batch_features_gpu(price_data):
         
     try:
         # Extract arrays
-        opens = price_data['opens']
-        highs = price_data['highs']
-        lows = price_data['lows']
-        closes = price_data['closes']
+        opens = price_data.get('opens')
+        highs = price_data.get('highs')
+        lows = price_data.get('lows')
+        closes = price_data.get('closes')
         volumes = price_data.get('volumes')
         
+        if opens is None or highs is None or lows is None or closes is None:
+            logging.warning("Missing required price data for GPU batch computation")
+            return {}
+            
         # Move data to GPU
-        cp_opens = cp.asarray(opens)
-        cp_highs = cp.asarray(highs)
-        cp_lows = cp.asarray(lows)
-        cp_closes = cp.asarray(closes)
+        try:
+            cp_opens = cp.asarray(opens)
+            cp_highs = cp.asarray(highs)
+            cp_lows = cp.asarray(lows)
+            cp_closes = cp.asarray(closes)
+            
+            # Synchronize to ensure data is on GPU
+            cp.cuda.Stream.null.synchronize()
+        except Exception as e:
+            logging.warning(f"Error transferring data to GPU: {e}")
+            return {}
         
         # Results dictionary
         results = {}
         
         # Compute price action features
-        # Body size
-        results['body_size'] = cp.asnumpy(cp.abs(cp_closes - cp_opens))
-        
-        # Shadows
-        results['upper_shadow'] = cp.asnumpy(cp_highs - cp.maximum(cp_opens, cp_closes))
-        results['lower_shadow'] = cp.asnumpy(cp.minimum(cp_opens, cp_closes) - cp_lows)
-        
-        # Relative close position
-        hl_range = cp_highs - cp_lows
-        mask = hl_range > 0
-        rel_pos = cp.where(
-            mask,
-            (cp_closes - cp_lows) / hl_range,
-            0.5  # Default to middle if no range
-        )
-        results['relative_close_position'] = cp.asnumpy(rel_pos)
-        
-        # Log returns
-        n = len(cp_closes)
-        log_returns = cp.zeros_like(cp_closes)
-        if n > 1:
-            # Avoid division by zero
-            mask = cp_closes[:-1] > 0
-            indices = cp.where(mask)[0]
-            log_returns[indices+1] = cp.log(cp_closes[indices+1] / cp_closes[indices])
-        
-        results['log_return'] = cp.asnumpy(log_returns)
-        
-        # Add more features as needed...
+        try:
+            # Body size
+            results['body_size'] = cp.asnumpy(cp.abs(cp_closes - cp_opens))
+            
+            # Shadows
+            results['upper_shadow'] = cp.asnumpy(cp_highs - cp.maximum(cp_opens, cp_closes))
+            results['lower_shadow'] = cp.asnumpy(cp.minimum(cp_opens, cp_closes) - cp_lows)
+            
+            # Relative close position
+            hl_range = cp_highs - cp_lows
+            mask = hl_range > 0
+            rel_pos = cp.where(
+                mask,
+                (cp_closes - cp_lows) / hl_range,
+                0.5  # Default to middle if no range
+            )
+            results['relative_close_position'] = cp.asnumpy(rel_pos)
+            
+            # Log returns
+            n = len(cp_closes)
+            log_returns = cp.zeros_like(cp_closes)
+            if n > 1:
+                # Avoid division by zero
+                mask = cp_closes[:-1] > 0
+                indices = cp.where(mask)[0]
+                if len(indices) > 0:
+                    log_returns[indices+1] = cp.log(cp_closes[indices+1] / cp_closes[indices])
+            
+            results['log_return'] = cp.asnumpy(log_returns)
+            
+            # Synchronize to ensure computation is complete
+            cp.cuda.Stream.null.synchronize()
+        except Exception as e:
+            logging.warning(f"Error in GPU batch computation: {e}")
+            # Continue with whatever we've computed so far
         
         # Return results dictionary
         return results

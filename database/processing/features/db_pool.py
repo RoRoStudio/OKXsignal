@@ -1,228 +1,223 @@
+# database/processing/features/db_pool.py
 #!/usr/bin/env python3
 """
-Database connection pool management
-- Provides efficient connection pooling for PostgreSQL
-- Optimizes database connections for high-throughput operations
+Database connection pool utilities
 """
 
 import logging
 import threading
+import time
 import psycopg2
 from psycopg2 import pool
-from psycopg2.extras import DictCursor
+import psycopg2.extras
+
+# Thread-local storage for connections
+THREAD_LOCAL = threading.local()
 
 # Global connection pool
 CONNECTION_POOL = None
+MAX_RETRIES = 5
+RETRY_BACKOFF = 1.5  # Seconds
 
-# Thread-local storage for thread-specific connections
-THREAD_LOCAL = threading.local()
-
-def initialize_connection_pool(db_params, min_connections=5, max_connections=20):
+def initialize_pool(config_manager, min_connections=3, max_connections=None):
     """
-    Initialize a PostgreSQL connection pool
+    Initialize the database connection pool
     
     Args:
-        db_params: Dictionary with database connection parameters
+        config_manager: Configuration manager with DB settings
         min_connections: Minimum number of connections to keep in the pool
-        max_connections: Maximum number of connections allowed in the pool
+        max_connections: Maximum number of connections allowed (default: CPU count * 4)
         
     Returns:
         Connection pool object
     """
     global CONNECTION_POOL
     
-    try:
-        if CONNECTION_POOL is None:
-            # Create threaded connection pool
-            CONNECTION_POOL = pool.ThreadedConnectionPool(
-                minconn=min_connections,
-                maxconn=max_connections,
-                **db_params
-            )
+    # Only initialize once
+    if CONNECTION_POOL is not None:
+        return CONNECTION_POOL
+    
+    # Get database parameters from config
+    db_params = config_manager.get_db_params()
+    
+    # Add extra parameters for performance
+    db_params.update({
+        'application_name': 'feature_compute',
+        'client_encoding': 'UTF8',
+        'keepalives': 1,
+        'keepalives_idle': 30,
+        'keepalives_interval': 10,
+        'keepalives_count': 5
+    })
+    
+    # Automatically determine max connections if not specified
+    if max_connections is None:
+        import os
+        import psutil
+        
+        # Get available CPU cores and memory
+        cpu_count = os.cpu_count() or 8
+        
+        # Start with CPU count * 1.5 (plus overhead) for worker threads
+        suggested_max = int(cpu_count * 1.5) + 5
+        
+        # Check if DB has connection limits
+        try:
+            # Create a temporary connection to check DB settings
+            temp_conn = psycopg2.connect(**db_params)
+            cursor = temp_conn.cursor()
             
-            logging.info(f"Database connection pool initialized with {min_connections}-{max_connections} connections")
+            # Get PostgreSQL max_connections setting
+            cursor.execute("SHOW max_connections")
+            pg_max_conn = int(cursor.fetchone()[0])
+            
+            # We should use at most 50% of available connections
+            db_max = max(3, int(pg_max_conn * 0.5))
+            
+            # Use the smaller of the two limits
+            max_connections = min(suggested_max, db_max)
+            
+            cursor.close()
+            temp_conn.close()
+        except Exception as e:
+            logging.warning(f"Could not determine optimal connection pool size: {e}")
+            # Use a conservative default
+            max_connections = suggested_max
+    
+    # Ensure min_connections is at least 3
+    min_connections = max(3, min_connections)
+    
+    # Ensure max_connections is at least min_connections + 1
+    max_connections = max(min_connections + 1, max_connections)
+    
+    # Create the connection pool
+    try:
+        CONNECTION_POOL = psycopg2.pool.ThreadedConnectionPool(
+            minconn=min_connections,
+            maxconn=max_connections,
+            **db_params
+        )
+        
+        logging.info(f"Database connection pool initialized with {min_connections}-{max_connections} connections")
         return CONNECTION_POOL
     except Exception as e:
-        logging.error(f"Error initializing connection pool: {e}")
+        logging.error(f"Failed to initialize connection pool: {e}")
         raise
-
-def get_db_connection():
-    """
-    Get a database connection that can be used with 'with' statement
-    
-    Returns:
-        Database connection with context manager support
-    """
-    class ConnectionContextManager:
-        def __enter__(self):
-            self.conn = get_connection()
-            return self.conn
-            
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            release_connection(self.conn)
-            self.conn = None
-            
-    return ConnectionContextManager()
 
 def get_connection():
     """
-    Get a connection from the pool
+    Get a connection from the pool with retry logic
     
     Returns:
         Database connection
     """
-    global CONNECTION_POOL
-    
     if CONNECTION_POOL is None:
-        raise ValueError("Connection pool not initialized. Call initialize_connection_pool first.")
-        
-    try:
-        conn = CONNECTION_POOL.getconn()
-        logging.debug("Retrieved connection from pool")
-        return conn
-    except Exception as e:
-        logging.error(f"Error getting connection from pool: {e}")
-        raise
+        raise ValueError("Connection pool not initialized")
+    
+    retry_count = 0
+    retry_delay = RETRY_BACKOFF
+    
+    while retry_count < MAX_RETRIES:
+        try:
+            conn = CONNECTION_POOL.getconn()
+            return conn
+        except psycopg2.pool.PoolError as e:
+            retry_count += 1
+            if retry_count >= MAX_RETRIES:
+                logging.error(f"Error getting connection from pool: {e}")
+                raise
+            
+            # Log and retry with exponential backoff
+            logging.warning(f"Connection pool busy, retrying in {retry_delay:.2f}s ({retry_count}/{MAX_RETRIES})")
+            time.sleep(retry_delay)
+            retry_delay *= RETRY_BACKOFF
+    
+    raise RuntimeError("Failed to get database connection after retries")
 
-def release_connection(conn):
+def return_connection(conn):
     """
     Return a connection to the pool
     
     Args:
-        conn: Database connection to return
+        conn: Connection to return
     """
-    global CONNECTION_POOL
-    
-    if CONNECTION_POOL is None:
-        logging.warning("Connection pool not initialized, cannot release connection")
-        return
-        
-    try:
-        CONNECTION_POOL.putconn(conn)
-        logging.debug("Connection returned to pool")
-    except Exception as e:
-        logging.error(f"Error returning connection to pool: {e}")
+    if conn and CONNECTION_POOL:
+        try:
+            # Make sure we're not in a transaction
+            if conn.status != psycopg2.extensions.STATUS_READY:
+                conn.rollback()
+                
+            CONNECTION_POOL.putconn(conn)
+        except Exception as e:
+            logging.warning(f"Error returning connection to pool: {e}")
+            try:
+                conn.close()
+            except:
+                pass
 
 def close_all_connections():
     """Close all connections in the pool"""
     global CONNECTION_POOL
     
-    if CONNECTION_POOL is None:
-        return
-        
-    try:
+    if CONNECTION_POOL:
         CONNECTION_POOL.closeall()
+        CONNECTION_POOL = None
         logging.info("All connections in the pool have been closed")
-    except Exception as e:
-        logging.error(f"Error closing connection pool: {e}")
 
-def get_optimized_connection_from_pool():
-    """
-    Get an optimized connection from the pool with performance settings
-    
-    Returns:
-        Optimized database connection
-    """
-    conn = get_connection()
-    
-    try:
-        # Set performance-related parameters
-        cursor = conn.cursor()
-        
-        # Increase work memory for this connection
-        cursor.execute("SET work_mem = '64MB'")
-        
-        # Set appropriate isolation level for read-heavy operations
-        cursor.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
-        
-        # Disable synchronous commit for better performance when safe to do so
-        # cursor.execute("SET synchronous_commit = off")  # Uncomment if needed
-        
-        cursor.close()
-        
-        logging.debug("Connection optimized for performance")
-        return conn
-    except Exception as e:
-        release_connection(conn)
-        logging.error(f"Error optimizing connection: {e}")
-        raise
-
-def execute_query(query, params=None, fetch_all=True, cursor_factory=None):
-    """
-    Execute a query using a connection from the pool
-    
-    Args:
-        query: SQL query string
-        params: Query parameters (optional)
-        fetch_all: Whether to fetch all results (True) or just one (False)
-        cursor_factory: Custom cursor factory (optional)
-        
-    Returns:
-        Query results
-    """
-    conn = get_connection()
-    
-    try:
-        if cursor_factory:
-            cursor = conn.cursor(cursor_factory=cursor_factory)
-        else:
-            cursor = conn.cursor()
-            
-        cursor.execute(query, params or ())
-        
-        if fetch_all:
-            result = cursor.fetchall()
-        else:
-            result = cursor.fetchone()
-            
-        cursor.close()
-        return result
-    except Exception as e:
-        logging.error(f"Error executing query: {e}")
-        raise
-    finally:
-        release_connection(conn)
-
-def execute_query_with_dict_result(query, params=None, fetch_all=True):
-    """
-    Execute a query and return results as dictionaries
-    
-    Args:
-        query: SQL query string
-        params: Query parameters (optional)
-        fetch_all: Whether to fetch all results (True) or just one (False)
-        
-    Returns:
-        Query results as dictionaries
-    """
-    return execute_query(query, params, fetch_all, cursor_factory=DictCursor)
-
-
-# Thread-specific connection management
+# Thread-local connection management
 def get_thread_connection():
     """
-    Get a connection that is specific to the current thread
+    Get or create a connection for the current thread
     
     Returns:
-        Database connection for this thread
+        Database connection
     """
-    global THREAD_LOCAL
-    
-    # Check if this thread already has a connection
-    if not hasattr(THREAD_LOCAL, "connection") or THREAD_LOCAL.connection is None:
-        # Get a new connection from the pool
+    if not hasattr(THREAD_LOCAL, 'connection'):
         THREAD_LOCAL.connection = get_connection()
-        logging.debug(f"Created new thread connection for thread {threading.get_ident()}")
     
     return THREAD_LOCAL.connection
 
-def release_thread_connection():
+def close_thread_connection():
+    """Close the connection for the current thread"""
+    if hasattr(THREAD_LOCAL, 'connection'):
+        return_connection(THREAD_LOCAL.connection)
+        del THREAD_LOCAL.connection
+
+def get_db_connection():
     """
-    Release the thread-specific connection back to the pool
-    """
-    global THREAD_LOCAL
+    Get a regular database connection from the pool
     
-    if hasattr(THREAD_LOCAL, "connection") and THREAD_LOCAL.connection is not None:
-        release_connection(THREAD_LOCAL.connection)
-        THREAD_LOCAL.connection = None
-        logging.debug(f"Released thread connection for thread {threading.get_ident()}")
+    Returns:
+        Database connection
+    """
+    return get_connection()
+
+def get_connection():
+    """
+    Get a connection from the pool with retry logic
+    
+    Returns:
+        Database connection
+    """
+    if CONNECTION_POOL is None:
+        raise ValueError("Connection pool not initialized")
+    
+    retry_count = 0
+    retry_delay = RETRY_BACKOFF
+    
+    while retry_count < MAX_RETRIES:
+        try:
+            conn = CONNECTION_POOL.getconn()
+            return conn
+        except psycopg2.pool.PoolError as e:
+            retry_count += 1
+            if retry_count >= MAX_RETRIES:
+                logging.error(f"Error getting connection from pool: {e}")
+                raise
+            
+            # Log and retry with exponential backoff
+            logging.warning(f"Connection pool busy, retrying in {retry_delay:.2f}s ({retry_count}/{MAX_RETRIES})")
+            time.sleep(retry_delay)
+            retry_delay *= RETRY_BACKOFF
+    
+    raise RuntimeError("Failed to get database connection after retries")
