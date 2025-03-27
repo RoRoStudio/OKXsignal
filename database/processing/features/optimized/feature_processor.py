@@ -172,11 +172,59 @@ class OptimizedFeatureProcessor:
         for key in results:
             if not isinstance(results[key], np.ndarray):
                 results[key] = np.array(results[key])
-                
-        # Add completion flags
-        results['features_computed'] = np.ones(len(closes), dtype=np.bool_)
-        results['targets_computed'] = np.ones(len(closes), dtype=np.bool_)
+                      
+        return results
+    
+    def process_all_features(self, price_data, perf_monitor=None):
+        """
+        Process all feature types including multi-timeframe features
         
+        Args:
+            price_data: Dictionary with OHLCV data
+            perf_monitor: Performance monitor for tracking
+            
+        Returns:
+            Dictionary with all computed features
+        """
+        # First, process standard features
+        results = self.process_features(price_data, None, perf_monitor)
+        
+        # Now process multi-timeframe features
+        start_time = time.time()
+        
+        try:
+            # Convert arrays to DataFrame for multi-timeframe processing
+            df = pd.DataFrame({
+                'timestamp_utc': [datetime.fromtimestamp(ts) for ts in price_data['timestamps']],
+                'open_1h': price_data['opens'],
+                'high_1h': price_data['highs'],
+                'low_1h': price_data['lows'],
+                'close_1h': price_data['closes'],
+                'volume_1h': price_data.get('volumes', np.zeros_like(price_data['closes']))
+            })
+            
+            # Add computed features that might be needed for multi-timeframe features
+            if 'log_return' in results:
+                df['log_return'] = results['log_return']
+            
+            # Import MultiTimeframeFeatures here to avoid circular imports
+            from database.processing.features.multi_timeframe import MultiTimeframeFeatures
+            
+            # Process multi-timeframe features
+            mtf_processor = MultiTimeframeFeatures(self.use_numba, self.use_gpu)
+            mtf_df = mtf_processor.compute_features(df, None, False, perf_monitor)
+            
+            # Add multi-timeframe features to results
+            mtf_columns = [col for col in mtf_df.columns if ('_4h' in col or '_1d' in col)]
+            for col in mtf_columns:
+                results[col] = mtf_df[col].values
+                
+            if perf_monitor:
+                perf_monitor.log_operation("multi_timeframe_features", time.time() - start_time)
+                
+        except Exception as e:
+            logging.error(f"Error computing multi-timeframe features: {e}")
+            
         return results
         
     def _compute_price_action(self, opens, highs, lows, closes, results, perf_monitor=None):
@@ -188,6 +236,7 @@ class OptimizedFeatureProcessor:
             if self.use_gpu:
                 try:
                     body_features = compute_candle_body_features_gpu(opens, highs, lows, closes)
+                    results['candle_body_size'] = results['body_size']
                     results['body_size'] = body_features[:len(closes)]
                     results['upper_shadow'] = body_features[len(closes):2*len(closes)]
                     results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]
@@ -200,6 +249,7 @@ class OptimizedFeatureProcessor:
             # Fall back to Numba if GPU failed or not enabled
             if 'body_size' not in results and self.use_numba:
                 body_features = compute_candle_body_features_numba(opens, highs, lows, closes)
+                results['candle_body_size'] = results['body_size']
                 results['body_size'] = body_features[:len(closes)]
                 results['upper_shadow'] = body_features[len(closes):2*len(closes)]
                 results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]

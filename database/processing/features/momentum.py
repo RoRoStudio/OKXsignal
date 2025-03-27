@@ -162,61 +162,34 @@ class MomentumFeatures(BaseFeatureComputer):
         
         # Stochastic Oscillator
         try:
-            rolling_low = low.rolling(window=params['stoch_k']).min()
-            rolling_high = high.rolling(window=params['stoch_k']).max()
-            
-            # Avoid division by zero
-            high_low_range = rolling_high - rolling_low
-            high_low_range = high_low_range.replace(0, np.nan)
-            
-            k = 100 * ((close - rolling_low) / high_low_range)
-            k = k.fillna(50)
-            
-            d = k.rolling(window=params['stoch_d']).mean().fillna(50)
-            
+            k, d = self.compute_stochastic(high, low, close, params['stoch_k'], params['stoch_d'])
             df['stoch_k_14'] = k
             df['stoch_d_14'] = d
             
         except Exception as e:
-            return self._handle_exceptions(df, 'stoch_k_14', 50, "Stochastic", e)
+            self._handle_exceptions(df, 'stoch_k_14', 50, "Stochastic %K", e)
+            self._handle_exceptions(df, 'stoch_d_14', 50, "Stochastic %D", e)
         
         # Williams %R
         try:
-            highest_high = high.rolling(window=14).max()
-            lowest_low = low.rolling(window=14).min()
-            
-            # Avoid division by zero
-            range_hl = highest_high - lowest_low
-            range_hl = range_hl.replace(0, np.nan)
-            
-            wr = -100 * ((highest_high - close) / range_hl)
-            df['williams_r_14'] = wr.fillna(-50)
+            df['williams_r_14'] = self.compute_williams_r(high, low, close, 14)
             
         except Exception as e:
-            return self._handle_exceptions(df, 'williams_r_14', -50, "Williams %R", e)
+            self._handle_exceptions(df, 'williams_r_14', -50, "Williams %R", e)
         
         # CCI (Commodity Channel Index)
         try:
-            typical_price = (high + low + close) / 3
-            mean_dev = np.abs(typical_price - typical_price.rolling(window=params['cci_length']).mean())
-            mean_dev = mean_dev.rolling(window=params['cci_length']).mean()
-            
-            # Avoid division by zero
-            mean_dev = mean_dev.replace(0, np.nan)
-            
-            cci = (typical_price - typical_price.rolling(window=params['cci_length']).mean()) / (0.015 * mean_dev)
-            df['cci_14'] = cci.fillna(0)
+            df['cci_14'] = self.compute_cci(high, low, close, params['cci_length'])
             
         except Exception as e:
-            return self._handle_exceptions(df, 'cci_14', 0, "CCI", e)
+            self._handle_exceptions(df, 'cci_14', 0, "CCI", e)
         
         # ROC (Rate of Change)
         try:
-            roc = 100 * (close / close.shift(params['roc_length']) - 1)
-            df['roc_10'] = roc.fillna(0)
+            df['roc_10'] = self.compute_roc(close, params['roc_length'])
             
         except Exception as e:
-            return self._handle_exceptions(df, 'roc_10', 0, "ROC", e)
+            self._handle_exceptions(df, 'roc_10', 0, "ROC", e)
         
         # TSI (True Strength Index)
         try:
@@ -224,16 +197,16 @@ class MomentumFeatures(BaseFeatureComputer):
             df['tsi'] = tsi
             
         except Exception as e:
-            return self._handle_exceptions(df, 'tsi', 0, "TSI", e)
+            self._handle_exceptions(df, 'tsi', 0, "TSI", e)
         
         # Awesome Oscillator
         try:
-            median_price = (high + low) / 2
-            ao = (median_price.rolling(window=5).mean() - median_price.rolling(window=34).mean())
-            df['awesome_oscillator'] = ao.fillna(0)
+            df['awesome_oscillator'] = self.compute_awesome_oscillator(
+                high, low, params['awesome_oscillator_fast'], params['awesome_oscillator_slow']
+            )
             
         except Exception as e:
-            return self._handle_exceptions(df, 'awesome_oscillator', 0, "Awesome Oscillator", e)
+            self._handle_exceptions(df, 'awesome_oscillator', 0, "Awesome Oscillator", e)
         
         # PPO (Percentage Price Oscillator)
         try:
@@ -241,10 +214,68 @@ class MomentumFeatures(BaseFeatureComputer):
             df['ppo'] = ppo
             
         except Exception as e:
-            return self._handle_exceptions(df, 'ppo', 0, "PPO", e)
+            self._handle_exceptions(df, 'ppo', 0, "PPO", e)
         
         # Clean any NaN values
         df = self._clean_dataframe(df)
         
-        self._log_performance("momentum_features", start_time, perf_monitor)
+        self._log_performance("momentum_features", time.time() - start_time, perf_monitor)
         return df
+    
+    def compute_stochastic(self, high, low, close, k_period=14, d_period=3):
+        """Compute Stochastic Oscillator"""
+        # Calculate %K
+        lowest_low = low.rolling(window=k_period).min()
+        highest_high = high.rolling(window=k_period).max()
+        
+        # Avoid division by zero
+        range_diff = highest_high - lowest_low
+        range_diff = range_diff.replace(0, np.nan)
+        
+        k = 100 * ((close - lowest_low) / range_diff)
+        k = k.fillna(50)
+        
+        # Calculate %D (moving average of %K)
+        d = k.rolling(window=d_period).mean().fillna(50)
+        
+        return k, d
+
+    def compute_williams_r(self, high, low, close, period=14):
+        """Compute Williams %R"""
+        highest_high = high.rolling(window=period).max()
+        lowest_low = low.rolling(window=period).min()
+        
+        # Avoid division by zero
+        range_diff = highest_high - lowest_low
+        range_diff = range_diff.replace(0, np.nan)
+        
+        wr = -100 * ((highest_high - close) / range_diff)
+        
+        return wr.fillna(-50)
+
+    def compute_cci(self, high, low, close, period=14):
+        """Compute Commodity Channel Index"""
+        tp = (high + low + close) / 3
+        tp_ma = tp.rolling(window=period).mean()
+        mean_dev = tp.rolling(window=period).apply(lambda x: pd.Series(x).mad(), raw=True)
+        
+        # Avoid division by zero
+        mean_dev = mean_dev.replace(0, np.nan)
+        
+        cci = (tp - tp_ma) / (0.015 * mean_dev)
+        
+        return cci.fillna(0)
+
+    def compute_roc(self, close, period=10):
+        """Compute Rate of Change"""
+        roc = ((close / close.shift(period)) - 1) * 100
+        return roc.fillna(0)
+
+    def compute_awesome_oscillator(self, high, low, fast=5, slow=34):
+        """Compute Awesome Oscillator"""
+        median_price = (high + low) / 2
+        fast_ma = median_price.rolling(window=fast).mean()
+        slow_ma = median_price.rolling(window=slow).mean()
+        
+        ao = fast_ma - slow_ma
+        return ao.fillna(0)

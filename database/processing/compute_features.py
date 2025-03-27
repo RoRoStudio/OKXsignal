@@ -290,7 +290,7 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
         enabled_features = {
             feature_name.lower() for feature_name 
             in ['price_action', 'momentum', 'volatility', 'volume', 
-                'statistical', 'pattern', 'time', 'labels']
+                'statistical', 'pattern', 'time', 'labels', 'multi_timeframe']
             if config_manager.is_feature_enabled(feature_name)
         }
 
@@ -301,22 +301,12 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
         
         log_skipped_features(pair, row_count, FEATURE_GROUP_REQUIREMENTS, enabled_features)
         
-        # Determine enabled feature groups
-        enabled_features = {
-            feature_name.lower() for feature_name 
-            in ['price_action', 'momentum', 'volatility', 'volume', 
-                'statistical', 'pattern', 'time', 'labels']
-            if config_manager.is_feature_enabled(feature_name)
-        }
-        
         # Free memory
         gc.collect()
         
-        # Process features
+        # Process features using the new method that includes multi-timeframe features
         start_compute = time.time()
-        feature_results = feature_processor.process_features(
-            price_data, enabled_features, perf_monitor
-        )
+        feature_results = feature_processor.process_all_features(price_data, perf_monitor)
         
         if perf_monitor:
             perf_monitor.log_operation("compute_features_total", time.time() - start_compute)

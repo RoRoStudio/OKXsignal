@@ -102,7 +102,7 @@ class VolumeFeatures(BaseFeatureComputer):
         # VWMA (Volume Weighted Moving Average)
         try:
             vwma = (close * volume).rolling(window=params['vwma_length']).sum() / \
-                   volume.rolling(window=params['vwma_length']).sum()
+                volume.rolling(window=params['vwma_length']).sum()
             df['vwma_20'] = vwma.fillna(close)
             
         except Exception as e:
@@ -115,7 +115,7 @@ class VolumeFeatures(BaseFeatureComputer):
             money_flow_volume = money_flow_multiplier * volume
             
             cmf = money_flow_volume.rolling(window=params['cmf_length']).sum() / \
-                  volume.rolling(window=params['cmf_length']).sum()
+                volume.rolling(window=params['cmf_length']).sum()
             df['chaikin_money_flow'] = cmf.fillna(0)
             
         except Exception as e:
@@ -216,5 +216,5 @@ class VolumeFeatures(BaseFeatureComputer):
         # Clean any NaN values
         df = self._clean_dataframe(df)
         
-        self._log_performance("volume_features", start_time, perf_monitor)
+        self._log_performance("volume_features", time.time() - start_time, perf_monitor)
         return df

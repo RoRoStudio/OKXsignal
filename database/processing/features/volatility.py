@@ -151,8 +151,89 @@ class VolatilityFeatures(BaseFeatureComputer):
         # Initialize volatility rank (will be updated in cross_pair features)
         df['volatility_rank_1h'] = 0
         
+        # Parabolic SAR
+        try:
+            sar = self._compute_parabolic_sar(high, low, close)
+            df['parabolic_sar_1h'] = sar.fillna(0)
+        except Exception as e:
+            self._handle_exceptions(df, 'parabolic_sar_1h', 0, "Parabolic SAR", e)
+
         # Clean any NaN values
         df = self._clean_dataframe(df)
         
         self._log_performance("volatility_features", start_time, perf_monitor)
         return df
+    
+    def _compute_parabolic_sar(self, high, low, close, af_start=0.02, af_step=0.02, af_max=0.2):
+        """
+        Compute Parabolic SAR indicator
+        
+        Args:
+            high: Series of high prices
+            low: Series of low prices
+            close: Series of close prices
+            af_start: Starting acceleration factor
+            af_step: Step to increase acceleration factor
+            af_max: Maximum acceleration factor
+            
+        Returns:
+            Series with Parabolic SAR values
+        """
+        n = len(high)
+        if n < 2:
+            return pd.Series(np.zeros(n))
+            
+        # Initialize arrays
+        sar = np.zeros(n)
+        ep = np.zeros(n)  # Extreme point
+        af = np.zeros(n)  # Acceleration factor
+        trend = np.zeros(n)  # 1 for uptrend, -1 for downtrend
+        
+        # Determine initial trend
+        trend[0] = 1 if close.iloc[1] > close.iloc[0] else -1
+        
+        # Set initial SAR and extreme point
+        if trend[0] > 0:
+            sar[0] = low.iloc[0]  # Start with low if uptrend
+            ep[0] = high.iloc[0]  # Extreme point is high
+        else:
+            sar[0] = high.iloc[0]  # Start with high if downtrend
+            ep[0] = low.iloc[0]    # Extreme point is low
+        
+        # Set initial acceleration factor
+        af[0] = af_start
+        
+        # Calculate SAR for each period
+        for i in range(1, n):
+            # Previous SAR
+            sar[i] = sar[i-1] + af[i-1] * (ep[i-1] - sar[i-1])
+            
+            # Ensure SAR doesn't penetrate previous candles
+            if trend[i-1] > 0:  # Previous uptrend
+                sar[i] = min(sar[i], low.iloc[i-1], low.iloc[i-2] if i > 1 else low.iloc[i-1])
+            else:  # Previous downtrend
+                sar[i] = max(sar[i], high.iloc[i-1], high.iloc[i-2] if i > 1 else high.iloc[i-1])
+            
+            # Check for trend reversal
+            if (trend[i-1] > 0 and low.iloc[i] < sar[i]) or (trend[i-1] < 0 and high.iloc[i] > sar[i]):
+                # Trend reversal
+                trend[i] = -trend[i-1]
+                sar[i] = ep[i-1]
+                ep[i] = low.iloc[i] if trend[i] < 0 else high.iloc[i]
+                af[i] = af_start
+            else:
+                # Continue previous trend
+                trend[i] = trend[i-1]
+                
+                # Update extreme point if needed
+                if trend[i] > 0 and high.iloc[i] > ep[i-1]:
+                    ep[i] = high.iloc[i]
+                    af[i] = min(af[i-1] + af_step, af_max)
+                elif trend[i] < 0 and low.iloc[i] < ep[i-1]:
+                    ep[i] = low.iloc[i]
+                    af[i] = min(af[i-1] + af_step, af_max)
+                else:
+                    ep[i] = ep[i-1]
+                    af[i] = af[i-1]
+        
+        return pd.Series(sar, index=close.index)

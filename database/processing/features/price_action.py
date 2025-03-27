@@ -74,7 +74,7 @@ class PriceActionFeatures(BaseFeatureComputer):
         # Use NumPy if GPU and Numba are not available or failed
         if not self.use_gpu and not self.use_numba:
             # Calculate candle body features directly
-            df['candle_body_size'] = np.abs(df['close_1h'] - df['open_1h'])
+            df['body_size'] = np.abs(df['close_1h'] - df['open_1h'])
             df['upper_shadow'] = df['high_1h'] - np.maximum(df['open_1h'], df['close_1h'])
             df['lower_shadow'] = np.minimum(df['open_1h'], df['close_1h']) - df['low_1h']
             
