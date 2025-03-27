@@ -103,7 +103,7 @@ class OptimizedFeatureProcessor:
         if enabled_features is None:
             enabled_features = {
                 'price_action', 'momentum', 'volatility', 'volume', 
-                'statistical', 'pattern', 'time', 'labels'
+                'statistical', 'pattern', 'time', 'labels', 'multi_timeframe'
             }
             
         # Extract price arrays
@@ -235,12 +235,19 @@ class OptimizedFeatureProcessor:
             # Compute candle body features
             if self.use_gpu:
                 try:
-                    body_features = compute_candle_body_features_gpu(opens, highs, lows, closes)
-                    results['candle_body_size'] = results['body_size']
-                    results['body_size'] = body_features[:len(closes)]
+                    body_features = compute_candle_body_features_gpu(
+                        opens, highs, lows, closes
+                    )
+                    
+                    # Fix: Ensure body_size and candle_body_size are both set properly
+                    body_size = body_features[:len(closes)]
+                    results['body_size'] = body_size
+                    results['candle_body_size'] = body_size  # Make sure this is set
+                    
                     results['upper_shadow'] = body_features[len(closes):2*len(closes)]
                     results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]
                     results['relative_close_position'] = body_features[3*len(closes):4*len(closes)]
+                    
                     logging.debug("Used GPU for candle body features")
                 except Exception as e:
                     logging.warning(f"GPU calculation failed for candle features: {e}")
@@ -248,13 +255,42 @@ class OptimizedFeatureProcessor:
             
             # Fall back to Numba if GPU failed or not enabled
             if 'body_size' not in results and self.use_numba:
-                body_features = compute_candle_body_features_numba(opens, highs, lows, closes)
-                results['candle_body_size'] = results['body_size']
-                results['body_size'] = body_features[:len(closes)]
-                results['upper_shadow'] = body_features[len(closes):2*len(closes)]
-                results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]
-                results['relative_close_position'] = body_features[3*len(closes):4*len(closes)]
-                logging.debug("Used Numba for candle body features")
+                try:
+                    body_features = compute_candle_body_features_numba(
+                        opens, highs, lows, closes
+                    )
+                    
+                    # Fix: Ensure body_size and candle_body_size are both set properly
+                    body_size = body_features[:len(closes)]
+                    results['body_size'] = body_size
+                    results['candle_body_size'] = body_size  # Make sure this is set
+                    
+                    results['upper_shadow'] = body_features[len(closes):2*len(closes)]
+                    results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]
+                    results['relative_close_position'] = body_features[3*len(closes):4*len(closes)]
+                    
+                    logging.debug("Used Numba for candle body features")
+                except Exception as e:
+                    logging.warning(f"Numba calculation failed for candle features: {e}")
+                    self.use_numba = False
+            
+            # Use NumPy if GPU and Numba are not available or failed
+            if 'body_size' not in results:
+                # Calculate candle body features directly
+                body_size = np.abs(closes - opens)
+                results['body_size'] = body_size
+                results['candle_body_size'] = body_size  # Make sure this is set
+                
+                results['upper_shadow'] = highs - np.maximum(opens, closes)
+                results['lower_shadow'] = np.minimum(opens, closes) - lows
+                
+                # Calculate relative position of close within the high-low range
+                hl_range = highs - lows
+                results['relative_close_position'] = np.where(
+                    hl_range > 0, 
+                    (closes - lows) / hl_range, 
+                    0.5  # Default to middle if there's no range
+                )
             
             # Compute other price features
             if self.use_numba:
@@ -302,6 +338,8 @@ class OptimizedFeatureProcessor:
         start_time = time.time()
         
         try:
+            n = len(closes)
+            
             # RSI using Numba
             if self.use_numba:
                 rsi = compute_rsi_numba(closes, MOMENTUM_PARAMS['rsi_length'])
@@ -328,10 +366,173 @@ class OptimizedFeatureProcessor:
                 macd_hist_slope = np.zeros_like(closes)
                 macd_hist_slope[1:] = np.diff(macd_result['histogram'])
                 results['macd_hist_slope_1h'] = macd_hist_slope
+                
+                # Fix: Add stochastic oscillator calculation
+                k_period = MOMENTUM_PARAMS['stoch_k']
+                d_period = MOMENTUM_PARAMS['stoch_d']
+                
+                stoch_k = np.zeros(n)
+                stoch_d = np.zeros(n)
+                
+                # Calculate %K (fast stochastic)
+                for i in range(k_period - 1, n):
+                    lowest_low = np.min(lows[i-k_period+1:i+1])
+                    highest_high = np.max(highs[i-k_period+1:i+1])
+                    
+                    # Avoid division by zero
+                    range_diff = highest_high - lowest_low
+                    if range_diff > 0:
+                        stoch_k[i] = 100 * ((closes[i] - lowest_low) / range_diff)
+                    else:
+                        stoch_k[i] = 50  # Default when range is zero
+                
+                # Calculate %D (moving average of %K)
+                for i in range(d_period - 1, n):
+                    stoch_d[i] = np.mean(stoch_k[i-d_period+1:i+1])
+                
+                results['stoch_k_14'] = stoch_k
+                results['stoch_d_14'] = stoch_d
+                
+                # Fix: Add Williams %R calculation
+                period = 14
+                will_r = np.zeros(n)
+                
+                for i in range(period - 1, n):
+                    highest_high = np.max(highs[i-period+1:i+1])
+                    lowest_low = np.min(lows[i-period+1:i+1])
+                    
+                    # Avoid division by zero
+                    range_diff = highest_high - lowest_low
+                    if range_diff > 0:
+                        will_r[i] = -100 * ((highest_high - closes[i]) / range_diff)
+                    else:
+                        will_r[i] = -50  # Default when range is zero
+                
+                results['williams_r_14'] = will_r
+                
+                # Fix: Add CCI calculation
+                cci_length = MOMENTUM_PARAMS['cci_length']
+                cci = np.zeros(n)
+                
+                for i in range(cci_length - 1, n):
+                    tp_window = (highs[i-cci_length+1:i+1] + lows[i-cci_length+1:i+1] + closes[i-cci_length+1:i+1]) / 3
+                    tp_mean = np.mean(tp_window)
+                    tp_mean_dev = np.mean(np.abs(tp_window - tp_mean))
+                    
+                    if tp_mean_dev > 0:
+                        cci[i] = ((highs[i] + lows[i] + closes[i]) / 3 - tp_mean) / (0.015 * tp_mean_dev)
+                
+                results['cci_14'] = cci
+                
+                # Fix: Add ROC calculation
+                roc_length = MOMENTUM_PARAMS['roc_length']
+                roc = np.zeros(n)
+                
+                for i in range(roc_length, n):
+                    if closes[i-roc_length] > 0:  # Avoid division by zero
+                        roc[i] = ((closes[i] / closes[i-roc_length]) - 1) * 100
+                
+                results['roc_10'] = roc
+                
+                # Fix: Add TSI calculation
+                tsi_fast = MOMENTUM_PARAMS['tsi_fast']
+                tsi_slow = MOMENTUM_PARAMS['tsi_slow']
+                
+                # Price change
+                price_change = np.zeros(n)
+                price_change[1:] = np.diff(closes)
+                
+                # Absolute price change
+                abs_price_change = np.abs(price_change)
+                
+                # Double smoothed price change
+                smooth1 = np.zeros(n)
+                smooth2 = np.zeros(n)
+                
+                # Double smoothed absolute price change
+                abs_smooth1 = np.zeros(n)
+                abs_smooth2 = np.zeros(n)
+                
+                # Calculating EMA manually
+                alpha_fast = 2.0 / (tsi_fast + 1.0)
+                alpha_slow = 2.0 / (tsi_slow + 1.0)
+                
+                # First values
+                if n > 0:
+                    smooth1[0] = price_change[0]
+                    abs_smooth1[0] = abs_price_change[0]
+                    
+                    # First smoothing
+                    for i in range(1, n):
+                        smooth1[i] = alpha_fast * price_change[i] + (1 - alpha_fast) * smooth1[i-1]
+                        abs_smooth1[i] = alpha_fast * abs_price_change[i] + (1 - alpha_fast) * abs_smooth1[i-1]
+                    
+                    # Second smoothing
+                    smooth2[0] = smooth1[0]
+                    abs_smooth2[0] = abs_smooth1[0]
+                    
+                    for i in range(1, n):
+                        smooth2[i] = alpha_slow * smooth1[i] + (1 - alpha_slow) * smooth2[i-1]
+                        abs_smooth2[i] = alpha_slow * abs_smooth1[i] + (1 - alpha_slow) * abs_smooth2[i-1]
+                
+                # Calculate TSI
+                tsi = np.zeros(n)
+                for i in range(n):
+                    if abs_smooth2[i] != 0:
+                        tsi[i] = 100 * (smooth2[i] / abs_smooth2[i])
+                
+                results['tsi'] = tsi
+                
+                # Fix: Add Awesome Oscillator
+                ao_fast = MOMENTUM_PARAMS['awesome_oscillator_fast']
+                ao_slow = MOMENTUM_PARAMS['awesome_oscillator_slow']
+                
+                # Calculate median price
+                median_price = (highs + lows) / 2
+                
+                # Calculate simple moving averages
+                fast_ma = np.zeros(n)
+                slow_ma = np.zeros(n)
+                
+                for i in range(ao_fast-1, n):
+                    fast_ma[i] = np.mean(median_price[i-ao_fast+1:i+1])
+                    
+                for i in range(ao_slow-1, n):
+                    slow_ma[i] = np.mean(median_price[i-ao_slow+1:i+1])
+                
+                # Calculate Awesome Oscillator
+                awesome_oscillator = fast_ma - slow_ma
+                results['awesome_oscillator'] = awesome_oscillator
+                
+                # Fix: Add PPO calculation
+                ppo_fast = MOMENTUM_PARAMS['ppo_fast']
+                ppo_slow = MOMENTUM_PARAMS['ppo_slow']
+                
+                # Calculate exponential moving averages
+                ema_fast = np.zeros(n)
+                ema_slow = np.zeros(n)
+                
+                if n > 0:
+                    ema_fast[0] = closes[0]
+                    ema_slow[0] = closes[0]
+                    
+                    alpha_fast = 2.0 / (ppo_fast + 1.0)
+                    alpha_slow = 2.0 / (ppo_slow + 1.0)
+                    
+                    for i in range(1, n):
+                        ema_fast[i] = alpha_fast * closes[i] + (1 - alpha_fast) * ema_fast[i-1]
+                        ema_slow[i] = alpha_slow * closes[i] + (1 - alpha_slow) * ema_slow[i-1]
+                
+                # Calculate PPO
+                ppo = np.zeros(n)
+                for i in range(n):
+                    if ema_slow[i] > 0:  # Avoid division by zero
+                        ppo[i] = 100 * ((ema_fast[i] - ema_slow[i]) / ema_slow[i])
+                
+                results['ppo'] = ppo
             else:
                 # Standard NumPy implementation as fallback
                 # RSI
-                n = len(closes)
                 rsi_length = MOMENTUM_PARAMS['rsi_length']
                 
                 # Calculate price changes
@@ -377,36 +578,226 @@ class OptimizedFeatureProcessor:
                 rsi_slope[3:] = (rsi[3:] - rsi[:-3]) / 3
                 results['rsi_slope_1h'] = rsi_slope
                 
+                # MACD
+                macd_fast = MOMENTUM_PARAMS['macd_fast']
+                macd_slow = MOMENTUM_PARAMS['macd_slow']
+                macd_signal = MOMENTUM_PARAMS['macd_signal']
+                
+                # Avoid recomputing EMAs in each step
+                ema_fast = np.zeros(n)
+                ema_slow = np.zeros(n)
+                
+                if n > 0:
+                    ema_fast[0] = closes[0]
+                    ema_slow[0] = closes[0]
+                    
+                    alpha_fast = 2.0 / (macd_fast + 1.0)
+                    alpha_slow = 2.0 / (macd_slow + 1.0)
+                    
+                    for i in range(1, n):
+                        ema_fast[i] = alpha_fast * closes[i] + (1 - alpha_fast) * ema_fast[i-1]
+                        ema_slow[i] = alpha_slow * closes[i] + (1 - alpha_slow) * ema_slow[i-1]
+                
+                # MACD Line
+                macd_line = ema_fast - ema_slow
+                
+                # MACD Signal
+                signal_line = np.zeros(n)
+                if n > 0:
+                    signal_line[0] = macd_line[0]
+                    alpha_signal = 2.0 / (macd_signal + 1.0)
+                    
+                    for i in range(1, n):
+                        signal_line[i] = alpha_signal * macd_line[i] + (1 - alpha_signal) * signal_line[i-1]
+                
+                # MACD Histogram
+                macd_hist = macd_line - signal_line
+                
+                # MACD slopes
+                macd_slope = np.zeros(n)
+                macd_slope[1:] = np.diff(macd_line)
+                results['macd_slope_1h'] = macd_slope
+                
+                macd_hist_slope = np.zeros(n)
+                macd_hist_slope[1:] = np.diff(macd_hist)
+                results['macd_hist_slope_1h'] = macd_hist_slope
+                
                 # Stochastic Oscillator
                 k_period = MOMENTUM_PARAMS['stoch_k']
                 d_period = MOMENTUM_PARAMS['stoch_d']
                 
                 # Calculate %K
-                lowest_low = np.zeros(n)
-                highest_high = np.zeros(n)
-                
-                for i in range(k_period - 1, n):
-                    lowest_low[i] = np.min(lows[i-k_period+1:i+1])
-                    highest_high[i] = np.max(highs[i-k_period+1:i+1])
-                
-                # Calculate %K
                 stoch_k = np.zeros(n)
-                valid_range = (highest_high - lowest_low) > 0
-                stoch_k[valid_range] = 100 * ((closes[valid_range] - lowest_low[valid_range]) / 
-                                            (highest_high[valid_range] - lowest_low[valid_range]))
+                for i in range(k_period - 1, n):
+                    lowest_low = np.min(lows[i-k_period+1:i+1])
+                    highest_high = np.max(highs[i-k_period+1:i+1])
+                    
+                    # Avoid division by zero
+                    range_diff = highest_high - lowest_low
+                    if range_diff > 0:
+                        stoch_k[i] = 100 * ((closes[i] - lowest_low) / range_diff)
+                    else:
+                        stoch_k[i] = 50  # Default value
                 
-                # Calculate %D (simple moving average of %K)
+                # Calculate %D
                 stoch_d = np.zeros(n)
                 for i in range(d_period - 1, n):
                     stoch_d[i] = np.mean(stoch_k[i-d_period+1:i+1])
-
+                
                 results['stoch_k_14'] = stoch_k
                 results['stoch_d_14'] = stoch_d
-            
+                
+                # Williams %R
+                period = 14  # Standard period
+                will_r = np.zeros(n)
+                
+                for i in range(period - 1, n):
+                    highest_high = np.max(highs[i-period+1:i+1]) 
+                    lowest_low = np.min(lows[i-period+1:i+1])
+                    
+                    # Avoid division by zero
+                    range_diff = highest_high - lowest_low
+                    if range_diff > 0:
+                        will_r[i] = -100 * ((highest_high - closes[i]) / range_diff)
+                    else:
+                        will_r[i] = -50  # Default value
+                
+                results['williams_r_14'] = will_r
+                
+                # CCI (Commodity Channel Index)
+                cci_length = MOMENTUM_PARAMS['cci_length']
+                cci = np.zeros(n)
+                
+                for i in range(cci_length - 1, n):
+                    # Typical price for the window
+                    window = np.column_stack((
+                        highs[i-cci_length+1:i+1],
+                        lows[i-cci_length+1:i+1],
+                        closes[i-cci_length+1:i+1]
+                    ))
+                    tp_window = np.mean(window, axis=1)
+                    
+                    # Current typical price
+                    current_tp = (highs[i] + lows[i] + closes[i]) / 3
+                    
+                    # Mean of typical prices
+                    tp_mean = np.mean(tp_window)
+                    
+                    # Mean absolute deviation
+                    tp_mean_dev = np.mean(np.abs(tp_window - tp_mean))
+                    
+                    # Calculate CCI
+                    if tp_mean_dev > 0:
+                        cci[i] = (current_tp - tp_mean) / (0.015 * tp_mean_dev)
+                
+                results['cci_14'] = cci
+                
+                # ROC (Rate of Change)
+                roc_length = MOMENTUM_PARAMS['roc_length']
+                roc = np.zeros(n)
+                
+                for i in range(roc_length, n):
+                    if closes[i-roc_length] > 0:  # Avoid division by zero
+                        roc[i] = ((closes[i] / closes[i-roc_length]) - 1) * 100
+                
+                results['roc_10'] = roc
+                
+                # TSI (True Strength Index)
+                tsi_fast = MOMENTUM_PARAMS['tsi_fast']
+                tsi_slow = MOMENTUM_PARAMS['tsi_slow']
+                
+                # Price change
+                price_change = np.zeros(n)
+                price_change[1:] = np.diff(closes)
+                
+                # Absolute price change
+                abs_price_change = np.abs(price_change)
+                
+                # First smoothing
+                smooth1 = np.zeros(n)
+                abs_smooth1 = np.zeros(n)
+                
+                if n > 0:
+                    smooth1[0] = price_change[0]
+                    abs_smooth1[0] = abs_price_change[0]
+                    
+                    alpha_fast = 2.0 / (tsi_fast + 1.0)
+                    
+                    for i in range(1, n):
+                        smooth1[i] = alpha_fast * price_change[i] + (1 - alpha_fast) * smooth1[i-1]
+                        abs_smooth1[i] = alpha_fast * abs_price_change[i] + (1 - alpha_fast) * abs_smooth1[i-1]
+                
+                # Second smoothing
+                smooth2 = np.zeros(n)
+                abs_smooth2 = np.zeros(n)
+                
+                if n > 0:
+                    smooth2[0] = smooth1[0]
+                    abs_smooth2[0] = abs_smooth1[0]
+                    
+                    alpha_slow = 2.0 / (tsi_slow + 1.0)
+                    
+                    for i in range(1, n):
+                        smooth2[i] = alpha_slow * smooth1[i] + (1 - alpha_slow) * smooth2[i-1]
+                        abs_smooth2[i] = alpha_slow * abs_smooth1[i] + (1 - alpha_slow) * abs_smooth2[i-1]
+                
+                # Calculate TSI
+                tsi = np.zeros(n)
+                for i in range(n):
+                    if abs_smooth2[i] > 0:  # Avoid division by zero
+                        tsi[i] = 100 * (smooth2[i] / abs_smooth2[i])
+                
+                results['tsi'] = tsi
+                
+                # Awesome Oscillator
+                ao_fast = MOMENTUM_PARAMS['awesome_oscillator_fast']
+                ao_slow = MOMENTUM_PARAMS['awesome_oscillator_slow']
+                
+                # Calculate median price
+                median_price = (highs + lows) / 2
+                
+                # Fast SMA of median price
+                fast_ma = np.zeros(n)
+                for i in range(ao_fast-1, n):
+                    fast_ma[i] = np.mean(median_price[i-ao_fast+1:i+1])
+                
+                # Slow SMA of median price
+                slow_ma = np.zeros(n)
+                for i in range(ao_slow-1, n):
+                    slow_ma[i] = np.mean(median_price[i-ao_slow+1:i+1])
+                
+                # Awesome Oscillator is the difference between the fast and slow SMAs
+                results['awesome_oscillator'] = fast_ma - slow_ma
+                
+                # PPO (Percentage Price Oscillator)
+                ppo_fast = MOMENTUM_PARAMS['ppo_fast'] 
+                ppo_slow = MOMENTUM_PARAMS['ppo_slow']
+                
+                # Calculate EMAs
+                ppo_ema_fast = np.zeros(n)
+                ppo_ema_slow = np.zeros(n)
+                
+                if n > 0:
+                    ppo_ema_fast[0] = closes[0]
+                    ppo_ema_slow[0] = closes[0]
+                    
+                    alpha_fast = 2.0 / (ppo_fast + 1.0)
+                    alpha_slow = 2.0 / (ppo_slow + 1.0)
+                    
+                    for i in range(1, n):
+                        ppo_ema_fast[i] = alpha_fast * closes[i] + (1 - alpha_fast) * ppo_ema_fast[i-1]
+                        ppo_ema_slow[i] = alpha_slow * closes[i] + (1 - alpha_slow) * ppo_ema_slow[i-1]
+                
+                # Calculate PPO
+                ppo = np.zeros(n)
+                for i in range(n):
+                    if ppo_ema_slow[i] > 0:  # Avoid division by zero
+                        ppo[i] = 100 * ((ppo_ema_fast[i] - ppo_ema_slow[i]) / ppo_ema_slow[i])
+                
+                results['ppo'] = ppo
+                
         except Exception as e:
             logging.error(f"Error computing momentum features: {e}")
-            results['stoch_k_14'] = np.zeros(n)
-            results['stoch_d_14'] = np.zeros(n)
             
         if perf_monitor:
             perf_monitor.log_operation("momentum_features", time.time() - start_time)
@@ -554,6 +945,68 @@ class OptimizedFeatureProcessor:
             chaikin_vol[1:] = (ema_range[1:] / np.maximum(ema_range[:-1], 1e-8)) - 1
             results['chaikin_volatility'] = chaikin_vol
             
+            # Fix: Add Parabolic SAR
+            # Implement basic parabolic SAR
+            af_start = 0.02
+            af_step = 0.02
+            af_max = 0.2
+            
+            sar = np.zeros(n)
+            ep = np.zeros(n)  # Extreme point
+            af = np.zeros(n)  # Acceleration factor
+            trend = np.zeros(n)  # 1 for uptrend, -1 for downtrend
+            
+            if n >= 2:
+                # Determine initial trend
+                trend[0] = 1 if closes[1] > closes[0] else -1
+                
+                # Set initial SAR and extreme point
+                if trend[0] > 0:
+                    sar[0] = lows[0]  # Start with low if uptrend
+                    ep[0] = highs[0]  # Extreme point is high
+                else:
+                    sar[0] = highs[0]  # Start with high if downtrend
+                    ep[0] = lows[0]    # Extreme point is low
+                
+                # Set initial acceleration factor
+                af[0] = af_start
+                
+                # Calculate SAR for each period
+                for i in range(1, n):
+                    # Previous SAR
+                    sar[i] = sar[i-1] + af[i-1] * (ep[i-1] - sar[i-1])
+                    
+                    # Ensure SAR doesn't penetrate previous candles
+                    if trend[i-1] > 0:  # Previous uptrend
+                        sar[i] = min(sar[i], lows[i-1], lows[i-2] if i > 1 else lows[i-1])
+                    else:  # Previous downtrend
+                        sar[i] = max(sar[i], highs[i-1], highs[i-2] if i > 1 else highs[i-1])
+                    
+                    # Check for trend reversal
+                    if (trend[i-1] > 0 and lows[i] < sar[i]) or (trend[i-1] < 0 and highs[i] > sar[i]):
+                        # Trend reversal
+                        trend[i] = -trend[i-1]
+                        sar[i] = ep[i-1]
+                        ep[i] = lows[i] if trend[i] < 0 else highs[i]
+                        af[i] = af_start
+                    else:
+                        # Continue previous trend
+                        trend[i] = trend[i-1]
+                        
+                        # Update extreme point if needed
+                        if trend[i] > 0 and highs[i] > ep[i-1]:
+                            ep[i] = highs[i]
+                            af[i] = min(af[i-1] + af_step, af_max)
+                        elif trend[i] < 0 and lows[i] < ep[i-1]:
+                            ep[i] = lows[i]
+                            af[i] = min(af[i-1] + af_step, af_max)
+                        else:
+                            ep[i] = ep[i-1]
+                            af[i] = af[i-1]
+            
+            # Add the Parabolic SAR to results
+            results['parabolic_sar_1h'] = sar
+            
             # Initialize volatility rank (will be updated in cross-pair)
             results['volatility_rank_1h'] = np.zeros(n, dtype=np.int32)
             
@@ -589,7 +1042,7 @@ class OptimizedFeatureProcessor:
                 else:
                     neg_flow[i] = money_flow[i]
             
-            # Calculate money flow ratio and MFI
+            # Calculate money flow ratio
             pos_sum = np.zeros(n)
             neg_sum = np.zeros(n)
             
@@ -599,18 +1052,12 @@ class OptimizedFeatureProcessor:
             
             # Calculate MFI
             mfi = np.zeros(n)
-            mfi[:] = 50.0  # Default value
-            
-            # Avoid division by zero
-            nonzero_indices = neg_sum[mfi_length:] > 0
-            zero_indices = neg_sum[mfi_length:] == 0
-            
-            mfr = np.zeros(n - mfi_length)
-            mfr[nonzero_indices] = pos_sum[mfi_length:][nonzero_indices] / neg_sum[mfi_length:][nonzero_indices]
-            
-            mfi[mfi_length:][nonzero_indices] = 100.0 - (100.0 / (1.0 + mfr[nonzero_indices]))
-            mfi[mfi_length:][zero_indices] = 100.0
-            
+            for i in range(mfi_length, n):
+                if neg_sum[i] > 0:
+                    mfi[i] = 100 - (100 / (1 + pos_sum[i] / neg_sum[i]))
+                else:
+                    mfi[i] = 100  # When all money flow is positive
+                    
             results['money_flow_index_1h'] = mfi
             
             # OBV (On-Balance Volume)
@@ -641,25 +1088,162 @@ class OptimizedFeatureProcessor:
             vol_change[1:] = (volumes[1:] / np.maximum(volumes[:-1], 1e-8)) - 1
             results['volume_change_pct_1h'] = vol_change
             
-            # VWMA (Volume Weighted Moving Average)
+            # Fix: Add VWMA (Volume Weighted Moving Average)
             vwma_length = VOLUME_PARAMS['vwma_length']
             vwma = np.zeros(n)
             
             for i in range(vwma_length-1, n):
-                sum_vol = np.sum(volumes[i-vwma_length+1:i+1])
-                if sum_vol > 0:
-                    vwma[i] = np.sum(closes[i-vwma_length+1:i+1] * volumes[i-vwma_length+1:i+1]) / sum_vol
+                vol_sum = np.sum(volumes[i-vwma_length+1:i+1])
+                if vol_sum > 0:
+                    vwma[i] = np.sum(closes[i-vwma_length+1:i+1] * volumes[i-vwma_length+1:i+1]) / vol_sum
                 else:
                     vwma[i] = closes[i]
-            
+                    
             # Fill the beginning values
             for i in range(vwma_length-1):
                 vwma[i] = closes[i]
                 
             results['vwma_20'] = vwma
             
-            # Additional volume indicators would go here
-            # Chaikin Money Flow, Klinger Oscillator, etc.
+            # Fix: Add Chaikin Money Flow
+            cmf_length = VOLUME_PARAMS['cmf_length']
+            
+            # Money flow multiplier
+            money_flow_multiplier = np.zeros(n)
+            for i in range(n):
+                hl_range = highs[i] - lows[i]
+                if hl_range > 0:
+                    money_flow_multiplier[i] = ((closes[i] - lows[i]) - (highs[i] - closes[i])) / hl_range
+            
+            # Money flow volume
+            money_flow_volume = money_flow_multiplier * volumes
+            
+            # Chaikin Money Flow
+            cmf = np.zeros(n)
+            for i in range(cmf_length, n):
+                period_vol_sum = np.sum(volumes[i-cmf_length+1:i+1])
+                if period_vol_sum > 0:
+                    cmf[i] = np.sum(money_flow_volume[i-cmf_length+1:i+1]) / period_vol_sum
+                    
+            results['chaikin_money_flow'] = cmf
+            
+            # Fix: Add Klinger Oscillator
+            kvo_fast = VOLUME_PARAMS['kvo_fast']
+            kvo_slow = VOLUME_PARAMS['kvo_slow']
+            kvo_signal = VOLUME_PARAMS['kvo_signal']
+            
+            # Calculate trend direction
+            trend = np.zeros(n)
+            for i in range(1, n):
+                current_tp = (highs[i] + lows[i] + closes[i])
+                prev_tp = (highs[i-1] + lows[i-1] + closes[i-1])
+                trend[i] = 1 if current_tp > prev_tp else -1
+            
+            # Calculate volume force
+            vf = np.zeros(n)
+            for i in range(1, n):
+                hl_range = highs[i] - lows[i]
+                if hl_range > 0:
+                    cm = ((closes[i] - lows[i]) - (highs[i] - closes[i])) / hl_range
+                    vf[i] = volumes[i] * trend[i] * abs(cm) * 2
+            
+            # Calculate EMAs of volume force
+            vf_ema_fast = np.zeros(n)
+            vf_ema_slow = np.zeros(n)
+            
+            if n > 0:
+                vf_ema_fast[0] = vf[0]
+                vf_ema_slow[0] = vf[0]
+                
+                alpha_fast = 2.0 / (kvo_fast + 1.0)
+                alpha_slow = 2.0 / (kvo_slow + 1.0)
+                
+                for i in range(1, n):
+                    vf_ema_fast[i] = alpha_fast * vf[i] + (1 - alpha_fast) * vf_ema_fast[i-1]
+                    vf_ema_slow[i] = alpha_slow * vf[i] + (1 - alpha_slow) * vf_ema_slow[i-1]
+            
+            # Klinger Oscillator
+            kvo = vf_ema_fast - vf_ema_slow
+            results['klinger_oscillator'] = kvo
+            
+            # Fix: Add Volume Oscillator
+            vol_fast = VOLUME_PARAMS['vol_fast']
+            vol_slow = VOLUME_PARAMS['vol_slow']
+            
+            vol_ema_fast = np.zeros(n)
+            vol_ema_slow = np.zeros(n)
+            
+            if n > 0:
+                vol_ema_fast[0] = volumes[0]
+                vol_ema_slow[0] = volumes[0]
+                
+                alpha_fast = 2.0 / (vol_fast + 1.0)
+                alpha_slow = 2.0 / (vol_slow + 1.0)
+                
+                for i in range(1, n):
+                    vol_ema_fast[i] = alpha_fast * volumes[i] + (1 - alpha_fast) * vol_ema_fast[i-1]
+                    vol_ema_slow[i] = alpha_slow * volumes[i] + (1 - alpha_slow) * vol_ema_slow[i-1]
+            
+            # Volume Oscillator
+            results['volume_oscillator'] = vol_ema_fast - vol_ema_slow
+            
+            # Fix: Add Volume Price Trend
+            vpt = np.zeros(n)
+            
+            for i in range(1, n):
+                if closes[i-1] > 0:  # Avoid division by zero
+                    pct_change = (closes[i] - closes[i-1]) / closes[i-1]
+                    vpt[i] = vpt[i-1] + volumes[i] * pct_change
+                    
+            results['volume_price_trend'] = vpt
+            
+            # Fix: Add Volume Zone Oscillator
+            vzo_length = VOLUME_PARAMS['vzo_length']
+            
+            # Separate volume based on price direction
+            vol_up = np.zeros(n)
+            vol_down = np.zeros(n)
+            
+            for i in range(1, n):
+                if closes[i] > closes[i-1]:
+                    vol_up[i] = volumes[i]
+                else:
+                    vol_down[i] = volumes[i]
+            
+            # Calculate EMAs
+            vol_ema = np.zeros(n)
+            vol_up_ema = np.zeros(n)
+            vol_down_ema = np.zeros(n)
+            
+            if n > 0:
+                vol_ema[0] = volumes[0]
+                vol_up_ema[0] = vol_up[0]
+                vol_down_ema[0] = vol_down[0]
+                
+                alpha = 2.0 / (vzo_length + 1.0)
+                
+                for i in range(1, n):
+                    vol_ema[i] = alpha * volumes[i] + (1 - alpha) * vol_ema[i-1]
+                    vol_up_ema[i] = alpha * vol_up[i] + (1 - alpha) * vol_up_ema[i-1]
+                    vol_down_ema[i] = alpha * vol_down[i] + (1 - alpha) * vol_down_ema[i-1]
+            
+            # Calculate VZO
+            vzo = np.zeros(n)
+            for i in range(n):
+                if vol_ema[i] > 0:
+                    vzo[i] = 100 * (vol_up_ema[i] - vol_down_ema[i]) / vol_ema[i]
+                    
+            results['volume_zone_oscillator'] = vzo
+            
+            # Fix: Add Volume Price Confirmation
+            vpc = np.zeros(n, dtype=np.int32)
+            
+            for i in range(1, n):
+                close_dir = 1 if closes[i] > closes[i-1] else (-1 if closes[i] < closes[i-1] else 0)
+                vol_dir = 1 if volumes[i] > volumes[i-1] else (-1 if volumes[i] < volumes[i-1] else 0)
+                vpc[i] = 1 if close_dir == vol_dir else 0
+                
+            results['volume_price_confirmation'] = vpc
             
             # Initialize volume ranks (will be updated in cross-pair)
             results['volume_rank_1h'] = np.zeros(n, dtype=np.int32)

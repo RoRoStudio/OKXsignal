@@ -115,22 +115,6 @@ def force_exit_on_ctrl_c():
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
 
-def log_skipped_features(pair, row_count, feature_requirements, enabled_features):
-    for group, min_required in feature_requirements.items():
-        if group in enabled_features and row_count < min_required:
-            logging.warning(f"{pair}: Skipping feature group '{group}' – only {row_count} rows, need {min_required}")
-
-FEATURE_GROUP_REQUIREMENTS = {
-    'price_action': 10,
-    'momentum': 60,
-    'volatility': 100,
-    'volume': 50,
-    'statistical': 120,
-    'pattern': 100,
-    'time': 1,
-    'labels': 300,
-}
-
 # ---------------------------
 # Memory Optimization
 # ---------------------------
@@ -301,14 +285,6 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
                 pd.to_datetime(max(price_data['raw_timestamps'])).strftime('%Y-%m-%d')
             )
             logging.debug(f"{pair}: Data range from {timestamp_range[0]} to {timestamp_range[1]}")
-            
-        if row_count < MIN_CANDLES_REQUIRED:
-            logging.warning(f"Skipping {pair}: only {row_count} candles, need >= {MIN_CANDLES_REQUIRED}. "
-                            f"Data range: {timestamp_range if 'timestamp_range' in locals() else 'unknown'}")
-            log_skipped_features(pair, row_count, FEATURE_GROUP_REQUIREMENTS, enabled_features)
-            return 0
-        
-        log_skipped_features(pair, row_count, FEATURE_GROUP_REQUIREMENTS, enabled_features)
         
         # Free memory
         gc.collect()
