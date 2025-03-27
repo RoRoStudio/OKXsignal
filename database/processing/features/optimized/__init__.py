@@ -74,3 +74,5 @@ if GPU_AVAILABLE:
         'compute_max_future_drawdown_gpu',
         'compute_batch_features_gpu'
     ])
+
+    

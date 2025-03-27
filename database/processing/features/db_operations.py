@@ -29,17 +29,31 @@ def get_optimized_connection(config_manager):
     """
     db_params = config_manager.get_db_params()
     
-    # Extra parameters for performance
-    db_params.update({
-        'application_name': 'feature_compute',
-        'client_encoding': 'UTF8',
-        'keepalives': 1,
-        'keepalives_idle': 30,
-        'keepalives_interval': 10,
-        'keepalives_count': 5
-    })
-    
-    return psycopg2.connect(**db_params)
+    # Initialize connection pool if not already done
+    try:
+        from database.processing.features.db_pool import (
+            initialize_connection_pool,
+            get_optimized_connection_from_pool
+        )
+        
+        # Initialize pool with database parameters
+        initialize_connection_pool(db_params)
+        
+        # Get an optimized connection from the pool
+        return get_optimized_connection_from_pool()
+    except ImportError:
+        # Fall back to direct connection if pool module is not available
+        # Extra parameters for performance
+        db_params.update({
+            'application_name': 'feature_compute',
+            'client_encoding': 'UTF8',
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5
+        })
+        
+        return psycopg2.connect(**db_params)
 
 def fetch_data_numpy(db_conn, pair, rolling_window=None):
     """

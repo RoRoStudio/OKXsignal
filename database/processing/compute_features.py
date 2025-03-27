@@ -26,17 +26,17 @@ import psycopg2.extras
 # Import database connection pool
 from database.processing.features.db_pool import (
     initialize_connection_pool,
-    get_db_connection,
+    get_connection,
+    release_connection,
+    close_all_connections,
+    get_optimized_connection_from_pool,
     get_thread_connection,
     release_thread_connection,
-    get_pool_status
+    get_db_connection
 )
 
 # Import configuration
 from database.processing.features.config import ConfigManager, SMALLINT_COLUMNS, MIN_CANDLES_REQUIRED
-
-# Import performance monitoring
-from database.processing.features.performance_monitor import PerformanceMonitor
 
 # Import optimized feature processor
 from database.processing.features.optimized.feature_processor import OptimizedFeatureProcessor
@@ -48,7 +48,8 @@ from database.processing.features.db_operations import (
     bulk_copy_update,
     get_database_columns
 )
-from features.db_pool import get_thread_connection, release_thread_connection, get_connection
+
+from database.processing.features.performance_monitor import PerformanceMonitor
 
 # ---------------------------
 # Logging Setup
@@ -816,7 +817,7 @@ def main():
     db_params = config_manager.get_db_params()
     
     # Initialize connection pool
-    from features.db_pool import initialize_pool
+    from database.processing.features.db_pool import initialize_connection_pool as initialize_pool
     initialize_pool(
         db_params, 
         min_connections=max(2, batch_size // 8),
@@ -968,7 +969,7 @@ def main():
     logger.info(f"Total runtime: {duration:.2f} seconds")
 
     # Close database connection pool
-    from features.db_pool import close_pool
+    from database.processing.features.db_pool import close_all_connections as close_pool
     close_pool()
 
 if __name__ == "__main__":

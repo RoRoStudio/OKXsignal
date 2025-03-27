@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Performance monitoring functionality with thread safety improvements
+Performance monitoring utilities
+- Tracks computation time and performance metrics
+- Produces performance reports for optimization
 """
 
 import os
@@ -8,9 +10,7 @@ import logging
 import threading
 import time
 from datetime import datetime
-
-# Thread-local storage for performance monitoring
-perf_thread_local = threading.local()
+import json
 
 class PerformanceMonitor:
     """Class to track and log computation times for performance analysis"""
@@ -19,6 +19,7 @@ class PerformanceMonitor:
         """Initialize the performance monitor with given log directory"""
         self.log_dir = log_dir
         self.timings = {}
+        self.current_pair = None
         self.lock = threading.Lock()
         
         # Create the log directory if it doesn't exist
@@ -34,17 +35,8 @@ class PerformanceMonitor:
     
     def start_pair(self, pair):
         """Set the current pair being processed"""
-        if not pair:
-            logging.warning("Attempted to start performance monitoring with empty pair name")
-            pair = "UNKNOWN"
-            
-        # Use a dedicated structure for performance monitoring data
-        if not hasattr(perf_thread_local, 'perf_data'):
-            perf_thread_local.perf_data = {}
-        
-        perf_thread_local.perf_data['current_pair'] = pair
-        
         with self.lock:
+            self.current_pair = pair
             if pair not in self.timings:
                 self.timings[pair] = {
                     "total": 0,
@@ -53,38 +45,26 @@ class PerformanceMonitor:
     
     def log_operation(self, operation, duration):
         """Log the duration of a specific operation"""
-        # Get pair from thread-local
-        if not hasattr(perf_thread_local, 'perf_data'):
-            perf_thread_local.perf_data = {}
-            
-        pair = perf_thread_local.perf_data.get('current_pair')
-        
-        if not pair:
-            logging.warning(f"Operation {operation} logged without a current pair context")
-            pair = "UNKNOWN"
-            
         with self.lock:
-            if pair not in self.timings:
-                self.timings[pair] = {
-                    "total": 0,
-                    "operations": {}
-                }
+            # Check if current_pair is None OR not in timings (double safety)
+            if not self.current_pair or self.current_pair not in self.timings:
+                return
                 
-            if operation not in self.timings[pair]["operations"]:
-                self.timings[pair]["operations"][operation] = []
+            if operation not in self.timings[self.current_pair]["operations"]:
+                self.timings[self.current_pair]["operations"][operation] = []
                 
-            self.timings[pair]["operations"][operation].append(duration)
+            self.timings[self.current_pair]["operations"][operation].append(duration)
             
             # Write to log file immediately
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(self.log_file, 'a') as f:
-                f.write(f"{timestamp},{pair},{operation},{duration:.6f}\n")
+                f.write(f"{timestamp},{self.current_pair},{operation},{duration:.6f}\n")
     
     def end_pair(self, total_duration):
         """Log the total processing time for the current pair"""
         with self.lock:
-            if not self.current_pair:
-                logging.debug("No current pair to end performance monitoring for")
+            # Ensure current_pair is valid before accessing
+            if not self.current_pair or self.current_pair not in self.timings:
                 return
                 
             self.timings[self.current_pair]["total"] = total_duration
@@ -99,18 +79,13 @@ class PerformanceMonitor:
     
     def save_summary(self):
         """Save a summary of all timings to JSON file"""
-        import json
-        
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
         summary_file = os.path.join(self.log_dir, f"performance_summary_{timestamp}.json")
         
-        # Filter out UNKNOWN pairs for accurate statistics
-        valid_timings = {pair: data for pair, data in self.timings.items() if pair != "UNKNOWN"}
-        
         summary = {
-            "pairs_processed": len(valid_timings),
-            "total_processing_time": sum(data["total"] for data in valid_timings.values()),
-            "average_pair_time": sum(data["total"] for data in valid_timings.values()) / len(valid_timings) if valid_timings else 0,
+            "pairs_processed": len(self.timings),
+            "total_processing_time": sum(data["total"] for data in self.timings.values()),
+            "average_pair_time": sum(data["total"] for data in self.timings.values()) / len(self.timings) if self.timings else 0,
             "operation_summaries": {}
         }
         
