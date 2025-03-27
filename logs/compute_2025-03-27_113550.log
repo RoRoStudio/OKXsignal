@@ -1,0 +1,107 @@
+[INFO] 2025-03-27 11:35:50,545 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-03-27 11:35:50,545 | System memory: 20.62 GB available / 23.43 GB total
+[INFO] 2025-03-27 11:35:50,550 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-03-27 11:35:50,554 | Loaded config from /root/OKXsignal/config/config.ini
+[INFO] 2025-03-27 11:35:50,693 | GPU detected: Device 0, Memory: 12.00 GB
+[INFO] 2025-03-27 11:35:50,693 | GPU acceleration is available
+[INFO] 2025-03-27 11:35:50,693 | GPU capabilities detected - enabling GPU acceleration
+[INFO] 2025-03-27 11:35:50,994 | Database connection pool initialized with 3-29 connections
+[INFO] 2025-03-27 11:35:50,994 | Starting compute_features.py in ROLLING_UPDATE mode with rolling_window=128
+[INFO] 2025-03-27 11:35:50,994 | Using 24 parallel workers with max 29 database connections
+[INFO] 2025-03-27 11:35:50,994 | Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:50,995 | Database connection test successful
+[INFO] 2025-03-27 11:35:51,748 | Found 303 pairs
+[INFO] 2025-03-27 11:35:51,748 | Rolling update mode: computing last 128 rows per pair
+[INFO] 2025-03-27 11:35:51,748 | Calibrating optimal batch size...
+[INFO] 2025-03-27 11:35:52,679 | Testing batch size 4...
+[INFO] 2025-03-27 11:35:52,679 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 11:35:52,680 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 11:35:52,681 | Computing features for ACA-USDT
+[INFO] 2025-03-27 11:35:52,681 | Computing features for ACE-USDT
+[INFO] 2025-03-27 11:35:52,681 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:52,682 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:52,682 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:52,682 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:52,683 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:52,683 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[WARNING] 2025-03-27 11:35:52,751 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:52,806 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:52,806 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:52,812 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:52,838 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:52,855 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:52,858 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:52,858 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:52,860 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:52,861 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[WARNING] 2025-03-27 11:35:52,934 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:52,996 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:52,996 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:52,999 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:55,212 | 1INCH-USDT: Updated 10/10 rows in 2.53s
+[INFO] 2025-03-27 11:35:55,286 | ACA-USDT: Updated 10/10 rows in 2.61s
+[INFO] 2025-03-27 11:35:55,286 | AAVE-USDT: Updated 10/10 rows in 2.61s
+[INFO] 2025-03-27 11:35:55,399 | ACE-USDT: Updated 10/10 rows in 2.72s
+[INFO] 2025-03-27 11:35:55,453 | Batch size 4: 1.44 pairs/sec
+[INFO] 2025-03-27 11:35:55,506 | Testing batch size 8...
+[INFO] 2025-03-27 11:35:55,506 | Computing features for 1INCH-USDT
+[INFO] 2025-03-27 11:35:55,507 | Computing features for AAVE-USDT
+[INFO] 2025-03-27 11:35:55,507 | Computing features for ACA-USDT
+[INFO] 2025-03-27 11:35:55,507 | Computing features for ACE-USDT
+[INFO] 2025-03-27 11:35:55,509 | Computing features for ACH-USDT
+[INFO] 2025-03-27 11:35:55,510 | Computing features for ACT-USDT
+[INFO] 2025-03-27 11:35:55,510 | Computing features for ADA-USDT
+[INFO] 2025-03-27 11:35:55,511 | Computing features for AERGO-USDT
+[INFO] 2025-03-27 11:35:55,512 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:55,512 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:55,512 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:55,513 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:55,513 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:55,513 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:55,513 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:55,514 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:55,514 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[WARNING] 2025-03-27 11:35:55,583 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:55,706 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:55,706 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:55,706 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:55,707 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:55,707 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:55,722 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:55,735 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:55,745 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[WARNING] 2025-03-27 11:35:55,860 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:55,867 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:55,868 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-03-27 11:35:55,900 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:55,911 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[WARNING] 2025-03-27 11:35:56,017 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:56,027 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 11:35:56,042 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:56,065 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:56,075 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:56,099 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 11:35:56,167 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:56,172 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[WARNING] 2025-03-27 11:35:56,172 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:56,172 | ACA-USDT: Updated 10/10 rows in 0.66s
+[INFO] 2025-03-27 11:35:56,176 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:56,176 | GPU acceleration initialized for feature computation
+[INFO] 2025-03-27 11:35:56,249 | 1INCH-USDT: Updated 10/10 rows in 0.74s
+[INFO] 2025-03-27 11:35:56,250 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:56,261 | Optimized feature processor initialized: Numba: enabled, GPU: enabled
+[INFO] 2025-03-27 11:35:56,340 | AAVE-USDT: Updated 10/10 rows in 0.83s
+[WARNING] 2025-03-27 11:35:56,512 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:56,594 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:56,595 | GPU batch computation failed, falling back to individual: name 'compute_batch_features_gpu' is not defined
+[WARNING] 2025-03-27 11:35:56,606 | GPU calculation failed for candle features: name 'compute_candle_body_features_gpu' is not defined
+[INFO] 2025-03-27 11:35:56,672 | ACE-USDT: Updated 10/10 rows in 1.17s
+[INFO] 2025-03-27 11:35:56,749 | ACH-USDT: Updated 10/10 rows in 1.24s
+[INFO] 2025-03-27 11:35:56,912 | ACT-USDT: Updated 10/10 rows in 1.40s
+[INFO] 2025-03-27 11:35:56,984 | ADA-USDT: Updated 0/0 rows in 1.47s
+[INFO] 2025-03-27 11:35:56,984 | AERGO-USDT: Updated 0/0 rows in 1.47s
+[CRITICAL] 2025-03-27 11:35:56,984 | Exception in worker
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/okxsignal/lib/python3.9/concurrent/futures/thread.py", line 81, in _worker
+    work_item = work_queue.get(block=True)
+SystemExit
