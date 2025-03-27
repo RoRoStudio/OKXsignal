@@ -32,15 +32,18 @@ def initialize_gpu():
         pinned_memory_pool = cp.cuda.PinnedMemoryPool()
         cp.cuda.set_pinned_memory_allocator(pinned_memory_pool.malloc)
         
+        # Test GPU with a small operation
+        test_array = cp.array([1, 2, 3])
+        test_result = test_array * 2
+        cp.cuda.Stream.null.synchronize()
+        
         # Get device info
         device = cp.cuda.Device()
-        device_id = device.id
-        memory_total = device.mem_info[1]/1024**3
-        logging.info(f"Initialized GPU: Device #{device_id}, "
-                    f"Memory: {memory_total:.2f} GB")
+        logging.info(f"Initialized GPU: {device.name}, "
+                    f"Memory: {device.mem_info[1]/1024**3:.2f} GB")
         return True
     except Exception as e:
-        logging.error(f"GPU initialization failed: {e}")
+        logging.warning(f"GPU initialization failed: {e}")
         return False
 
 def is_gpu_available():

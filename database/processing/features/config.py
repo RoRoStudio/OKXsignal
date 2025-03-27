@@ -176,21 +176,42 @@ class ConfigManager:
     def _check_gpu_availability(self):
         """Check if CuPy is available for GPU acceleration"""
         try:
-            import cupy
-            # Test basic GPU operation
-            x = cupy.array([1, 2, 3])
-            y = x * 2
-            cupy.cuda.Stream.null.synchronize()
+            import cupy as cp
             
-            # Get GPU info
-            device = cupy.cuda.Device()
-            mem_info = device.mem_info
-            total_memory = mem_info[1] / (1024**3)  # Convert to GB
-            device_id = device.id
-            logging.info(f"GPU detected: Device #{device_id}, Memory: {total_memory:.2f} GB")
-            return True
-        except (ImportError, Exception) as e:
-            logging.warning(f"GPU acceleration not available: {str(e)}")
+            # First check if CUDA is available
+            if not cp.cuda.is_available():
+                logging.warning("CUDA is not available on this system")
+                return False
+                
+            # Test basic GPU operation with error handling
+            try:
+                x = cp.array([1, 2, 3])
+                y = x * 2
+                cp.cuda.Stream.null.synchronize()
+                
+                # Get GPU info
+                device = cp.cuda.Device()
+                mem_info = device.mem_info
+                total_memory = mem_info[1] / (1024**3)  # Convert to GB
+                free_memory = mem_info[0] / (1024**3)   # Convert to GB
+                
+                logging.info(f"GPU detected: {device.name}, Memory: {total_memory:.2f} GB (Free: {free_memory:.2f} GB)")
+                
+                if free_memory < 1.0:  # Less than 1GB free
+                    logging.warning(f"Low GPU memory: only {free_memory:.2f} GB free")
+                    return False
+                    
+                return True
+            except Exception as e:
+                # Changed from CUDARuntimeError to use a more generic exception handler
+                logging.warning(f"CUDA runtime error during GPU test: {e}")
+                return False
+                
+        except ImportError as e:
+            logging.warning(f"CuPy not installed: {e}")
+            return False
+        except Exception as e:
+            logging.warning(f"Unexpected error checking GPU: {e}")
             return False
     
     def use_gpu(self):

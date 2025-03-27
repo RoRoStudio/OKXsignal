@@ -152,6 +152,8 @@ def configure_memory_settings():
         logging.info(f"GPU memory: {free_memory:.2f} GB free / {total_memory:.2f} GB total")
     except ImportError:
         pass
+    except Exception as e:
+        logging.warning(f"Error configuring GPU memory: {e}")
     
     # Report available system memory
     vm = psutil.virtual_memory()
@@ -213,13 +215,12 @@ class ErrorContext:
 # ---------------------------
 # Pair Processing
 # ---------------------------
-def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
+def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
     """
     Process a single pair, compute features, and update the database
     
     Args:
         pair: Symbol pair (e.g., 'BTC-USDT')
-        db_conn: Database connection
         rolling_window: Number of recent candles to process
         config_manager: Configuration manager
         debug_mode: Whether to log debug info
@@ -236,6 +237,9 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
         # Start performance monitoring for this pair
         if perf_monitor:
             perf_monitor.start_pair(pair)
+        
+        # Get a database connection for this thread
+        db_conn = get_thread_connection()
         
         # Create feature processor with GPU acceleration if enabled
         feature_processor = OptimizedFeatureProcessor(
@@ -337,12 +341,21 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
         # Don't re-raise the exception - just log it and return
         return 0
     finally:
+        # Release the connection back to the pool
+        try:
+            release_thread_connection(db_conn)
+        except Exception as e:
+            logging.warning(f"Error releasing connection for {pair}: {e}")
+            
         total_time = time.time() - start_process
         logging.info(f"{pair}: Updated {updated_rows}/{len(update_timestamps) if 'update_timestamps' in locals() else 0} rows in {total_time:.2f}s")
         
         # End performance monitoring for this pair
         if perf_monitor:
-            perf_monitor.end_pair(total_time)
+            try:
+                perf_monitor.end_pair(total_time)
+            except Exception as e:
+                logging.debug(f"Error ending performance monitoring for {pair}: {e}")
         
         # Clear memory
         gc.collect()
@@ -351,41 +364,39 @@ def process_pair(pair, db_conn, rolling_window, config_manager, debug_mode=False
 
 def process_pair_thread(pair, rolling_window, config_manager, debug_mode=False, perf_monitor=None):
     """Wrapper function for thread pool to handle a single pair"""
-    db_conn = None
-    start_time = time.time()
-    
     try:
         # Set current pair for performance tracking
         if perf_monitor:
             perf_monitor.start_pair(pair)
-        
-        # Acquire a connection for this thread from the pool
-        db_conn = get_thread_connection()
+            
+        start_time = time.time()
         
         # Process the pair
-        result = process_pair(pair, db_conn, rolling_window, config_manager, debug_mode, perf_monitor)
+        result = process_pair(pair, rolling_window, config_manager, debug_mode, perf_monitor)
         
+        # End timing for this pair
+        total_time = time.time() - start_time
+        if perf_monitor:
+            try:
+                perf_monitor.end_pair(total_time)
+            except Exception as e:
+                logging.debug(f"Error ending performance monitoring for {pair}: {e}")
+            
         return result
         
-    except Exception as e:
-        # More detailed error logging with entire exception
-        logging.error(f"Thread error for pair {pair}: {str(e) or type(e).__name__}", exc_info=True)
+    except KeyboardInterrupt:
+        # Handle keyboard interrupt
+        logging.info(f"Processing of {pair} interrupted by user")
         return 0
-    finally:
-        try:
-            # Always release the connection back to the pool
-            if db_conn is not None:
-                release_thread_connection()
-        except Exception as conn_ex:
-            logging.error(f"Error releasing connection for {pair}: {conn_ex}")
-        
-        try:
-            # End performance monitoring for this pair even if there was an error
-            if perf_monitor:
-                total_time = time.time() - start_time
-                perf_monitor.end_pair(total_time)
-        except Exception as monitor_ex:
-            logging.error(f"Error ending performance monitoring for {pair}: {monitor_ex}")
+    except Exception as e:
+        logging.error(f"Thread error for pair {pair}: {e}", exc_info=True)
+        # Make sure to end performance monitoring even on error
+        if perf_monitor:
+            try:
+                perf_monitor.end_pair(0)  # Use 0 duration for error case
+            except Exception:
+                pass
+        return 0
 
 # ---------------------------
 # Cross-Pair Features
@@ -639,7 +650,10 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
     finally:
         if perf_monitor:
             perf_monitor.log_operation("cross_pair_features", time.time() - start_time)
-            perf_monitor.end_pair(time.time() - start_time)
+            try:
+                perf_monitor.end_pair(time.time() - start_time)
+            except Exception as e:
+                logging.debug(f"Error ending CROSS_PAIR performance monitoring: {e}")
     
     return updated_rows
 
@@ -671,13 +685,16 @@ def calibrate_batch_size(config_manager, initial_pairs=10):
     dummy_monitor = DummyMonitor()
     
     for batch_size in test_sizes:
+        if batch_size > len(test_pairs):
+            continue
+            
         logging.info(f"Testing batch size {batch_size}...")
         
         # Time the processing
         start_time = time.time()
         
         # Process with current batch size
-        with ThreadPoolExecutor(max_workers=min(batch_size, len(test_pairs))) as executor:
+        with ThreadPoolExecutor(max_workers=batch_size) as executor:
             futures = {
                 executor.submit(
                     process_pair_thread, 
@@ -695,10 +712,10 @@ def calibrate_batch_size(config_manager, initial_pairs=10):
         
         # Record time
         duration = time.time() - start_time
-        pairs_per_second = len(test_pairs[:batch_size]) / duration
-        results[batch_size] = pairs_per_second
-        
-        logging.info(f"Batch size {batch_size}: {pairs_per_second:.2f} pairs/sec")
+        if duration > 0:
+            pairs_per_second = len(test_pairs[:batch_size]) / duration
+            results[batch_size] = pairs_per_second
+            logging.info(f"Batch size {batch_size}: {pairs_per_second:.2f} pairs/sec")
         
         # Force cleanup
         gc.collect()
@@ -710,10 +727,6 @@ def calibrate_batch_size(config_manager, initial_pairs=10):
         return optimal_size
     
     return None
-
-# Add this to the main function before processing the batches:
-
-
 
 # ---------------------------
 # Main Function
@@ -735,15 +748,15 @@ def main():
                        help='Directory for log files')
     parser.add_argument('--batch-size', type=int,
                        help='Number of parallel workers (overrides default)')
+    parser.add_argument('--max-connections', type=int,
+                       help='Maximum database connections')
     parser.add_argument('--debug', action='store_true',
                        help='Enable debug mode with detailed timing')
     parser.add_argument('--pairs', type=str, help='Comma-separated list of pairs to process (default: all)')
     parser.add_argument('--no-numba', action='store_true', help='Disable Numba optimizations')
-    parser.add_argument('--max-connections', type=int, default=None,
-                       help='Maximum number of database connections in the pool')
+    parser.add_argument('--no-calibration', action='store_true', help='Skip auto-calibration of processing parameters')
     parser.add_argument('--use-gpu', action='store_true', help='Enable GPU acceleration (if available)')
     parser.add_argument('--no-gpu', action='store_true', help='Disable GPU acceleration')
-
     parser.add_argument('--disable-features', type=str, 
                        help='Comma-separated list of feature groups to disable (e.g., momentum,pattern)')
     
@@ -802,11 +815,11 @@ def main():
     # Set rolling window
     rolling_window = args.rolling_window if args.rolling_window else config_manager.get_rolling_window()
     
-    # Set batch size
+    # Set batch size - potentially auto-calibrate later
     batch_size = args.batch_size if args.batch_size else config_manager.get_batch_size()
     
     # Set max connections for the pool
-    max_connections = args.max_connections if args.max_connections is not None else batch_size + 5
+    max_connections = args.max_connections if hasattr(args, 'max_connections') and args.max_connections is not None else batch_size + 5
     
     # Initialize the connection pool
     db_params = config_manager.get_db_params()
@@ -869,16 +882,12 @@ def main():
         # Sort pairs by complexity (process simpler pairs first)
         sorted_pairs = sorted(all_pairs, key=estimate_pair_complexity)
 
-        # Auto-calibrate batch size if not specified
+        # Auto-calibrate batch size if not specified and calibration not disabled
         if not args.batch_size and not args.no_calibration:
             optimal_batch_size = calibrate_batch_size(config_manager)
             if optimal_batch_size:
                 batch_size = optimal_batch_size
                 logger.info(f"Using auto-calibrated batch size: {batch_size}")
-
-        # Add to the argument parser:
-        parser.add_argument('--no-calibration', action='store_true', 
-                        help='Skip batch size auto-calibration')
         
         # Split pairs into batches
         batches = []

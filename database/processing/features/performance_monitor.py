@@ -82,26 +82,20 @@ class PerformanceMonitor:
     
     def end_pair(self, total_duration):
         """Log the total processing time for the current pair"""
-        # Get pair from thread-local
-        if not hasattr(perf_thread_local, 'perf_data'):
-            perf_thread_local.perf_data = {}
-            
-        pair = perf_thread_local.perf_data.get('current_pair')
-        
-        if not pair:
-            logging.warning("Attempted to end performance monitoring without a current pair")
-            return  # Exit early if no pair found
-            
         with self.lock:
-            self.timings[pair]["total"] = total_duration
+            if not self.current_pair:
+                logging.debug("No current pair to end performance monitoring for")
+                return
+                
+            self.timings[self.current_pair]["total"] = total_duration
             
             # Write total to log file
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(self.log_file, 'a') as f:
-                f.write(f"{timestamp},{pair},TOTAL,{total_duration:.6f}\n")
+                f.write(f"{timestamp},{self.current_pair},TOTAL,{total_duration:.6f}\n")
             
-            # Reset thread-local pair
-            perf_thread_local.perf_data['current_pair'] = None
+            # Reset current pair
+            self.current_pair = None
     
     def save_summary(self):
         """Save a summary of all timings to JSON file"""
