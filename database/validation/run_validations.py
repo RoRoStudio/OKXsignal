@@ -120,7 +120,7 @@ def generate_comprehensive_report(all_results, args):
             )
     
     # Generate text report
-    with open(report_filename, 'w') as f:
+    with open(report_filename, 'w', encoding='utf-8') as f:
         f.write("OKXsignal Comprehensive Validation Report\n")
         f.write("=======================================\n\n")
         
@@ -219,7 +219,13 @@ def generate_comprehensive_report(all_results, args):
                         for issue_type, details in results['issue_summary'].items():
                             if issue_type not in issue_types:
                                 issue_types[issue_type] = 0
-                            issue_types[issue_type] += details.get('count', 0)
+                            if isinstance(details, dict):
+                                issue_types[issue_type] += details.get('count', 0)
+                            elif isinstance(details, (int, float)):
+                                issue_types[issue_type] += details
+                            else:
+                                issue_types[issue_type] += 1  # fallback if totally unexpected
+
             
             if issue_types:
                 f.write("  Most common issue types:\n")

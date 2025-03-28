@@ -63,7 +63,7 @@ def fetch_candles(pair, after_utc):
 def insert_candles(pair, candles):
     query = """
     INSERT INTO public.candles_1h 
-    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h, taker_buy_base_1h)
+    (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h)
     VALUES %s
     ON CONFLICT (pair, timestamp_utc) DO NOTHING;
     """
@@ -79,8 +79,7 @@ def insert_candles(pair, candles):
                 float(c[3]),
                 float(c[4]),
                 float(c[5]),
-                float(c[6]),
-                float(c[7]),
+                float(c[6])
             )
             rows.append(row)
         except Exception as e:

@@ -1,0 +1,172 @@
+OKXsignal Comprehensive Validation Report
+=======================================
+
+Generated: 2025-03-28 13:57:34
+Pairs analyzed: 1
+Pairs with issues: 1
+
+VALIDATION RESULT: SIGNIFICANT ISSUES ✗
+
+Validator Summary
+----------------
++---------------------+---------------+---------------+
+| Validator           |   Issue Count |   Error Count |
++=====================+===============+===============+
+| Raw OHLCV           |          1654 |             0 |
++---------------------+---------------+---------------+
+| Momentum            |           854 |             0 |
++---------------------+---------------+---------------+
+| Volatility          |          2024 |             0 |
++---------------------+---------------+---------------+
+| Volume Indicators   |          1249 |             0 |
++---------------------+---------------+---------------+
+| Statistical         |          1957 |             0 |
++---------------------+---------------+---------------+
+| Pattern Recognition |             4 |             0 |
++---------------------+---------------+---------------+
+| Temporal Features   |           586 |             0 |
++---------------------+---------------+---------------+
+| Labels              |            34 |             0 |
++---------------------+---------------+---------------+
+| Data Sanity         |          1579 |             0 |
++---------------------+---------------+---------------+
+| Data Distributions  |            33 |             0 |
++---------------------+---------------+---------------+
+
+Top Pairs with Issues
+-------------------
++----------+---------------+
+| Pair     |   Issue Count |
++==========+===============+
+| BTC-USDT |          9974 |
++----------+---------------+
+
+Validator Details
+----------------
+
+Data Completeness:
+  Pairs with issues: 0/1
+  Total issues found: 0
+  Most common issue types:
+    - missing_values: 0
+    - timestamp_gaps: 0
+    - future_return_issues: 0
+
+Raw OHLCV:
+  Pairs with issues: 1/1
+  Total issues found: 1654
+  Most common issue types:
+    - negative_volume: 1654
+    - high_low_issues: 0
+    - open_high_issues: 0
+    - low_close_issues: 0
+    - taker_buy_issues: 0
+
+Price Action:
+  Pairs with issues: 0/1
+  Total issues found: 0
+  Most common issue types:
+    - body_size_issues: 0
+    - upper_shadow_issues: 0
+    - lower_shadow_issues: 0
+    - rel_position_issues: 0
+    - range_violation: 0
+
+Momentum:
+  Pairs with issues: 1/1
+  Total issues found: 854
+  Most common issue types:
+    - macd_slope_issues: 168
+    - rsi_issues: 164
+    - macd_hist_slope_issues: 159
+    - tsi_issues: 152
+    - ppo_issues: 114
+
+Volatility:
+  Pairs with issues: 1/1
+  Total issues found: 2024
+  Most common issue types:
+    - bb_width_issues: 450
+    - hist_vol_issues: 450
+    - z_score_issues: 449
+    - percent_b_issues: 448
+    - atr_issues: 208
+
+Volume Indicators:
+  Pairs with issues: 1/1
+  Total issues found: 1249
+  Most common issue types:
+    - kvo_issues: 450
+    - vpt_issues: 450
+    - vo_issues: 210
+    - vzo_issues: 76
+    - vwma_issues: 19
+
+Statistical:
+  Pairs with issues: 1/1
+  Total issues found: 1957
+  Most common issue types:
+    - entropy_issues: 449
+    - hurst_issues: 444
+    - autocorr_issues: 442
+    - std_dev_issues: 330
+    - range_issues: 254
+
+Pattern Recognition:
+  Pairs with issues: 1/1
+  Total issues found: 4
+  Most common issue types:
+    - multiple_patterns: 4
+    - pattern_logic: 0
+
+Temporal Features:
+  Pairs with issues: 1/1
+  Total issues found: 586
+  Most common issue types:
+    - hour_of_day_issues: 450
+    - asian_session_issues: 38
+    - european_session_issues: 37
+    - american_session_issues: 37
+    - day_of_week_issues: 19
+
+Cross-Pair Features:
+  Pairs with issues: 0/1
+  Total issues found: 0
+  Most common issue types:
+    - rank_range_issues: 0
+    - btc_correlation_issues: 0
+
+Labels:
+  Pairs with issues: 1/1
+  Total issues found: 34
+  Most common issue types:
+    - future_leakage: 34
+    - future_return_1h_pct_issues: 0
+    - future_return_4h_pct_issues: 0
+    - future_return_12h_pct_issues: 0
+    - future_return_1d_pct_issues: 0
+
+Targets and Risk:
+  Pairs with issues: 0/1
+  Total issues found: 0
+  Most common issue types:
+    - profit_target_issues: 0
+    - risk_adj_return_issues: 0
+
+Data Sanity:
+  Pairs with issues: 1/1
+  Total issues found: 1579
+  Most common issue types:
+    - nan_issues: 850
+    - absurd_values: 450
+    - range_violations: 279
+    - infinity_issues: 0
+
+Data Distributions:
+  Pairs with issues: 1/1
+  Total issues found: 33
+  Most common issue types:
+    - total_outliers: 1331
+    - feature_coverage: 96.20253164556962
+    - outliers_by_group: 0
+    - zeros_by_group: 0

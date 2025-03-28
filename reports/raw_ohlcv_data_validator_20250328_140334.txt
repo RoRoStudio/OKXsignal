@@ -1,0 +1,24 @@
+OKXsignal Validation Report: Raw OHLCV Data Validator
+==================================================
+
+Generated: 2025-03-28 14:03:34
+Duration: 0.04 seconds
+
+Summary
+-------
+Total pairs analyzed: 1
+Pairs with issues: 1
+Total issues found: 1654
+Pairs with errors: 0
+
+VALIDATION RESULT: SIGNIFICANT ISSUES ✗
+
+Pairs with Issues
+----------------
+BTC-USDT: 1654 issues
+  - high_low_issues: 0 issues
+  - open_high_issues: 0 issues
+  - low_close_issues: 0 issues
+  - negative_volume: 1654 issues
+  - taker_buy_issues: 0 issues
+

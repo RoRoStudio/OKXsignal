@@ -1,0 +1,4517 @@
+{
+  "timestamp": "20250328_135734",
+  "total_pairs": 1,
+  "pairs_with_issues": 1,
+  "validators_with_issues": {
+    "Raw OHLCV": {
+      "error_count": 0,
+      "issue_count": 1654
+    },
+    "Momentum": {
+      "error_count": 0,
+      "issue_count": 854
+    },
+    "Volatility": {
+      "error_count": 0,
+      "issue_count": 2024
+    },
+    "Volume Indicators": {
+      "error_count": 0,
+      "issue_count": 1249
+    },
+    "Statistical": {
+      "error_count": 0,
+      "issue_count": 1957
+    },
+    "Pattern Recognition": {
+      "error_count": 0,
+      "issue_count": 4
+    },
+    "Temporal Features": {
+      "error_count": 0,
+      "issue_count": 586
+    },
+    "Labels": {
+      "error_count": 0,
+      "issue_count": 34
+    },
+    "Data Sanity": {
+      "error_count": 0,
+      "issue_count": "1579"
+    },
+    "Data Distributions": {
+      "error_count": 0,
+      "issue_count": 33
+    }
+  },
+  "results": {
+    "BTC-USDT": {
+      "Data Completeness": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 0,
+        "issue_summary": {
+          "missing_values": {
+            "count": 0
+          },
+          "timestamp_gaps": {
+            "count": 0
+          },
+          "future_return_issues": {
+            "count": 0
+          }
+        },
+        "issues": [],
+        "total_elements": 45450,
+        "missing_pct": 0.0,
+        "duration_seconds": 0.013140439987182617
+      },
+      "Raw OHLCV": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 1654,
+        "candles_count": 450,
+        "issue_percentage": 367.55555555555554,
+        "issue_summary": {
+          "high_low_issues": {
+            "count": 0
+          },
+          "open_high_issues": {
+            "count": 0
+          },
+          "low_close_issues": {
+            "count": 0
+          },
+          "negative_volume": {
+            "count": 1654
+          },
+          "taker_buy_issues": {
+            "count": 0
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1h",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": -0.021986438930312713,
+            "details": "Negative volume in volume_change_pct_1h: -0.021986438930312713"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1h",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "value": -0.15568249222519648,
+            "details": "Negative volume in volume_change_pct_1h: -0.15568249222519648"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1h",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "value": -0.23650476289241307,
+            "details": "Negative volume in volume_change_pct_1h: -0.23650476289241307"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1h",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "value": -0.34249974148639606,
+            "details": "Negative volume in volume_change_pct_1h: -0.34249974148639606"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1h",
+            "timestamp": "2025-03-05 01:00:00+01:00",
+            "value": -0.24594607007157765,
+            "details": "Negative volume in volume_change_pct_1h: -0.24594607007157765"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_4h",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": -0.02572474469346331,
+            "details": "Negative volume in volume_change_pct_4h: -0.02572474469346331"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_4h",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "value": -0.02572474469346331,
+            "details": "Negative volume in volume_change_pct_4h: -0.02572474469346331"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_4h",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "value": -0.02572474469346331,
+            "details": "Negative volume in volume_change_pct_4h: -0.02572474469346331"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_4h",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "value": -0.02572474469346331,
+            "details": "Negative volume in volume_change_pct_4h: -0.02572474469346331"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_4h",
+            "timestamp": "2025-03-05 08:00:00+01:00",
+            "value": -0.06397198589485031,
+            "details": "Negative volume in volume_change_pct_4h: -0.06397198589485031"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1d",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": -0.2930229529917038,
+            "details": "Negative volume in volume_change_pct_1d: -0.2930229529917038"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1d",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "value": -0.2930229529917038,
+            "details": "Negative volume in volume_change_pct_1d: -0.2930229529917038"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1d",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "value": -0.2930229529917038,
+            "details": "Negative volume in volume_change_pct_1d: -0.2930229529917038"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1d",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "value": -0.2930229529917038,
+            "details": "Negative volume in volume_change_pct_1d: -0.2930229529917038"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_change_pct_1d",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "value": -0.10412087919258517,
+            "details": "Negative volume in volume_change_pct_1d: -0.10412087919258517"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_zone_oscillator",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": -2.0714475481332344,
+            "details": "Negative volume in volume_zone_oscillator: -2.0714475481332344"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_zone_oscillator",
+            "timestamp": "2025-03-05 07:00:00+01:00",
+            "value": -6.293622455936496,
+            "details": "Negative volume in volume_zone_oscillator: -6.293622455936496"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_zone_oscillator",
+            "timestamp": "2025-03-05 08:00:00+01:00",
+            "value": -27.309511608414045,
+            "details": "Negative volume in volume_zone_oscillator: -27.309511608414045"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_zone_oscillator",
+            "timestamp": "2025-03-05 09:00:00+01:00",
+            "value": -12.582989327215744,
+            "details": "Negative volume in volume_zone_oscillator: -12.582989327215744"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_zone_oscillator",
+            "timestamp": "2025-03-06 02:00:00+01:00",
+            "value": -8.62030874648677,
+            "details": "Negative volume in volume_zone_oscillator: -8.62030874648677"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_price_trend",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": -229.18998731019744,
+            "details": "Negative volume in volume_price_trend: -229.18998731019744"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_price_trend",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "value": -228.9378942903843,
+            "details": "Negative volume in volume_price_trend: -228.9378942903843"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_price_trend",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "value": -227.78925177228035,
+            "details": "Negative volume in volume_price_trend: -227.78925177228035"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_price_trend",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "value": -226.51678493655908,
+            "details": "Negative volume in volume_price_trend: -226.51678493655908"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_price_trend",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "value": -226.18935746487773,
+            "details": "Negative volume in volume_price_trend: -226.18935746487773"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_oscillator",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": -99.00828207709549,
+            "details": "Negative volume in volume_oscillator: -99.00828207709549"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_oscillator",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "value": -110.53586907347358,
+            "details": "Negative volume in volume_oscillator: -110.53586907347358"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_oscillator",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "value": -112.4883969362661,
+            "details": "Negative volume in volume_oscillator: -112.4883969362661"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_oscillator",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "value": -119.60042080977212,
+            "details": "Negative volume in volume_oscillator: -119.60042080977212"
+          },
+          {
+            "issue_type": "negative_volume",
+            "column": "volume_oscillator",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "value": -131.50459401924695,
+            "details": "Negative volume in volume_oscillator: -131.50459401924695"
+          }
+        ],
+        "duration_seconds": 0.0042972564697265625
+      },
+      "Price Action": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 0,
+        "candles_count": 450,
+        "issue_percentage": 0.0,
+        "issue_summary": {
+          "body_size_issues": {
+            "count": 0
+          },
+          "upper_shadow_issues": {
+            "count": 0
+          },
+          "lower_shadow_issues": {
+            "count": 0
+          },
+          "rel_position_issues": {
+            "count": 0
+          },
+          "range_violation": {
+            "count": 0
+          }
+        },
+        "issues": [],
+        "duration_seconds": 0.01592564582824707
+      },
+      "Momentum": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 854,
+        "candles_count": 450,
+        "issue_percentage": 189.77777777777777,
+        "issue_summary": {
+          "rsi_issues": {
+            "count": 164
+          },
+          "macd_slope_issues": {
+            "count": 168
+          },
+          "macd_hist_slope_issues": {
+            "count": 159
+          },
+          "stoch_k_issues": {
+            "count": 13
+          },
+          "stoch_d_issues": {
+            "count": 15
+          },
+          "williams_r_issues": {
+            "count": 13
+          },
+          "cci_issues": {
+            "count": 13
+          },
+          "roc_issues": {
+            "count": 10
+          },
+          "tsi_issues": {
+            "count": 152
+          },
+          "ppo_issues": {
+            "count": 114
+          },
+          "ao_issues": {
+            "count": 33
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "rsi_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 50.0,
+            "actual": 53.06918366598112,
+            "diff": 3.0691836659811216,
+            "details": "RSI calculation discrepancy"
+          },
+          {
+            "issue_type": "rsi_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 50.0,
+            "actual": 53.41722057711945,
+            "diff": 3.4172205771194513,
+            "details": "RSI calculation discrepancy"
+          },
+          {
+            "issue_type": "rsi_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 50.0,
+            "actual": 54.69114947124343,
+            "diff": 4.691149471243428,
+            "details": "RSI calculation discrepancy"
+          },
+          {
+            "issue_type": "rsi_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 50.0,
+            "actual": 56.55270769949244,
+            "diff": 6.552707699492437,
+            "details": "RSI calculation discrepancy"
+          },
+          {
+            "issue_type": "rsi_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 50.0,
+            "actual": 57.2950477487309,
+            "diff": 7.295047748730902,
+            "details": "RSI calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_slope_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 5.241025641022134,
+            "actual": -3.661889815237373,
+            "diff": 8.902915456259507,
+            "details": "MACD slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_slope_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 22.497771933674812,
+            "actual": 11.716906282134005,
+            "diff": 10.780865651540807,
+            "details": "MACD slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_slope_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 44.15365268221649,
+            "actual": 32.024317397910636,
+            "diff": 12.129335284305853,
+            "details": "MACD slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_slope_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 44.31989939199411,
+            "actual": 31.272296848794213,
+            "diff": 13.0476025431999,
+            "details": "MACD slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_slope_issue",
+            "timestamp": "2025-03-05 01:00:00+01:00",
+            "expected": 44.75077759029227,
+            "actual": 31.13242551428266,
+            "diff": 13.618352076009614,
+            "details": "MACD slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_hist_slope_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 4.192820512817707,
+            "actual": -75.09990055463021,
+            "diff": 79.29272106744791,
+            "details": "MACD histogram slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_hist_slope_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 17.159653444376307,
+            "actual": -47.77688356580708,
+            "diff": 64.93653701018339,
+            "details": "MACD histogram slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_hist_slope_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 31.05242735433439,
+            "actual": -21.975577960024367,
+            "diff": 53.02800531435876,
+            "details": "MACD histogram slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_hist_slope_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 24.974939251289598,
+            "actual": -18.18207880731262,
+            "diff": 43.15701805860222,
+            "details": "MACD histogram slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_hist_slope_issue",
+            "timestamp": "2025-03-05 01:00:00+01:00",
+            "expected": 20.32465395967023,
+            "actual": -14.65756011345934,
+            "diff": 34.98221407312957,
+            "details": "MACD histogram slope calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_k_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 50.0,
+            "actual": 71.84923597497111,
+            "diff": 21.84923597497111,
+            "details": "Stochastic %K calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_k_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 50.0,
+            "actual": 72.73142304696954,
+            "diff": 22.73142304696954,
+            "details": "Stochastic %K calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_k_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 50.0,
+            "actual": 74.10046056419114,
+            "diff": 24.10046056419114,
+            "details": "Stochastic %K calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_k_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 50.0,
+            "actual": 73.6234810514549,
+            "diff": 23.623481051454903,
+            "details": "Stochastic %K calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_k_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 50.0,
+            "actual": 65.10017832791384,
+            "diff": 15.100178327913838,
+            "details": "Stochastic %K calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_d_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 50.0,
+            "actual": 78.10421534137198,
+            "diff": 28.104215341371983,
+            "details": "Stochastic %D calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_d_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 50.0,
+            "actual": 74.90667884093784,
+            "diff": 24.906678840937843,
+            "details": "Stochastic %D calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_d_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 50.0,
+            "actual": 72.8937065287106,
+            "diff": 22.893706528710595,
+            "details": "Stochastic %D calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_d_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 50.0,
+            "actual": 73.4851215542052,
+            "diff": 23.485121554205193,
+            "details": "Stochastic %D calculation discrepancy"
+          },
+          {
+            "issue_type": "stoch_d_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 50.0,
+            "actual": 70.94137331451996,
+            "diff": 20.941373314519964,
+            "details": "Stochastic %D calculation discrepancy"
+          },
+          {
+            "issue_type": "williams_r_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": -50.0,
+            "actual": -28.15076402502889,
+            "diff": 21.84923597497111,
+            "details": "Williams %R calculation discrepancy"
+          },
+          {
+            "issue_type": "williams_r_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": -50.0,
+            "actual": -27.268576953030454,
+            "diff": 22.731423046969546,
+            "details": "Williams %R calculation discrepancy"
+          },
+          {
+            "issue_type": "williams_r_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": -50.0,
+            "actual": -25.899539435808865,
+            "diff": 24.100460564191135,
+            "details": "Williams %R calculation discrepancy"
+          },
+          {
+            "issue_type": "williams_r_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": -50.0,
+            "actual": -26.376518948545097,
+            "diff": 23.623481051454903,
+            "details": "Williams %R calculation discrepancy"
+          },
+          {
+            "issue_type": "williams_r_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": -50.0,
+            "actual": -34.899821672086155,
+            "diff": 15.100178327913845,
+            "details": "Williams %R calculation discrepancy"
+          },
+          {
+            "issue_type": "cci_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 41.541995164327204,
+            "diff": 41.541995164327204,
+            "details": "CCI calculation discrepancy"
+          },
+          {
+            "issue_type": "cci_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 28.868174224187147,
+            "diff": 28.868174224187147,
+            "details": "CCI calculation discrepancy"
+          },
+          {
+            "issue_type": "cci_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 23.39825491949913,
+            "diff": 23.39825491949913,
+            "details": "CCI calculation discrepancy"
+          },
+          {
+            "issue_type": "cci_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 37.148139998036,
+            "diff": 37.148139998036,
+            "details": "CCI calculation discrepancy"
+          },
+          {
+            "issue_type": "cci_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 65.50019059939649,
+            "diff": 65.50019059939649,
+            "details": "CCI calculation discrepancy"
+          },
+          {
+            "issue_type": "roc_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1.652504681647926,
+            "diff": 1.652504681647926,
+            "details": "ROC calculation discrepancy"
+          },
+          {
+            "issue_type": "roc_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.20717587121663605,
+            "diff": 0.20717587121663605,
+            "details": "ROC calculation discrepancy"
+          },
+          {
+            "issue_type": "roc_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": -1.1997886793821855,
+            "diff": 1.1997886793821855,
+            "details": "ROC calculation discrepancy"
+          },
+          {
+            "issue_type": "roc_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.7501669852822523,
+            "diff": 0.7501669852822523,
+            "details": "ROC calculation discrepancy"
+          },
+          {
+            "issue_type": "roc_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.11540667713325625,
+            "diff": 0.11540667713325625,
+            "details": "ROC calculation discrepancy"
+          },
+          {
+            "issue_type": "tsi_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 6.485696068921196,
+            "diff": 6.485696068921196,
+            "details": "TSI calculation discrepancy"
+          },
+          {
+            "issue_type": "tsi_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 100.0,
+            "actual": 6.634608557106708,
+            "diff": 93.3653914428933,
+            "details": "TSI calculation discrepancy"
+          },
+          {
+            "issue_type": "tsi_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 100.0,
+            "actual": 7.099895216242939,
+            "diff": 92.90010478375706,
+            "details": "TSI calculation discrepancy"
+          },
+          {
+            "issue_type": "tsi_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 100.0,
+            "actual": 7.994134636566619,
+            "diff": 92.00586536343339,
+            "details": "TSI calculation discrepancy"
+          },
+          {
+            "issue_type": "tsi_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 100.0,
+            "actual": 8.944325826952488,
+            "diff": 91.0556741730475,
+            "details": "TSI calculation discrepancy"
+          },
+          {
+            "issue_type": "ppo_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.39726455942294125,
+            "diff": 0.39726455942294125,
+            "details": "PPO calculation discrepancy"
+          },
+          {
+            "issue_type": "ppo_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.006034101708086609,
+            "actual": 0.39281400964810176,
+            "diff": 0.38677990794001516,
+            "details": "PPO calculation discrepancy"
+          },
+          {
+            "issue_type": "ppo_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.03192829932850314,
+            "actual": 0.4061043696666686,
+            "diff": 0.3741760703381654,
+            "details": "PPO calculation discrepancy"
+          },
+          {
+            "issue_type": "ppo_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.08270785100698709,
+            "actual": 0.44275721987140915,
+            "diff": 0.36004936886442207,
+            "details": "PPO calculation discrepancy"
+          },
+          {
+            "issue_type": "ppo_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.13361612640316425,
+            "actual": 0.4784522974173106,
+            "diff": 0.3448361710141463,
+            "details": "PPO calculation discrepancy"
+          },
+          {
+            "issue_type": "ao_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1920.0608823529474,
+            "diff": 1920.0608823529474,
+            "details": "Awesome Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "ao_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1894.8270588235464,
+            "diff": 1894.8270588235464,
+            "details": "Awesome Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "ao_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1929.697941176477,
+            "diff": 1929.697941176477,
+            "details": "Awesome Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "ao_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1903.634117647045,
+            "diff": 1903.634117647045,
+            "details": "Awesome Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "ao_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1872.7908823529433,
+            "diff": 1872.7908823529433,
+            "details": "Awesome Oscillator calculation discrepancy"
+          }
+        ],
+        "duration_seconds": 0.08404135704040527
+      },
+      "Volatility": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 2024,
+        "candles_count": 450,
+        "issue_percentage": 449.7777777777777,
+        "issue_summary": {
+          "atr_issues": {
+            "count": 208
+          },
+          "bb_width_issues": {
+            "count": 450
+          },
+          "percent_b_issues": {
+            "count": 448
+          },
+          "dc_width_issues": {
+            "count": 19
+          },
+          "hist_vol_issues": {
+            "count": 450
+          },
+          "z_score_issues": {
+            "count": 449
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "atr_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1363.2359111515198,
+            "diff": 1363.2359111515198,
+            "details": "ATR calculation discrepancy"
+          },
+          {
+            "issue_type": "atr_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1313.1476317835538,
+            "diff": 1313.1476317835538,
+            "details": "ATR calculation discrepancy"
+          },
+          {
+            "issue_type": "atr_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1249.0370866561575,
+            "diff": 1249.0370866561575,
+            "details": "ATR calculation discrepancy"
+          },
+          {
+            "issue_type": "atr_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1201.141580466432,
+            "diff": 1201.141580466432,
+            "details": "ATR calculation discrepancy"
+          },
+          {
+            "issue_type": "atr_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1142.5457532902585,
+            "diff": 1142.5457532902585,
+            "details": "ATR calculation discrepancy"
+          },
+          {
+            "issue_type": "bb_width_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7475.172680038901,
+            "diff": 7475.172680038901,
+            "details": "Bollinger Band Width calculation discrepancy"
+          },
+          {
+            "issue_type": "bb_width_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7419.144606516318,
+            "diff": 7419.144606516318,
+            "details": "Bollinger Band Width calculation discrepancy"
+          },
+          {
+            "issue_type": "bb_width_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7310.213279952906,
+            "diff": 7310.213279952906,
+            "details": "Bollinger Band Width calculation discrepancy"
+          },
+          {
+            "issue_type": "bb_width_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7238.627684167761,
+            "diff": 7238.627684167761,
+            "details": "Bollinger Band Width calculation discrepancy"
+          },
+          {
+            "issue_type": "bb_width_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7109.290222124837,
+            "diff": 7109.290222124837,
+            "details": "Bollinger Band Width calculation discrepancy"
+          },
+          {
+            "issue_type": "percent_b_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.5,
+            "actual": 0.6801316247309919,
+            "diff": 0.18013162473099187,
+            "details": "Bollinger %B calculation discrepancy"
+          },
+          {
+            "issue_type": "percent_b_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.5,
+            "actual": 0.6700014040557131,
+            "diff": 0.17000140405571307,
+            "details": "Bollinger %B calculation discrepancy"
+          },
+          {
+            "issue_type": "percent_b_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.5,
+            "actual": 0.6808921230282696,
+            "diff": 0.18089212302826962,
+            "details": "Bollinger %B calculation discrepancy"
+          },
+          {
+            "issue_type": "percent_b_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.5,
+            "actual": 0.7049041703366273,
+            "diff": 0.20490417033662733,
+            "details": "Bollinger %B calculation discrepancy"
+          },
+          {
+            "issue_type": "percent_b_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.5,
+            "actual": 0.7013618737275706,
+            "diff": 0.20136187372757064,
+            "details": "Bollinger %B calculation discrepancy"
+          },
+          {
+            "issue_type": "dc_width_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7447.399999999994,
+            "diff": 7447.399999999994,
+            "details": "Donchian Channel Width calculation discrepancy"
+          },
+          {
+            "issue_type": "dc_width_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7447.399999999994,
+            "diff": 7447.399999999994,
+            "details": "Donchian Channel Width calculation discrepancy"
+          },
+          {
+            "issue_type": "dc_width_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7447.399999999994,
+            "diff": 7447.399999999994,
+            "details": "Donchian Channel Width calculation discrepancy"
+          },
+          {
+            "issue_type": "dc_width_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7447.399999999994,
+            "diff": 7447.399999999994,
+            "details": "Donchian Channel Width calculation discrepancy"
+          },
+          {
+            "issue_type": "dc_width_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 7447.399999999994,
+            "diff": 7447.399999999994,
+            "details": "Donchian Channel Width calculation discrepancy"
+          },
+          {
+            "issue_type": "hist_vol_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.16618490226872426,
+            "diff": 0.16618490226872426,
+            "details": "Historical Volatility calculation discrepancy"
+          },
+          {
+            "issue_type": "hist_vol_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.16068116593572518,
+            "diff": 0.16068116593572518,
+            "details": "Historical Volatility calculation discrepancy"
+          },
+          {
+            "issue_type": "hist_vol_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.1601177159431352,
+            "diff": 0.1601177159431352,
+            "details": "Historical Volatility calculation discrepancy"
+          },
+          {
+            "issue_type": "hist_vol_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.16023552263695756,
+            "diff": 0.16023552263695756,
+            "details": "Historical Volatility calculation discrepancy"
+          },
+          {
+            "issue_type": "hist_vol_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.1306987953888619,
+            "diff": 0.1306987953888619,
+            "details": "Historical Volatility calculation discrepancy"
+          },
+          {
+            "issue_type": "z_score_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.7061637304916228,
+            "diff": 0.7061637304916228,
+            "details": "Z-Score calculation discrepancy"
+          },
+          {
+            "issue_type": "z_score_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.6749088236412922,
+            "diff": 0.6749088236412922,
+            "details": "Z-Score calculation discrepancy"
+          },
+          {
+            "issue_type": "z_score_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.712944723486689,
+            "diff": 0.712944723486689,
+            "details": "Z-Score calculation discrepancy"
+          },
+          {
+            "issue_type": "z_score_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.8115905477437398,
+            "diff": 0.8115905477437398,
+            "details": "Z-Score calculation discrepancy"
+          },
+          {
+            "issue_type": "z_score_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.7910560191574435,
+            "diff": 0.7910560191574435,
+            "details": "Z-Score calculation discrepancy"
+          }
+        ],
+        "duration_seconds": 0.07847857475280762
+      },
+      "Volume Indicators": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 1249,
+        "candles_count": 450,
+        "issue_percentage": 277.55555555555554,
+        "issue_summary": {
+          "mfi_issues": {
+            "count": 14
+          },
+          "vwma_issues": {
+            "count": 19
+          },
+          "cmf_issues": {
+            "count": 19
+          },
+          "kvo_issues": {
+            "count": 450
+          },
+          "vo_issues": {
+            "count": 210
+          },
+          "vzo_issues": {
+            "count": 76
+          },
+          "vpt_issues": {
+            "count": 450
+          },
+          "vpc_issues": {
+            "count": 1
+          },
+          "vol_change_issues": {
+            "count": 1
+          },
+          "directional_mismatch": {
+            "count": 9
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "mfi_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 50.0,
+            "actual": 66.438539169549,
+            "diff": 16.438539169549003,
+            "details": "Money Flow Index calculation discrepancy"
+          },
+          {
+            "issue_type": "mfi_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 50.0,
+            "actual": 57.98592771578583,
+            "diff": 7.985927715785827,
+            "details": "Money Flow Index calculation discrepancy"
+          },
+          {
+            "issue_type": "mfi_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 50.0,
+            "actual": 70.09751013764314,
+            "diff": 20.09751013764314,
+            "details": "Money Flow Index calculation discrepancy"
+          },
+          {
+            "issue_type": "mfi_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 50.0,
+            "actual": 68.6416936112081,
+            "diff": 18.641693611208098,
+            "details": "Money Flow Index calculation discrepancy"
+          },
+          {
+            "issue_type": "mfi_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 50.0,
+            "actual": 65.83714547608437,
+            "diff": 15.837145476084373,
+            "details": "Money Flow Index calculation discrepancy"
+          },
+          {
+            "issue_type": "vwma_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 86851.9,
+            "actual": 85254.51914677206,
+            "diff": 1597.3808532279363,
+            "details": "VWMA calculation discrepancy"
+          },
+          {
+            "issue_type": "vwma_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 86917.6,
+            "actual": 85340.82694283365,
+            "diff": 1576.773057166356,
+            "details": "VWMA calculation discrepancy"
+          },
+          {
+            "issue_type": "vwma_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 87148.9,
+            "actual": 85424.95317056308,
+            "diff": 1723.9468294369144,
+            "details": "VWMA calculation discrepancy"
+          },
+          {
+            "issue_type": "vwma_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 87485.4,
+            "actual": 85501.28958097882,
+            "diff": 1984.1104190211772,
+            "details": "VWMA calculation discrepancy"
+          },
+          {
+            "issue_type": "vwma_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 87617.6,
+            "actual": 85571.26716768676,
+            "diff": 2046.3328323132446,
+            "details": "VWMA calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.17888142130063853,
+            "diff": 0.17888142130063853,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.1391032022886984,
+            "diff": 0.1391032022886984,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.16190658869278357,
+            "diff": 0.16190658869278357,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.16363548893550675,
+            "diff": 0.16363548893550675,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.17839435163463768,
+            "diff": 0.17839435163463768,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "kvo_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 32.24878361354912,
+            "diff": 32.24878361354912,
+            "details": "Klinger Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "kvo_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": -326.2058845798125,
+            "actual": 26.03219788297534,
+            "diff": 352.2380824627878,
+            "details": "Klinger Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "kvo_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 117.58928644890273,
+            "actual": 35.12126288122504,
+            "diff": 82.46802356767768,
+            "details": "Klinger Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "kvo_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 585.9771334791718,
+            "actual": 44.6159463640797,
+            "diff": 541.3611871150921,
+            "details": "Klinger Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "kvo_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 719.0334697351111,
+            "actual": 47.32533711139757,
+            "diff": 671.7081326237135,
+            "details": "Klinger Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vo_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": -99.00828207709549,
+            "diff": 99.00828207709549,
+            "details": "Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vo_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": -3.955282698942483,
+            "actual": -110.53586907347358,
+            "diff": 106.5805863745311,
+            "details": "Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vo_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": -0.7777957044896766,
+            "actual": -112.4883969362661,
+            "diff": 111.71060123177642,
+            "details": "Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vo_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": -4.777652198763576,
+            "actual": -119.60042080977212,
+            "diff": 114.82276861100854,
+            "details": "Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vo_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": -15.226469831993597,
+            "actual": -131.50459401924695,
+            "diff": 116.27812418725335,
+            "details": "Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vzo_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": -2.0714475481332344,
+            "diff": 2.0714475481332344,
+            "details": "Volume Zone Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vzo_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 11.496201068118264,
+            "actual": 5.742850743525733,
+            "diff": 5.753350324592531,
+            "details": "Volume Zone Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vzo_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 24.472467668494392,
+            "actual": 15.41992134050248,
+            "diff": 9.052546327991912,
+            "details": "Volume Zone Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vzo_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 33.11200109255931,
+            "actual": 22.435253297981134,
+            "diff": 10.676747794578176,
+            "details": "Volume Zone Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vzo_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 38.45314969213611,
+            "actual": 27.027082106408987,
+            "diff": 11.426067585727122,
+            "details": "Volume Zone Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vpt_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 394.70168451,
+            "actual": -229.18998731019744,
+            "diff": 623.8916718201974,
+            "details": "Volume Price Trend calculation discrepancy"
+          },
+          {
+            "issue_type": "vpt_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 394.9537775298132,
+            "actual": -228.9378942903843,
+            "diff": 623.8916718201974,
+            "details": "Volume Price Trend calculation discrepancy"
+          },
+          {
+            "issue_type": "vpt_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 396.1024200479172,
+            "actual": -227.78925177228035,
+            "diff": 623.8916718201975,
+            "details": "Volume Price Trend calculation discrepancy"
+          },
+          {
+            "issue_type": "vpt_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 397.37488688363845,
+            "actual": -226.51678493655908,
+            "diff": 623.8916718201975,
+            "details": "Volume Price Trend calculation discrepancy"
+          },
+          {
+            "issue_type": "vpt_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 397.7023143553198,
+            "actual": -226.18935746487773,
+            "diff": 623.8916718201975,
+            "details": "Volume Price Trend calculation discrepancy"
+          },
+          {
+            "issue_type": "vpc_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 1.0,
+            "diff": 1.0,
+            "details": "Volume Price Confirmation calculation discrepancy"
+          },
+          {
+            "issue_type": "vol_change_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": -0.021986438930312713,
+            "diff": 0.021986438930312713,
+            "details": "Volume Change Percentage calculation discrepancy"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-06 05:00:00+01:00",
+            "price_change": -0.013791578599410492,
+            "obv_slope": 85.60847667000023,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-06 09:00:00+01:00",
+            "price_change": -0.016614825621404372,
+            "obv_slope": 360.3851420066667,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-06 18:00:00+01:00",
+            "price_change": 0.03182583481432988,
+            "obv_slope": -553.6202762600002,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-07 08:00:00+01:00",
+            "price_change": -0.021939271971338936,
+            "obv_slope": 497.41982001333326,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-10 12:00:00+01:00",
+            "price_change": 0.018086717349650838,
+            "obv_slope": -462.85007049333336,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-10 18:00:00+01:00",
+            "price_change": 0.018604441583521147,
+            "obv_slope": -192.1636134766662,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-11 08:00:00+01:00",
+            "price_change": 0.018173818870989455,
+            "obv_slope": -964.0042437833332,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-12 06:00:00+01:00",
+            "price_change": -0.016467680214874325,
+            "obv_slope": 398.0632292433335,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          },
+          {
+            "issue_type": "directional_mismatch",
+            "timestamp": "2025-03-20 08:00:00+01:00",
+            "price_change": -0.01717369230322896,
+            "obv_slope": 103.90435053333324,
+            "details": "OBV Slope direction doesn't match significant price movement direction"
+          }
+        ],
+        "duration_seconds": 0.048534393310546875
+      },
+      "Statistical": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 1957,
+        "candles_count": 450,
+        "issue_percentage": 434.8888888888889,
+        "issue_summary": {
+          "std_dev_issues": {
+            "count": 330
+          },
+          "skewness_issues": {
+            "count": 19
+          },
+          "kurtosis_issues": {
+            "count": 19
+          },
+          "autocorr_issues": {
+            "count": 442
+          },
+          "hurst_issues": {
+            "count": 444
+          },
+          "entropy_issues": {
+            "count": 449
+          },
+          "range_issues": {
+            "count": 254
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "std_dev_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.009223108304714194,
+            "diff": 0.009223108304714194,
+            "details": "Standard Deviation of Returns calculation discrepancy"
+          },
+          {
+            "issue_type": "std_dev_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.009111804161801284,
+            "diff": 0.009111804161801284,
+            "details": "Standard Deviation of Returns calculation discrepancy"
+          },
+          {
+            "issue_type": "std_dev_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.009075530424774927,
+            "diff": 0.009075530424774927,
+            "details": "Standard Deviation of Returns calculation discrepancy"
+          },
+          {
+            "issue_type": "std_dev_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.009083445531454914,
+            "diff": 0.009083445531454914,
+            "details": "Standard Deviation of Returns calculation discrepancy"
+          },
+          {
+            "issue_type": "std_dev_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.00906735219549397,
+            "diff": 0.00906735219549397,
+            "details": "Standard Deviation of Returns calculation discrepancy"
+          },
+          {
+            "issue_type": "skewness_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.30153524269867626,
+            "diff": 0.30153524269867626,
+            "details": "Skewness calculation discrepancy"
+          },
+          {
+            "issue_type": "skewness_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.4228667186285427,
+            "diff": 0.4228667186285427,
+            "details": "Skewness calculation discrepancy"
+          },
+          {
+            "issue_type": "skewness_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.35686542861968407,
+            "diff": 0.35686542861968407,
+            "details": "Skewness calculation discrepancy"
+          },
+          {
+            "issue_type": "skewness_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.33757687076759046,
+            "diff": 0.33757687076759046,
+            "details": "Skewness calculation discrepancy"
+          },
+          {
+            "issue_type": "skewness_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.3088976373068314,
+            "diff": 0.3088976373068314,
+            "details": "Skewness calculation discrepancy"
+          },
+          {
+            "issue_type": "kurtosis_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": -0.2520508724224042,
+            "diff": 0.2520508724224042,
+            "details": "Kurtosis calculation discrepancy"
+          },
+          {
+            "issue_type": "kurtosis_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": -0.06597444203775105,
+            "diff": 0.06597444203775105,
+            "details": "Kurtosis calculation discrepancy"
+          },
+          {
+            "issue_type": "kurtosis_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": -0.05902745990860225,
+            "diff": 0.05902745990860225,
+            "details": "Kurtosis calculation discrepancy"
+          },
+          {
+            "issue_type": "kurtosis_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": -0.07785777827127305,
+            "diff": 0.07785777827127305,
+            "details": "Kurtosis calculation discrepancy"
+          },
+          {
+            "issue_type": "kurtosis_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": -0.07092723122115085,
+            "diff": 0.07092723122115085,
+            "details": "Kurtosis calculation discrepancy"
+          },
+          {
+            "issue_type": "autocorr_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.08440439958105964,
+            "diff": 0.08440439958105964,
+            "details": "Autocorrelation calculation discrepancy"
+          },
+          {
+            "issue_type": "autocorr_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.10994306981176445,
+            "diff": 0.10994306981176445,
+            "details": "Autocorrelation calculation discrepancy"
+          },
+          {
+            "issue_type": "autocorr_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.11202258343070501,
+            "diff": 0.11202258343070501,
+            "details": "Autocorrelation calculation discrepancy"
+          },
+          {
+            "issue_type": "autocorr_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.11365818902190902,
+            "diff": 0.11365818902190902,
+            "details": "Autocorrelation calculation discrepancy"
+          },
+          {
+            "issue_type": "autocorr_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.10663392989347131,
+            "diff": 0.10663392989347131,
+            "details": "Autocorrelation calculation discrepancy"
+          },
+          {
+            "issue_type": "hurst_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.01017711367742889,
+            "diff": 0.01017711367742889,
+            "details": "Hurst Exponent calculation discrepancy"
+          },
+          {
+            "issue_type": "hurst_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.010826016553667588,
+            "diff": 0.010826016553667588,
+            "details": "Hurst Exponent calculation discrepancy"
+          },
+          {
+            "issue_type": "hurst_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.010969083444900454,
+            "diff": 0.010969083444900454,
+            "details": "Hurst Exponent calculation discrepancy"
+          },
+          {
+            "issue_type": "hurst_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.011371312796570212,
+            "diff": 0.011371312796570212,
+            "details": "Hurst Exponent calculation discrepancy"
+          },
+          {
+            "issue_type": "hurst_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 0.011953407710425018,
+            "diff": 0.011953407710425018,
+            "details": "Hurst Exponent calculation discrepancy"
+          },
+          {
+            "issue_type": "entropy_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 0.0,
+            "actual": 2.0280467677759697,
+            "diff": 2.0280467677759697,
+            "details": "Shannon Entropy calculation discrepancy"
+          },
+          {
+            "issue_type": "entropy_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 0.0,
+            "actual": 2.0555861437635774,
+            "diff": 2.0555861437635774,
+            "details": "Shannon Entropy calculation discrepancy"
+          },
+          {
+            "issue_type": "entropy_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0.0,
+            "actual": 2.0688846458275623,
+            "diff": 2.0688846458275623,
+            "details": "Shannon Entropy calculation discrepancy"
+          },
+          {
+            "issue_type": "entropy_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 0.0,
+            "actual": 2.0688846458275623,
+            "diff": 2.0688846458275623,
+            "details": "Shannon Entropy calculation discrepancy"
+          },
+          {
+            "issue_type": "entropy_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0.0,
+            "actual": 2.0867687549639196,
+            "diff": 2.0867687549639196,
+            "details": "Shannon Entropy calculation discrepancy"
+          },
+          {
+            "issue_type": "range_violation",
+            "column": "hurst_exponent",
+            "timestamp": "2025-03-06 01:00:00+01:00",
+            "value": -0.001347063159192233,
+            "details": "Hurst Exponent outside valid range [0,1]: -0.001347063159192233"
+          },
+          {
+            "issue_type": "range_violation",
+            "column": "hurst_exponent",
+            "timestamp": "2025-03-06 02:00:00+01:00",
+            "value": -0.0023032107479290464,
+            "details": "Hurst Exponent outside valid range [0,1]: -0.0023032107479290464"
+          },
+          {
+            "issue_type": "range_violation",
+            "column": "hurst_exponent",
+            "timestamp": "2025-03-06 03:00:00+01:00",
+            "value": -0.002742435094486786,
+            "details": "Hurst Exponent outside valid range [0,1]: -0.002742435094486786"
+          },
+          {
+            "issue_type": "range_violation",
+            "column": "hurst_exponent",
+            "timestamp": "2025-03-06 04:00:00+01:00",
+            "value": -0.003278242420241611,
+            "details": "Hurst Exponent outside valid range [0,1]: -0.003278242420241611"
+          },
+          {
+            "issue_type": "range_violation",
+            "column": "hurst_exponent",
+            "timestamp": "2025-03-06 05:00:00+01:00",
+            "value": -0.0032642315334024978,
+            "details": "Hurst Exponent outside valid range [0,1]: -0.0032642315334024978"
+          }
+        ],
+        "duration_seconds": 0.2687058448791504
+      },
+      "Pattern Recognition": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 4,
+        "issue_summary": {
+          "multiple_patterns": {
+            "count": 4
+          },
+          "pattern_logic": {
+            "count": 0
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "multiple_patterns",
+            "timestamp": "2025-03-07 16:00:00+01:00",
+            "pattern_count": 2,
+            "flagged_patterns": "pattern_doji, pattern_hammer",
+            "details": "Multiple patterns detected: pattern_doji, pattern_hammer"
+          },
+          {
+            "issue_type": "multiple_patterns",
+            "timestamp": "2025-03-08 15:00:00+01:00",
+            "pattern_count": 2,
+            "flagged_patterns": "pattern_engulfing, pattern_hammer",
+            "details": "Multiple patterns detected: pattern_engulfing, pattern_hammer"
+          },
+          {
+            "issue_type": "multiple_patterns",
+            "timestamp": "2025-03-14 07:00:00+01:00",
+            "pattern_count": 2,
+            "flagged_patterns": "pattern_doji, pattern_hammer",
+            "details": "Multiple patterns detected: pattern_doji, pattern_hammer"
+          },
+          {
+            "issue_type": "multiple_patterns",
+            "timestamp": "2025-03-15 22:00:00+01:00",
+            "pattern_count": 2,
+            "flagged_patterns": "pattern_doji, pattern_hammer",
+            "details": "Multiple patterns detected: pattern_doji, pattern_hammer"
+          }
+        ],
+        "duration_seconds": 0.0058002471923828125
+      },
+      "Temporal Features": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 586,
+        "candles_count": 450,
+        "issue_percentage": 130.22222222222223,
+        "issue_summary": {
+          "hour_of_day_issues": {
+            "count": 450
+          },
+          "day_of_week_issues": {
+            "count": 19
+          },
+          "month_of_year_issues": {
+            "count": 0
+          },
+          "is_weekend_issues": {
+            "count": 5
+          },
+          "asian_session_issues": {
+            "count": 38
+          },
+          "european_session_issues": {
+            "count": 37
+          },
+          "american_session_issues": {
+            "count": 37
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "hour_of_day_issue",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "expected": 20,
+            "actual": 19,
+            "details": "Hour of day mismatch"
+          },
+          {
+            "issue_type": "hour_of_day_issue",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "expected": 21,
+            "actual": 20,
+            "details": "Hour of day mismatch"
+          },
+          {
+            "issue_type": "hour_of_day_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 22,
+            "actual": 21,
+            "details": "Hour of day mismatch"
+          },
+          {
+            "issue_type": "hour_of_day_issue",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "expected": 23,
+            "actual": 22,
+            "details": "Hour of day mismatch"
+          },
+          {
+            "issue_type": "hour_of_day_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 0,
+            "actual": 23,
+            "details": "Hour of day mismatch"
+          },
+          {
+            "issue_type": "day_of_week_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 2,
+            "actual": 1,
+            "details": "Day of week mismatch"
+          },
+          {
+            "issue_type": "day_of_week_issue",
+            "timestamp": "2025-03-06 00:00:00+01:00",
+            "expected": 3,
+            "actual": 2,
+            "details": "Day of week mismatch"
+          },
+          {
+            "issue_type": "day_of_week_issue",
+            "timestamp": "2025-03-07 00:00:00+01:00",
+            "expected": 4,
+            "actual": 3,
+            "details": "Day of week mismatch"
+          },
+          {
+            "issue_type": "day_of_week_issue",
+            "timestamp": "2025-03-08 00:00:00+01:00",
+            "expected": 5,
+            "actual": 4,
+            "details": "Day of week mismatch"
+          },
+          {
+            "issue_type": "day_of_week_issue",
+            "timestamp": "2025-03-09 00:00:00+01:00",
+            "expected": 6,
+            "actual": 5,
+            "details": "Day of week mismatch"
+          },
+          {
+            "issue_type": "is_weekend_issue",
+            "timestamp": "2025-03-07 21:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "details": "Weekend flag mismatch"
+          },
+          {
+            "issue_type": "is_weekend_issue",
+            "timestamp": "2025-03-10 00:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "details": "Weekend flag mismatch"
+          },
+          {
+            "issue_type": "is_weekend_issue",
+            "timestamp": "2025-03-14 21:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "details": "Weekend flag mismatch"
+          },
+          {
+            "issue_type": "is_weekend_issue",
+            "timestamp": "2025-03-17 00:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "details": "Weekend flag mismatch"
+          },
+          {
+            "issue_type": "is_weekend_issue",
+            "timestamp": "2025-03-21 21:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "details": "Weekend flag mismatch"
+          },
+          {
+            "issue_type": "asian_session_issue",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 0,
+            "details": "Asian Session flag mismatch"
+          },
+          {
+            "issue_type": "asian_session_issue",
+            "timestamp": "2025-03-05 08:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 8,
+            "details": "Asian Session flag mismatch"
+          },
+          {
+            "issue_type": "asian_session_issue",
+            "timestamp": "2025-03-06 00:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 0,
+            "details": "Asian Session flag mismatch"
+          },
+          {
+            "issue_type": "asian_session_issue",
+            "timestamp": "2025-03-06 08:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 8,
+            "details": "Asian Session flag mismatch"
+          },
+          {
+            "issue_type": "asian_session_issue",
+            "timestamp": "2025-03-07 00:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 0,
+            "details": "Asian Session flag mismatch"
+          },
+          {
+            "issue_type": "european_session_issue",
+            "timestamp": "2025-03-05 08:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 8,
+            "details": "European Session flag mismatch"
+          },
+          {
+            "issue_type": "european_session_issue",
+            "timestamp": "2025-03-05 16:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 16,
+            "details": "European Session flag mismatch"
+          },
+          {
+            "issue_type": "european_session_issue",
+            "timestamp": "2025-03-06 08:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 8,
+            "details": "European Session flag mismatch"
+          },
+          {
+            "issue_type": "european_session_issue",
+            "timestamp": "2025-03-06 16:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 16,
+            "details": "European Session flag mismatch"
+          },
+          {
+            "issue_type": "european_session_issue",
+            "timestamp": "2025-03-07 08:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 8,
+            "details": "European Session flag mismatch"
+          },
+          {
+            "issue_type": "american_session_issue",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 22,
+            "details": "American Session flag mismatch"
+          },
+          {
+            "issue_type": "american_session_issue",
+            "timestamp": "2025-03-05 14:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 14,
+            "details": "American Session flag mismatch"
+          },
+          {
+            "issue_type": "american_session_issue",
+            "timestamp": "2025-03-05 22:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 22,
+            "details": "American Session flag mismatch"
+          },
+          {
+            "issue_type": "american_session_issue",
+            "timestamp": "2025-03-06 14:00:00+01:00",
+            "expected": 1,
+            "actual": 0,
+            "hour": 14,
+            "details": "American Session flag mismatch"
+          },
+          {
+            "issue_type": "american_session_issue",
+            "timestamp": "2025-03-06 22:00:00+01:00",
+            "expected": 0,
+            "actual": 1,
+            "hour": 22,
+            "details": "American Session flag mismatch"
+          }
+        ],
+        "duration_seconds": 0.0062389373779296875
+      },
+      "Cross-Pair Features": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 0,
+        "candles_count": 450,
+        "issue_percentage": 0.0,
+        "issue_summary": {
+          "rank_range_issues": {
+            "count": 0
+          },
+          "btc_correlation_issues": {
+            "count": 0
+          }
+        },
+        "issues": [],
+        "duration_seconds": 0.0021255016326904297
+      },
+      "Labels": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 34,
+        "candles_count": 450,
+        "issue_percentage": 7.555555555555555,
+        "issue_summary": {
+          "future_return_1h_pct_issues": {
+            "count": 0
+          },
+          "future_return_4h_pct_issues": {
+            "count": 0
+          },
+          "future_return_12h_pct_issues": {
+            "count": 0
+          },
+          "future_return_1d_pct_issues": {
+            "count": 0
+          },
+          "future_return_3d_pct_issues": {
+            "count": 0
+          },
+          "future_return_1w_pct_issues": {
+            "count": 0
+          },
+          "future_return_2w_pct_issues": {
+            "count": 0
+          },
+          "future_max_return_24h_pct_issues": {
+            "count": 0
+          },
+          "future_max_drawdown_12h_pct_issues": {
+            "count": 0
+          },
+          "was_profitable_12h_issues": {
+            "count": 0
+          },
+          "future_leakage": {
+            "count": 34
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_return_24h_pct",
+            "timestamp": "2025-03-22 14:00:00+01:00",
+            "value": 0.01667944146365841,
+            "details": "Future leakage detected: future_max_return_24h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_return_24h_pct",
+            "timestamp": "2025-03-22 15:00:00+01:00",
+            "value": 0.017351463303959598,
+            "details": "Future leakage detected: future_max_return_24h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_return_24h_pct",
+            "timestamp": "2025-03-22 16:00:00+01:00",
+            "value": 0.018735837805605247,
+            "details": "Future leakage detected: future_max_return_24h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_return_24h_pct",
+            "timestamp": "2025-03-22 17:00:00+01:00",
+            "value": 0.016879138984156467,
+            "details": "Future leakage detected: future_max_return_24h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_return_24h_pct",
+            "timestamp": "2025-03-22 18:00:00+01:00",
+            "value": 0.01606510733861152,
+            "details": "Future leakage detected: future_max_return_24h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_drawdown_12h_pct",
+            "timestamp": "2025-03-23 02:00:00+01:00",
+            "value": -0.00016367175037452258,
+            "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_drawdown_12h_pct",
+            "timestamp": "2025-03-23 03:00:00+01:00",
+            "value": 1.1840190578673785e-06,
+            "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_drawdown_12h_pct",
+            "timestamp": "2025-03-23 04:00:00+01:00",
+            "value": -0.0014167985076389052,
+            "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_drawdown_12h_pct",
+            "timestamp": "2025-03-23 05:00:00+01:00",
+            "value": -0.0010185703191205938,
+            "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
+          },
+          {
+            "issue_type": "future_leakage",
+            "label": "future_max_drawdown_12h_pct",
+            "timestamp": "2025-03-23 06:00:00+01:00",
+            "value": -0.002570249973557065,
+            "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
+          }
+        ],
+        "duration_seconds": 0.009107828140258789
+      },
+      "Targets and Risk": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 0,
+        "candles_count": 450,
+        "issue_percentage": 0.0,
+        "issue_summary": {
+          "profit_target_issues": {
+            "count": 0
+          },
+          "risk_adj_return_issues": {
+            "count": 0
+          }
+        },
+        "issues": [],
+        "duration_seconds": 0.0022704601287841797
+      },
+      "Data Sanity": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": "1579",
+        "candles_count": 450,
+        "cells_count": 45900,
+        "issue_percentage": 3.440087145969499,
+        "issue_summary": {
+          "range_violations": {
+            "count": 279
+          },
+          "infinity_issues": {
+            "count": 0
+          },
+          "nan_issues": {
+            "count": "850"
+          },
+          "absurd_values": {
+            "count": 450
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "nan_issue",
+            "column": "performance_rank_btc_1h",
+            "count": 425,
+            "details": "Found 425 NaN values in performance_rank_btc_1h"
+          },
+          {
+            "issue_type": "nan_issue",
+            "column": "performance_rank_eth_1h",
+            "count": 425,
+            "details": "Found 425 NaN values in performance_rank_eth_1h"
+          },
+          {
+            "issue_type": "range_violation",
+            "constraint_type": "oscillators",
+            "column": "chaikin_money_flow",
+            "timestamp": "2025-03-05 07:00:00+01:00",
+            "value": -0.03433700989123704,
+            "valid_range": "[0, 100]",
+            "details": "chaikin_money_flow outside valid range [0, 100]"
+          },
+          {
+            "issue_type": "range_violation",
+            "constraint_type": "oscillators",
+            "column": "chaikin_money_flow",
+            "timestamp": "2025-03-05 08:00:00+01:00",
+            "value": -0.16319312758479063,
+            "valid_range": "[0, 100]",
+            "details": "chaikin_money_flow outside valid range [0, 100]"
+          },
+          {
+            "issue_type": "range_violation",
+            "constraint_type": "oscillators",
+            "column": "chaikin_money_flow",
+            "timestamp": "2025-03-05 09:00:00+01:00",
+            "value": -0.07208825418137642,
+            "valid_range": "[0, 100]",
+            "details": "chaikin_money_flow outside valid range [0, 100]"
+          },
+          {
+            "issue_type": "range_violation",
+            "constraint_type": "oscillators",
+            "column": "chaikin_money_flow",
+            "timestamp": "2025-03-05 10:00:00+01:00",
+            "value": -0.05452705965044272,
+            "valid_range": "[0, 100]",
+            "details": "chaikin_money_flow outside valid range [0, 100]"
+          },
+          {
+            "issue_type": "range_violation",
+            "constraint_type": "oscillators",
+            "column": "chaikin_money_flow",
+            "timestamp": "2025-03-05 11:00:00+01:00",
+            "value": -0.02154821966789474,
+            "valid_range": "[0, 100]",
+            "details": "chaikin_money_flow outside valid range [0, 100]"
+          },
+          {
+            "issue_type": "absurd_value",
+            "column": "quote_volume_1h",
+            "timestamp": "2025-03-04 20:00:00+01:00",
+            "value": 34556236.20995601,
+            "threshold": 1000000.0,
+            "details": "Absurdly large value in quote_volume_1h: 34556236.20995601 > 1000000.0"
+          },
+          {
+            "issue_type": "absurd_value",
+            "column": "quote_volume_1h",
+            "timestamp": "2025-03-04 21:00:00+01:00",
+            "value": 29007771.202863555,
+            "threshold": 1000000.0,
+            "details": "Absurdly large value in quote_volume_1h: 29007771.202863555 > 1000000.0"
+          },
+          {
+            "issue_type": "absurd_value",
+            "column": "quote_volume_1h",
+            "timestamp": "2025-03-04 22:00:00+01:00",
+            "value": 37580472.71527206,
+            "threshold": 1000000.0,
+            "details": "Absurdly large value in quote_volume_1h: 37580472.71527206 > 1000000.0"
+          },
+          {
+            "issue_type": "absurd_value",
+            "column": "quote_volume_1h",
+            "timestamp": "2025-03-04 23:00:00+01:00",
+            "value": 28772422.451245043,
+            "threshold": 1000000.0,
+            "details": "Absurdly large value in quote_volume_1h: 28772422.451245043 > 1000000.0"
+          },
+          {
+            "issue_type": "absurd_value",
+            "column": "quote_volume_1h",
+            "timestamp": "2025-03-05 00:00:00+01:00",
+            "value": 18970050.303928424,
+            "threshold": 1000000.0,
+            "details": "Absurdly large value in quote_volume_1h: 18970050.303928424 > 1000000.0"
+          }
+        ],
+        "duration_seconds": 0.03511857986450195
+      },
+      "Data Distributions": {
+        "pair": "BTC-USDT",
+        "status": "completed",
+        "issues_count": 33,
+        "candles_count": 450,
+        "issue_summary": {
+          "feature_coverage": 96.20253164556962,
+          "total_outliers": 1331,
+          "outliers_by_group": {
+            "price": 111,
+            "volume": 31,
+            "price_action": 327,
+            "momentum": 100,
+            "volatility": 74,
+            "volume_indicators": 214,
+            "statistical": 106,
+            "patterns": 85,
+            "cross_pair": 100,
+            "labels": 183
+          },
+          "zeros_by_group": {
+            "price": {
+              "total_cells": 1800,
+              "zeros_count": 0,
+              "zeros_pct": 0.0
+            },
+            "volume": {
+              "total_cells": 450,
+              "zeros_count": 0,
+              "zeros_pct": 0.0
+            },
+            "price_action": {
+              "total_cells": 3150,
+              "zeros_count": 178,
+              "zeros_pct": 5.65079365079365
+            },
+            "momentum": {
+              "total_cells": 5400,
+              "zeros_count": 0,
+              "zeros_pct": 0.0
+            },
+            "volatility": {
+              "total_cells": 4500,
+              "zeros_count": 0,
+              "zeros_pct": 0.0
+            },
+            "volume_indicators": {
+              "total_cells": 4050,
+              "zeros_count": 0,
+              "zeros_pct": 0.0
+            },
+            "statistical": {
+              "total_cells": 2700,
+              "zeros_count": 0,
+              "zeros_pct": 0.0
+            },
+            "patterns": {
+              "total_cells": 1800,
+              "zeros_count": 1715,
+              "zeros_pct": 95.27777777777777
+            },
+            "time": {
+              "total_cells": 3150,
+              "zeros_count": 1277,
+              "zeros_pct": 40.539682539682545
+            },
+            "cross_pair": {
+              "total_cells": 1850,
+              "zeros_count": 1702,
+              "zeros_pct": 92.0
+            },
+            "labels": {
+              "total_cells": 4500,
+              "zeros_count": 757,
+              "zeros_pct": 16.822222222222223
+            }
+          }
+        },
+        "distribution_stats": {
+          "price": {
+            "open_1h": {
+              "count": 450,
+              "mean": 84402.466,
+              "median": 84103.8,
+              "min": 77660.8,
+              "max": 92737.2,
+              "std": 2624.3298144626388,
+              "skew": 0.7070189387676379,
+              "kurtosis": 0.7926543873062575,
+              "q1": 82947.025,
+              "q3": 85782.925,
+              "zeros_count": 0,
+              "unique_count": 449,
+              "iqr": 2835.9000000000087,
+              "outliers_count": 25
+            },
+            "high_1h": {
+              "count": 450,
+              "mean": 84773.8891111111,
+              "median": 84283.0,
+              "min": 79135.4,
+              "max": 92812.3,
+              "std": 2657.2291127640483,
+              "skew": 0.9246889262797628,
+              "kurtosis": 0.8275444618109851,
+              "q1": 83259.85,
+              "q3": 86004.15,
+              "zeros_count": 0,
+              "unique_count": 444,
+              "iqr": 2744.2999999999884,
+              "outliers_count": 33
+            },
+            "low_1h": {
+              "count": 450,
+              "mean": 84042.96933333334,
+              "median": 83899.0,
+              "min": 76600.0,
+              "max": 92122.7,
+              "std": 2609.5216432063908,
+              "skew": 0.5362431999192475,
+              "kurtosis": 0.8250749161618685,
+              "q1": 82562.95,
+              "q3": 85371.95000000001,
+              "zeros_count": 0,
+              "unique_count": 442,
+              "iqr": 2809.0000000000146,
+              "outliers_count": 25
+            },
+            "close_1h": {
+              "count": 450,
+              "mean": 84396.95377777779,
+              "median": 84102.95000000001,
+              "min": 77659.2,
+              "max": 92737.1,
+              "std": 2620.4891206414027,
+              "skew": 0.7125575934453389,
+              "kurtosis": 0.8163455990301509,
+              "q1": 82947.75,
+              "q3": 85739.625,
+              "zeros_count": 0,
+              "unique_count": 447,
+              "iqr": 2791.875,
+              "outliers_count": 28
+            }
+          },
+          "volume": {
+            "volume_1h": {
+              "count": 450,
+              "mean": 424.6859387273111,
+              "median": 291.430217715,
+              "min": 16.59805731,
+              "max": 3454.04892919,
+              "std": 429.83498161990826,
+              "skew": 2.685388930991148,
+              "kurtosis": 10.818246427742023,
+              "q1": 150.18719696,
+              "q3": 532.342654885,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 382.155457925,
+              "outliers_count": 31
+            }
+          },
+          "price_action": {
+            "upper_shadow": {
+              "count": 450,
+              "mean": 195.92622222222164,
+              "median": 125.44999999999709,
+              "min": 0.0,
+              "max": 1559.699999999997,
+              "std": 223.18396723484713,
+              "skew": 2.6153349730591007,
+              "kurtosis": 9.348842108613761,
+              "q1": 53.35000000000218,
+              "q3": 253.24999999999636,
+              "zeros_count": 6,
+              "unique_count": 424,
+              "iqr": 199.89999999999418,
+              "outliers_count": 29
+            },
+            "lower_shadow": {
+              "count": 450,
+              "mean": 178.4875555555553,
+              "median": 122.60000000000582,
+              "min": 0.0,
+              "max": 1075.0,
+              "std": 183.66520057620426,
+              "skew": 1.9499999279018532,
+              "kurtosis": 4.2053513978393955,
+              "q1": 59.89999999999782,
+              "q3": 226.52500000000146,
+              "zeros_count": 11,
+              "unique_count": 422,
+              "iqr": 166.62500000000364,
+              "outliers_count": 34
+            },
+            "relative_close_position": {
+              "count": 450,
+              "mean": 0.5074105895986717,
+              "median": 0.5352935804414409,
+              "min": 0.0,
+              "max": 0.9936384157603,
+              "std": 0.2792835194457129,
+              "skew": -0.15488420832098151,
+              "kurtosis": -1.135290414447082,
+              "q1": 0.2616352455638571,
+              "q3": 0.7383248596882839,
+              "zeros_count": 3,
+              "unique_count": 448,
+              "iqr": 0.4766896141244268,
+              "outliers_count": 0
+            },
+            "log_return": {
+              "count": 450,
+              "mean": -6.008682531969602e-05,
+              "median": 0.00028017035287183944,
+              "min": -0.05018778221522529,
+              "max": 0.03132988810220745,
+              "std": 0.006450394961490243,
+              "skew": -0.9632081504961293,
+              "kurtosis": 10.141133079279738,
+              "q1": -0.002363723872814771,
+              "q3": 0.0028367984036484647,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.005200522276463235,
+              "outliers_count": 41
+            },
+            "gap_open": {
+              "count": 450,
+              "mean": 3.8527593838498675e-06,
+              "median": 0.0,
+              "min": -0.00013654542471008835,
+              "max": 0.001082495841991049,
+              "std": 5.694637923999599e-05,
+              "skew": 15.3184102828198,
+              "kurtosis": 288.6282003173117,
+              "q1": 0.0,
+              "q3": 1.2014981953245574e-06,
+              "zeros_count": 158,
+              "unique_count": 292,
+              "iqr": 1.2014981953245574e-06,
+              "outliers_count": 144
+            },
+            "price_velocity": {
+              "count": 450,
+              "mean": -0.00012437239023713298,
+              "median": 0.000813770456117302,
+              "min": -0.04895341286150168,
+              "max": 0.027603315741659307,
+              "std": 0.01018060789454183,
+              "skew": -0.8530901608525964,
+              "kurtosis": 2.736126831711556,
+              "q1": -0.004150765451517852,
+              "q3": 0.005379741609446653,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.009530507060964505,
+              "outliers_count": 31
+            },
+            "price_acceleration": {
+              "count": 450,
+              "mean": -1.3433462068035419e-06,
+              "median": -3.5800378826444934e-06,
+              "min": -0.07241810973189977,
+              "max": 0.06602501514379533,
+              "std": 0.015278991854607408,
+              "skew": -0.11654637761193563,
+              "kurtosis": 3.772241283979561,
+              "q1": -0.006186458983327758,
+              "q3": 0.005942982875328351,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.01212944185865611,
+              "outliers_count": 48
+            }
+          },
+          "momentum": {
+            "rsi_1h": {
+              "count": 450,
+              "mean": 50.06040660574473,
+              "median": 50.47346586145234,
+              "min": 16.97524441264133,
+              "max": 77.63416639718247,
+              "std": 10.65890579412078,
+              "skew": -0.23624717651374788,
+              "kurtosis": 0.2827666624486871,
+              "q1": 43.290995704100546,
+              "q3": 57.13852821846554,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 13.847532514364993,
+              "outliers_count": 5
+            },
+            "rsi_slope_1h": {
+              "count": 450,
+              "mean": 0.013435576082502563,
+              "median": 0.18010240975562297,
+              "min": -9.531452352546168,
+              "max": 6.765806302055606,
+              "std": 2.314241621388688,
+              "skew": -0.29748485414642567,
+              "kurtosis": 0.6230934712378611,
+              "q1": -1.2910768292912298,
+              "q3": 1.4729564405975135,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 2.7640332698887433,
+              "outliers_count": 10
+            },
+            "macd_slope_1h": {
+              "count": 450,
+              "mean": -0.23321310869657383,
+              "median": 5.28388320357044,
+              "min": -331.7635317236709,
+              "max": 180.6828899631655,
+              "std": 61.632911728336126,
+              "skew": -0.600441856785148,
+              "kurtosis": 2.122295125430403,
+              "q1": -34.42875434783491,
+              "q3": 34.84563920169239,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 69.2743935495273,
+              "outliers_count": 19
+            },
+            "macd_hist_slope_1h": {
+              "count": 450,
+              "mean": -0.9126411676072942,
+              "median": 0.5760976042283446,
+              "min": -243.56468293254918,
+              "max": 110.24151956969126,
+              "std": 43.282074591092794,
+              "skew": -0.6934666956955047,
+              "kurtosis": 2.770898848180801,
+              "q1": -20.27632888276289,
+              "q3": 23.657153432376354,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 43.933482315139244,
+              "outliers_count": 24
+            },
+            "stoch_k_14": {
+              "count": 450,
+              "mean": 52.66051745108445,
+              "median": 55.100366604771025,
+              "min": 0.1203298220697879,
+              "max": 98.56024200187635,
+              "std": 27.862632643875255,
+              "skew": -0.15961787471744243,
+              "kurtosis": -1.1690361614393343,
+              "q1": 29.10156619936329,
+              "q3": 76.28375265851228,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 47.182186459148994,
+              "outliers_count": 0
+            },
+            "stoch_d_14": {
+              "count": 450,
+              "mean": 52.67667978137558,
+              "median": 55.134721877291106,
+              "min": 2.3210728021551854,
+              "max": 95.24973596958534,
+              "std": 25.94887857710414,
+              "skew": -0.10897377842688265,
+              "kurtosis": -1.226706018209814,
+              "q1": 29.36209547298116,
+              "q3": 75.56379473706724,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 46.20169926408608,
+              "outliers_count": 0
+            },
+            "williams_r_14": {
+              "count": 450,
+              "mean": -47.33948254891554,
+              "median": -44.899633395228975,
+              "min": -99.87967017793021,
+              "max": -1.4397579981236623,
+              "std": 27.862632643875255,
+              "skew": -0.15961787471744324,
+              "kurtosis": -1.169036161439334,
+              "q1": -70.89843380063672,
+              "q3": -23.716247341487712,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 47.18218645914901,
+              "outliers_count": 0
+            },
+            "cci_14": {
+              "count": 450,
+              "mean": 0.6451654520647586,
+              "median": 11.806594959885945,
+              "min": -312.12422178276125,
+              "max": 312.65876124819715,
+              "std": 107.74119499906448,
+              "skew": -0.21193235982792744,
+              "kurtosis": -0.4955047536537589,
+              "q1": -82.17005899338022,
+              "q3": 80.56226328862721,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 162.73232228200743,
+              "outliers_count": 0
+            },
+            "roc_10": {
+              "count": 450,
+              "mean": -0.04113879121176014,
+              "median": 0.02249808004688436,
+              "min": -5.010644472262305,
+              "max": 5.340585774058582,
+              "std": 1.6796258515723377,
+              "skew": -0.31710470173886884,
+              "kurtosis": 0.43489636457415104,
+              "q1": -0.8296401035248258,
+              "q3": 1.0729926772962861,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 1.9026327808211119,
+              "outliers_count": 16
+            },
+            "tsi": {
+              "count": 450,
+              "mean": -0.4250892560864193,
+              "median": -2.224013997610185,
+              "min": -53.69128026621431,
+              "max": 39.719072181233436,
+              "std": 17.848531743925662,
+              "skew": -0.20862678606578602,
+              "kurtosis": 0.12743416540050534,
+              "q1": -12.120099280893132,
+              "q3": 12.442049227000703,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 24.562148507893838,
+              "outliers_count": 8
+            },
+            "awesome_oscillator": {
+              "count": 450,
+              "mean": -21.849354901961988,
+              "median": -38.51220588237629,
+              "min": -3346.418823529413,
+              "max": 3447.652941176464,
+              "std": 1302.7555309857898,
+              "skew": 0.12068976931005065,
+              "kurtosis": -0.07548989048995347,
+              "q1": -841.7416911764667,
+              "q3": 718.1992647058905,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 1559.9409558823572,
+              "outliers_count": 6
+            },
+            "ppo": {
+              "count": 450,
+              "mean": -0.030877390923433095,
+              "median": -0.041489489965459314,
+              "min": -1.5328260261315878,
+              "max": 1.309858538875069,
+              "std": 0.5766303800146866,
+              "skew": -0.21401326831428982,
+              "kurtosis": 0.0069866912742080345,
+              "q1": -0.3327361246764311,
+              "q3": 0.3582710160746897,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.6910071407511208,
+              "outliers_count": 12
+            }
+          },
+          "volatility": {
+            "atr_1h": {
+              "count": 450,
+              "mean": 763.1407728039432,
+              "median": 675.195357008206,
+              "min": 191.43689420032706,
+              "max": 1655.2680208837749,
+              "std": 332.9778233641802,
+              "skew": 0.48827682382911697,
+              "kurtosis": -0.5438563990926046,
+              "q1": 539.1699979329919,
+              "q3": 1020.9738904472492,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 481.8038925142573,
+              "outliers_count": 0
+            },
+            "true_range": {
+              "count": 450,
+              "mean": 730.9726666666656,
+              "median": 559.0499999999956,
+              "min": 68.0,
+              "max": 6650.300000000003,
+              "std": 594.264719521655,
+              "skew": 3.3676567287409176,
+              "kurtosis": 23.36660314120104,
+              "q1": 370.02500000000146,
+              "q3": 931.4750000000058,
+              "zeros_count": 0,
+              "unique_count": 437,
+              "iqr": 561.4500000000044,
+              "outliers_count": 25
+            },
+            "normalized_atr_14": {
+              "count": 450,
+              "mean": 0.009027033806241869,
+              "median": 0.008009039790568795,
+              "min": 0.00227049359130603,
+              "max": 0.01875657814032606,
+              "std": 0.003882733097616847,
+              "skew": 0.4598602015404033,
+              "kurtosis": -0.5598066766849925,
+              "q1": 0.006450609374496115,
+              "q3": 0.012047297183830423,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.005596687809334308,
+              "outliers_count": 0
+            },
+            "bollinger_width_1h": {
+              "count": 450,
+              "mean": 3015.726893629327,
+              "median": 2814.492233588433,
+              "min": 392.4501823161845,
+              "max": 7475.172680038901,
+              "std": 1747.0158581605651,
+              "skew": 0.43065299972734783,
+              "kurtosis": -0.5025610455184291,
+              "q1": 1672.2521441968202,
+              "q3": 4316.220454233939,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 2643.9683100371185,
+              "outliers_count": 0
+            },
+            "bollinger_percent_b": {
+              "count": 450,
+              "mean": 0.49374277648891685,
+              "median": 0.5232988396360412,
+              "min": -0.4682722686419495,
+              "max": 1.2130844352189345,
+              "std": 0.3260091745196544,
+              "skew": -0.2452075561455216,
+              "kurtosis": -0.5737199954166115,
+              "q1": 0.24594245666496387,
+              "q3": 0.7307025484036686,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.4847600917387047,
+              "outliers_count": 0
+            },
+            "donchian_channel_width_1h": {
+              "count": 450,
+              "mean": 3566.9835555555546,
+              "median": 3529.2999999999956,
+              "min": 555.1999999999971,
+              "max": 9162.100000000006,
+              "std": 1881.974071236617,
+              "skew": 0.41804416435208147,
+              "kurtosis": -0.5006413131850924,
+              "q1": 2158.099999999995,
+              "q3": 4720.399999999994,
+              "zeros_count": 0,
+              "unique_count": 202,
+              "iqr": 2562.2999999999993,
+              "outliers_count": 2
+            },
+            "keltner_channel_width": {
+              "count": 450,
+              "mean": 3052.5630912157726,
+              "median": 2700.781428032831,
+              "min": 765.7475768013101,
+              "max": 6621.072083535109,
+              "std": 1331.9112934567206,
+              "skew": 0.4882768238291177,
+              "kurtosis": -0.5438563990926046,
+              "q1": 2156.679991731973,
+              "q3": 4083.8955617890024,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 1927.2155700570293,
+              "outliers_count": 0
+            },
+            "historical_vol_30": {
+              "count": 450,
+              "mean": 0.09373767273935879,
+              "median": 0.08116096755156109,
+              "min": 0.018491114610907685,
+              "max": 0.21519701922827006,
+              "std": 0.04631558332951441,
+              "skew": 0.8109890283126683,
+              "kurtosis": 0.20200317483623076,
+              "q1": 0.06441859230775951,
+              "q3": 0.11919296201928294,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.05477436971152343,
+              "outliers_count": 23
+            },
+            "chaikin_volatility": {
+              "count": 450,
+              "mean": 0.0018745732877868033,
+              "median": -0.02731718870404637,
+              "min": -0.13799754039661438,
+              "max": 0.9252300401497142,
+              "std": 0.11056711717821094,
+              "skew": 2.872517629682182,
+              "kurtosis": 14.721142026987652,
+              "q1": -0.06735240352162344,
+              "q3": 0.03963162863816516,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.1069840321597886,
+              "outliers_count": 21
+            },
+            "z_score_20": {
+              "count": 450,
+              "mean": -0.06792300862106891,
+              "median": 0.0787112029061301,
+              "min": -8.388425811251398,
+              "max": 3.770971490604251,
+              "std": 1.466948057083184,
+              "skew": -0.7743899288361101,
+              "kurtosis": 2.1918826291879157,
+              "q1": -0.9626990560003587,
+              "q3": 0.9154675303671062,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 1.8781665863674648,
+              "outliers_count": 5
+            }
+          },
+          "volume_indicators": {
+            "money_flow_index_1h": {
+              "count": 450,
+              "mean": 50.38372597730686,
+              "median": 49.90658247470516,
+              "min": 2.6961460785482956,
+              "max": 94.20017930826431,
+              "std": 18.135469964886344,
+              "skew": -0.06761620078501934,
+              "kurtosis": -0.004400239230201386,
+              "q1": 38.50670490197547,
+              "q3": 62.960761962485755,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 24.454057060510287,
+              "outliers_count": 0
+            },
+            "obv_slope_1h": {
+              "count": 450,
+              "mean": 2.437511842088911,
+              "median": 18.128809213333323,
+              "min": -1771.1241804566664,
+              "max": 1206.26281344,
+              "std": 325.0549124481976,
+              "skew": -0.9023784667260122,
+              "kurtosis": 4.668879063779104,
+              "q1": -114.64113183916668,
+              "q3": 138.3352946116666,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 252.9764264508333,
+              "outliers_count": 42
+            },
+            "volume_change_pct_1h": {
+              "count": 450,
+              "mean": 0.2339965962702441,
+              "median": -0.0448876318146893,
+              "min": -0.8701799302430824,
+              "max": 12.676628915723812,
+              "std": 1.056016376641989,
+              "skew": 4.989440207983684,
+              "kurtosis": 45.574816688892135,
+              "q1": -0.3347920924511859,
+              "q3": 0.42677450290964036,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.7615665953608263,
+              "outliers_count": 36
+            },
+            "vwma_20": {
+              "count": 450,
+              "mean": 84309.42076305588,
+              "median": 84080.78109564284,
+              "min": 79259.84342756172,
+              "max": 91003.40340346265,
+              "std": 2506.8116341614023,
+              "skew": 0.6839750230019764,
+              "kurtosis": 0.2431157125991268,
+              "q1": 82673.13591206512,
+              "q3": 85411.74535715353,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 2738.609445088412,
+              "outliers_count": 22
+            },
+            "chaikin_money_flow": {
+              "count": 450,
+              "mean": -0.023248615627876286,
+              "median": -0.038189169342378634,
+              "min": -0.4092178807191279,
+              "max": 0.45372975838070345,
+              "std": 0.16457935711725585,
+              "skew": 0.4705071357605515,
+              "kurtosis": 0.17848042321044133,
+              "q1": -0.1305805311784061,
+              "q3": 0.07194278183104262,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.2025233130094487,
+              "outliers_count": 12
+            },
+            "klinger_oscillator": {
+              "count": 450,
+              "mean": 3.921490125652014,
+              "median": 4.6652941117085245,
+              "min": -114.75223058701141,
+              "max": 111.7171269894996,
+              "std": 34.710863757022665,
+              "skew": -0.2248216238021561,
+              "kurtosis": 1.325191398282219,
+              "q1": -11.08990939134724,
+              "q3": 20.085233004768327,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 31.175142396115568,
+              "outliers_count": 41
+            },
+            "volume_oscillator": {
+              "count": 450,
+              "mean": -10.70909458616743,
+              "median": -23.55211389160823,
+              "min": -165.70417314164536,
+              "max": 232.3101829999997,
+              "std": 72.94762351263019,
+              "skew": 0.5693283504899179,
+              "kurtosis": 0.2977976996702427,
+              "q1": -58.73732396841771,
+              "q3": 35.501536998613936,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 94.23886096703166,
+              "outliers_count": 8
+            },
+            "volume_price_trend": {
+              "count": 450,
+              "mean": -379.5773072317042,
+              "median": -408.8856969125436,
+              "min": -464.62835297054806,
+              "max": -184.535707118266,
+              "std": 66.30540285107148,
+              "skew": 1.8156908456677674,
+              "kurtosis": 2.2715553436858205,
+              "q1": -414.40895579462676,
+              "q3": -369.4238187772222,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 44.985137017404554,
+              "outliers_count": 53
+            },
+            "volume_zone_oscillator": {
+              "count": 450,
+              "mean": 2.9944245393348288,
+              "median": 4.6038347816283505,
+              "min": -64.71124971363173,
+              "max": 84.821200897236,
+              "std": 26.71235605864473,
+              "skew": -0.0366952777516724,
+              "kurtosis": -0.048345549614153605,
+              "q1": -16.12157329745745,
+              "q3": 21.369085833657618,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 37.490659131115066,
+              "outliers_count": 3
+            }
+          },
+          "statistical": {
+            "std_dev_returns_20": {
+              "count": 450,
+              "mean": 0.005671846795953404,
+              "median": 0.005120739536569219,
+              "min": 0.0011140569222274676,
+              "max": 0.015635260182511868,
+              "std": 0.0031331515001624985,
+              "skew": 1.081966377488595,
+              "kurtosis": 1.3526702955131888,
+              "q1": 0.003676592260017654,
+              "q3": 0.00743016467268677,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.0037535724126691165,
+              "outliers_count": 19
+            },
+            "skewness_20": {
+              "count": 450,
+              "mean": -0.2182961099224443,
+              "median": -0.26463511781014537,
+              "min": -2.3962817400528196,
+              "max": 1.8718178501139697,
+              "std": 0.7078614399955376,
+              "skew": 0.25294771426737794,
+              "kurtosis": 0.37805198751389035,
+              "q1": -0.6473668714744529,
+              "q3": 0.12946569887862394,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.7768325703530768,
+              "outliers_count": 18
+            },
+            "kurtosis_20": {
+              "count": 450,
+              "mean": 0.5202120989394595,
+              "median": 0.003228474174595819,
+              "min": -1.4218027260266919,
+              "max": 6.702471164433044,
+              "std": 1.4882018606022338,
+              "skew": 1.5616094601247876,
+              "kurtosis": 2.2793041352620005,
+              "q1": -0.44982187880937585,
+              "q3": 1.1367545816836135,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 1.5865764604929895,
+              "outliers_count": 31
+            },
+            "hurst_exponent": {
+              "count": 450,
+              "mean": -0.0026043701136400543,
+              "median": -0.0015074829249243275,
+              "min": -0.04196566353259148,
+              "max": 0.016628175913385158,
+              "std": 0.010990928795155425,
+              "skew": -1.271693697411303,
+              "kurtosis": 2.3564740211989204,
+              "q1": -0.0064166865385995,
+              "q3": 0.003554724545732397,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.009971411084331897,
+              "outliers_count": 31
+            },
+            "shannon_entropy": {
+              "count": 450,
+              "mean": 1.8981355133687359,
+              "median": 1.9096604215404314,
+              "min": 1.3097558619082146,
+              "max": 2.2326944771870663,
+              "std": 0.1686286083873411,
+              "skew": -0.569846094462789,
+              "kurtosis": 0.18632531816518094,
+              "q1": 1.8091581844412503,
+              "q3": 2.0280467677759697,
+              "zeros_count": 0,
+              "unique_count": 166,
+              "iqr": 0.2188885833347194,
+              "outliers_count": 7
+            },
+            "autocorr_1": {
+              "count": 450,
+              "mean": -0.1212451158596892,
+              "median": -0.10333101483609625,
+              "min": -0.6446032815845515,
+              "max": 0.3252080591569571,
+              "std": 0.1831396859060741,
+              "skew": -0.12009969756360377,
+              "kurtosis": -0.7330477084509326,
+              "q1": -0.2599574853463188,
+              "q3": 0.012347530574861248,
+              "zeros_count": 0,
+              "unique_count": 450,
+              "iqr": 0.27230501592118006,
+              "outliers_count": 0
+            }
+          },
+          "patterns": {
+            "pattern_doji": {
+              "count": 450,
+              "mean": 0.09555555555555556,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.29430795770219986,
+              "skew": 2.7607136631424045,
+              "kurtosis": 5.646616454131674,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 407,
+              "unique_count": 2,
+              "iqr": 0.0,
+              "outliers_count": 43
+            },
+            "pattern_engulfing": {
+              "count": 450,
+              "mean": 0.07555555555555556,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.26457980768567985,
+              "skew": 3.222765103985378,
+              "kurtosis": 8.423633861496649,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 416,
+              "unique_count": 2,
+              "iqr": 0.0,
+              "outliers_count": 34
+            },
+            "pattern_hammer": {
+              "count": 450,
+              "mean": 0.017777777777777778,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.13228990384283992,
+              "skew": 7.322932225809713,
+              "kurtosis": 51.85578904138452,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 442,
+              "unique_count": 2,
+              "iqr": 0.0,
+              "outliers_count": 8
+            },
+            "pattern_morning_star": {
+              "count": 450,
+              "mean": 0.0,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 0.0,
+              "std": 0.0,
+              "skew": 0.0,
+              "kurtosis": 0.0,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 450,
+              "unique_count": 1,
+              "iqr": 0.0,
+              "outliers_count": 0
+            }
+          },
+          "time": {
+            "hour_of_day": {
+              "count": 450,
+              "mean": 11.446666666666667,
+              "median": 11.0,
+              "min": 0.0,
+              "max": 23.0,
+              "std": 6.957590269684022,
+              "skew": 0.01915412023237696,
+              "kurtosis": -1.2120732311977402,
+              "q1": 5.0,
+              "q3": 17.75,
+              "zeros_count": 19,
+              "unique_count": 24,
+              "iqr": 12.75,
+              "outliers_count": 0
+            },
+            "day_of_week": {
+              "count": 450,
+              "mean": 3.171111111111111,
+              "median": 3.0,
+              "min": 0.0,
+              "max": 6.0,
+              "std": 1.8946792480801775,
+              "skew": -0.10744196974692324,
+              "kurtosis": -1.1087120179791343,
+              "q1": 2.0,
+              "q3": 5.0,
+              "zeros_count": 48,
+              "unique_count": 7,
+              "iqr": 3.0,
+              "outliers_count": 0
+            },
+            "month_of_year": {
+              "count": 450,
+              "mean": 3.0,
+              "median": 3.0,
+              "min": 3.0,
+              "max": 3.0,
+              "std": 0.0,
+              "skew": 0.0,
+              "kurtosis": 0.0,
+              "q1": 3.0,
+              "q3": 3.0,
+              "zeros_count": 0,
+              "unique_count": 1,
+              "iqr": 0.0,
+              "outliers_count": 0
+            },
+            "is_weekend": {
+              "count": 450,
+              "mean": 0.31555555555555553,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.46525398650885896,
+              "skew": 0.7964159900404397,
+              "kurtosis": -1.3718384883847667,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 308,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            },
+            "asian_session": {
+              "count": 450,
+              "mean": 0.3377777777777778,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.47347875679418033,
+              "skew": 0.6882945696432201,
+              "kurtosis": -1.5330841574885885,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 298,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            },
+            "european_session": {
+              "count": 450,
+              "mean": 0.33111111111111113,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.4711367205526499,
+              "skew": 0.7201427939807522,
+              "kurtosis": -1.4880276753526012,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 301,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            },
+            "american_session": {
+              "count": 450,
+              "mean": 0.32666666666666666,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.4695161704333952,
+              "skew": 0.7416449265056415,
+              "kurtosis": -1.4564558012339488,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 303,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            }
+          },
+          "cross_pair": {
+            "volume_rank_1h": {
+              "count": 450,
+              "mean": 0.24,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 13.0,
+              "std": 1.156062744422774,
+              "skew": 6.57604006885789,
+              "kurtosis": 54.26055270658505,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 425,
+              "unique_count": 8,
+              "iqr": 0.0,
+              "outliers_count": 25
+            },
+            "volatility_rank_1h": {
+              "count": 450,
+              "mean": 5.555555555555555,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 100.0,
+              "std": 22.931636131325,
+              "skew": 3.893560571709425,
+              "kurtosis": 13.218543793356266,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 425,
+              "unique_count": 2,
+              "iqr": 0.0,
+              "outliers_count": 25
+            },
+            "performance_rank_btc_1h": {
+              "count": 25,
+              "mean": 55.72,
+              "median": 55.0,
+              "min": 0.0,
+              "max": 88.0,
+              "std": 21.239742622420515,
+              "skew": -0.6388712932241488,
+              "kurtosis": 0.19262175096780298,
+              "q1": 40.0,
+              "q3": 72.0,
+              "zeros_count": 1,
+              "unique_count": 19,
+              "iqr": 32.0,
+              "outliers_count": 0
+            },
+            "performance_rank_eth_1h": {
+              "count": 25,
+              "mean": 55.72,
+              "median": 55.0,
+              "min": 0.0,
+              "max": 88.0,
+              "std": 21.239742622420515,
+              "skew": -0.6388712932241488,
+              "kurtosis": 0.19262175096780298,
+              "q1": 40.0,
+              "q3": 72.0,
+              "zeros_count": 1,
+              "unique_count": 19,
+              "iqr": 32.0,
+              "outliers_count": 0
+            },
+            "btc_corr_24h": {
+              "count": 450,
+              "mean": 0.05555555555555555,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.22931636131325,
+              "skew": 3.893560571709426,
+              "kurtosis": 13.218543793356263,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 425,
+              "unique_count": 2,
+              "iqr": 0.0,
+              "outliers_count": 25
+            },
+            "prev_volume_rank": {
+              "count": 450,
+              "mean": 0.4911111111111111,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 20.0,
+              "std": 2.251683084646845,
+              "skew": 5.463685680470796,
+              "kurtosis": 34.136559331436644,
+              "q1": 0.0,
+              "q3": 0.0,
+              "zeros_count": 425,
+              "unique_count": 12,
+              "iqr": 0.0,
+              "outliers_count": 25
+            }
+          },
+          "labels": {
+            "future_return_1h_pct": {
+              "count": 450,
+              "mean": -2.368506357968374e-05,
+              "median": 0.00028020964182990456,
+              "min": -0.04894918269765373,
+              "max": 0.03182583481432981,
+              "std": 0.006422446363384556,
+              "skew": -0.8649651673715857,
+              "kurtosis": 9.661429822671808,
+              "q1": -0.002350151365741831,
+              "q3": 0.002840825923782393,
+              "zeros_count": 1,
+              "unique_count": 450,
+              "iqr": 0.0051909772895242234,
+              "outliers_count": 41
+            },
+            "future_return_4h_pct": {
+              "count": 450,
+              "mean": -0.00014935905665888164,
+              "median": 0.0002836050931113235,
+              "min": -0.051063267573491805,
+              "max": 0.04378186904923055,
+              "std": 0.011424136627715792,
+              "skew": -0.49737504537914357,
+              "kurtosis": 1.9075457286473938,
+              "q1": -0.005613642922775188,
+              "q3": 0.006402836310697734,
+              "zeros_count": 4,
+              "unique_count": 447,
+              "iqr": 0.012016479233472922,
+              "outliers_count": 22
+            },
+            "future_return_12h_pct": {
+              "count": 450,
+              "mean": -0.0008956591654479244,
+              "median": 0.0,
+              "min": -0.06705101642494671,
+              "max": 0.045886063727067876,
+              "std": 0.01835068639976486,
+              "skew": -0.4054695195060881,
+              "kurtosis": 0.6373193782225188,
+              "q1": -0.009808867090476736,
+              "q3": 0.009972763476230637,
+              "zeros_count": 12,
+              "unique_count": 439,
+              "iqr": 0.019781630566707373,
+              "outliers_count": 18
+            },
+            "future_return_1d_pct": {
+              "count": 450,
+              "mean": -0.0026051714017856606,
+              "median": -0.0022024814783854043,
+              "min": -0.06935671783183825,
+              "max": 0.07228119784906364,
+              "std": 0.023878098119117855,
+              "skew": 0.26959708383692477,
+              "kurtosis": 0.33108500844915145,
+              "q1": -0.017422201198559584,
+              "q3": 0.008744553753909983,
+              "zeros_count": 25,
+              "unique_count": 426,
+              "iqr": 0.02616675495246957,
+              "outliers_count": 17
+            },
+            "future_max_return_24h_pct": {
+              "count": 450,
+              "mean": 0.019278041768150272,
+              "median": 0.014110959748259867,
+              "min": 0.0,
+              "max": 0.076688767299646,
+              "std": 0.01719158813370177,
+              "skew": 1.025045098470248,
+              "kurtosis": 0.14953245679219718,
+              "q1": 0.005539422970683787,
+              "q3": 0.030246528034106705,
+              "zeros_count": 1,
+              "unique_count": 450,
+              "iqr": 0.02470710506342292,
+              "outliers_count": 2
+            },
+            "future_max_drawdown_12h_pct": {
+              "count": 450,
+              "mean": -0.016330950600690095,
+              "median": -0.010420589396471606,
+              "min": -0.07996276611716663,
+              "max": 0.00018610918719760687,
+              "std": 0.01562598541153215,
+              "skew": -1.261987403760699,
+              "kurtosis": 1.1968922987914983,
+              "q1": -0.024099170940109937,
+              "q3": -0.0043054796193386,
+              "zeros_count": 1,
+              "unique_count": 449,
+              "iqr": 0.01979369132077134,
+              "outliers_count": 18
+            },
+            "was_profitable_12h": {
+              "count": 450,
+              "mean": 0.47555555555555556,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.4999579294352149,
+              "skew": 0.09822255027061487,
+              "kurtosis": -1.9992578060988007,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 236,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            },
+            "future_risk_adj_return_12h": {
+              "count": 450,
+              "mean": 50.875871317719735,
+              "median": 0.0,
+              "min": -0.9983232545354574,
+              "max": 10800.000000942964,
+              "std": 699.5561691991137,
+              "skew": 14.951095002561855,
+              "kurtosis": 222.87712837741262,
+              "q1": -0.5305493246093727,
+              "q3": 1.4391082910977055,
+              "zeros_count": 12,
+              "unique_count": 439,
+              "iqr": 1.9696576157070782,
+              "outliers_count": 67
+            },
+            "profit_target_1pct": {
+              "count": 450,
+              "mean": 0.5844444444444444,
+              "median": 1.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.493366037560415,
+              "skew": -0.3438478618870953,
+              "kurtosis": -1.8901893699526926,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 187,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            },
+            "profit_target_2pct": {
+              "count": 450,
+              "mean": 0.38222222222222224,
+              "median": 0.0,
+              "min": 0.0,
+              "max": 1.0,
+              "std": 0.48647126687165193,
+              "skew": 0.4863743430905817,
+              "kurtosis": -1.7713324623083768,
+              "q1": 0.0,
+              "q3": 1.0,
+              "zeros_count": 278,
+              "unique_count": 2,
+              "iqr": 1.0,
+              "outliers_count": 0
+            }
+          }
+        },
+        "significant_outliers": {
+          "price": {
+            "open_1h": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 77660.8,
+              "max_value": 92737.2,
+              "first_timestamp": "2025-03-05T06:00:00+01:00",
+              "last_timestamp": "2025-03-10T18:00:00+01:00"
+            },
+            "high_1h": {
+              "count": 33,
+              "percentage": 7.333333333333333,
+              "min_value": 79135.4,
+              "max_value": 92812.3,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-10T18:00:00+01:00"
+            },
+            "low_1h": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 76600.0,
+              "max_value": 92122.7,
+              "first_timestamp": "2025-03-05T05:00:00+01:00",
+              "last_timestamp": "2025-03-10T18:00:00+01:00"
+            },
+            "close_1h": {
+              "count": 28,
+              "percentage": 6.222222222222222,
+              "min_value": 77659.2,
+              "max_value": 92737.1,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-10T17:00:00+01:00"
+            }
+          },
+          "volume": {
+            "volume_1h": {
+              "count": 31,
+              "percentage": 6.888888888888889,
+              "min_value": 1113.4784476,
+              "max_value": 3454.04892919,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-20T09:00:00+01:00"
+            }
+          },
+          "price_action": {
+            "upper_shadow": {
+              "count": 29,
+              "percentage": 6.444444444444445,
+              "min_value": 566.0,
+              "max_value": 1559.699999999997,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-19T17:00:00+01:00"
+            },
+            "lower_shadow": {
+              "count": 34,
+              "percentage": 7.555555555555555,
+              "min_value": 477.5,
+              "max_value": 1075.0,
+              "first_timestamp": "2025-03-05T09:00:00+01:00",
+              "last_timestamp": "2025-03-19T12:00:00+01:00"
+            },
+            "log_return": {
+              "count": 41,
+              "percentage": 9.11111111111111,
+              "min_value": -0.05018778221522529,
+              "max_value": 0.03132988810220745,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-20T09:00:00+01:00"
+            },
+            "gap_open": {
+              "count": 144,
+              "percentage": 32.0,
+              "min_value": -0.00013654542471008835,
+              "max_value": 0.001082495841991049,
+              "first_timestamp": "2025-03-04T20:00:00+01:00",
+              "last_timestamp": "2025-03-23T12:00:00+01:00"
+            },
+            "price_velocity": {
+              "count": 31,
+              "percentage": 6.888888888888889,
+              "min_value": -0.04895341286150168,
+              "max_value": 0.027603315741659307,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-20T10:00:00+01:00"
+            },
+            "price_acceleration": {
+              "count": 48,
+              "percentage": 10.666666666666668,
+              "min_value": -0.07241810973189977,
+              "max_value": 0.06602501514379533,
+              "first_timestamp": "2025-03-05T06:00:00+01:00",
+              "last_timestamp": "2025-03-20T13:00:00+01:00"
+            }
+          },
+          "momentum": {
+            "rsi_1h": {
+              "count": 5,
+              "percentage": 1.1111111111111112,
+              "min_value": 16.97524441264133,
+              "max_value": 20.737190701249034,
+              "first_timestamp": "2025-03-09T06:00:00+01:00",
+              "last_timestamp": "2025-03-09T15:00:00+01:00"
+            },
+            "rsi_slope_1h": {
+              "count": 10,
+              "percentage": 2.2222222222222223,
+              "min_value": -9.531452352546168,
+              "max_value": 6.765806302055606,
+              "first_timestamp": "2025-03-06T17:00:00+01:00",
+              "last_timestamp": "2025-03-20T10:00:00+01:00"
+            },
+            "macd_slope_1h": {
+              "count": 19,
+              "percentage": 4.222222222222222,
+              "min_value": -331.7635317236709,
+              "max_value": 180.6828899631655,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-20T09:00:00+01:00"
+            },
+            "macd_hist_slope_1h": {
+              "count": 24,
+              "percentage": 5.333333333333334,
+              "min_value": -243.56468293254918,
+              "max_value": 110.24151956969126,
+              "first_timestamp": "2025-03-04T20:00:00+01:00",
+              "last_timestamp": "2025-03-20T09:00:00+01:00"
+            },
+            "roc_10": {
+              "count": 16,
+              "percentage": 3.5555555555555554,
+              "min_value": -5.010644472262305,
+              "max_value": 5.340585774058582,
+              "first_timestamp": "2025-03-06T17:00:00+01:00",
+              "last_timestamp": "2025-03-13T12:00:00+01:00"
+            },
+            "tsi": {
+              "count": 8,
+              "percentage": 1.7777777777777777,
+              "min_value": -53.69128026621431,
+              "max_value": -49.5363496042143,
+              "first_timestamp": "2025-03-09T10:00:00+01:00",
+              "last_timestamp": "2025-03-09T17:00:00+01:00"
+            },
+            "awesome_oscillator": {
+              "count": 6,
+              "percentage": 1.3333333333333335,
+              "min_value": -3346.418823529413,
+              "max_value": 3447.652941176464,
+              "first_timestamp": "2025-03-05T05:00:00+01:00",
+              "last_timestamp": "2025-03-09T19:00:00+01:00"
+            },
+            "ppo": {
+              "count": 12,
+              "percentage": 2.666666666666667,
+              "min_value": -1.5328260261315878,
+              "max_value": -1.3703002779407407,
+              "first_timestamp": "2025-03-09T15:00:00+01:00",
+              "last_timestamp": "2025-03-10T18:00:00+01:00"
+            }
+          },
+          "volatility": {
+            "true_range": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 1795.0999999999913,
+              "max_value": 6650.300000000003,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-19T11:00:00+01:00"
+            },
+            "historical_vol_30": {
+              "count": 23,
+              "percentage": 5.111111111111112,
+              "min_value": 0.20143834220504558,
+              "max_value": 0.21519701922827006,
+              "first_timestamp": "2025-03-06T18:00:00+01:00",
+              "last_timestamp": "2025-03-07T22:00:00+01:00"
+            },
+            "chaikin_volatility": {
+              "count": 21,
+              "percentage": 4.666666666666667,
+              "min_value": 0.2003956100267028,
+              "max_value": 0.9252300401497142,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-23T04:00:00+01:00"
+            },
+            "z_score_20": {
+              "count": 5,
+              "percentage": 1.1111111111111112,
+              "min_value": -8.388425811251398,
+              "max_value": 3.770971490604251,
+              "first_timestamp": "2025-03-09T03:00:00+01:00",
+              "last_timestamp": "2025-03-23T06:00:00+01:00"
+            }
+          },
+          "volume_indicators": {
+            "obv_slope_1h": {
+              "count": 42,
+              "percentage": 9.333333333333334,
+              "min_value": -1771.1241804566664,
+              "max_value": 1206.26281344,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-19T08:00:00+01:00"
+            },
+            "volume_change_pct_1h": {
+              "count": 36,
+              "percentage": 8.0,
+              "min_value": 1.5736624018771477,
+              "max_value": 12.676628915723812,
+              "first_timestamp": "2025-03-05T02:00:00+01:00",
+              "last_timestamp": "2025-03-23T06:00:00+01:00"
+            },
+            "vwma_20": {
+              "count": 22,
+              "percentage": 4.888888888888889,
+              "min_value": 89611.52116330483,
+              "max_value": 91003.40340346265,
+              "first_timestamp": "2025-03-05T19:00:00+01:00",
+              "last_timestamp": "2025-03-06T16:00:00+01:00"
+            },
+            "chaikin_money_flow": {
+              "count": 12,
+              "percentage": 2.666666666666667,
+              "min_value": 0.37813131034594216,
+              "max_value": 0.45372975838070345,
+              "first_timestamp": "2025-03-14T08:00:00+01:00",
+              "last_timestamp": "2025-03-14T20:00:00+01:00"
+            },
+            "klinger_oscillator": {
+              "count": 41,
+              "percentage": 9.11111111111111,
+              "min_value": -114.75223058701141,
+              "max_value": 111.7171269894996,
+              "first_timestamp": "2025-03-05T03:00:00+01:00",
+              "last_timestamp": "2025-03-20T10:00:00+01:00"
+            },
+            "volume_oscillator": {
+              "count": 8,
+              "percentage": 1.7777777777777777,
+              "min_value": 179.54477612438927,
+              "max_value": 232.3101829999997,
+              "first_timestamp": "2025-03-06T18:00:00+01:00",
+              "last_timestamp": "2025-03-10T12:00:00+01:00"
+            },
+            "volume_price_trend": {
+              "count": 53,
+              "percentage": 11.777777777777777,
+              "min_value": -301.35482794209435,
+              "max_value": -184.535707118266,
+              "first_timestamp": "2025-03-04T20:00:00+01:00",
+              "last_timestamp": "2025-03-07T07:00:00+01:00"
+            }
+          },
+          "statistical": {
+            "std_dev_returns_20": {
+              "count": 19,
+              "percentage": 4.222222222222222,
+              "min_value": 0.014120918024182178,
+              "max_value": 0.015635260182511868,
+              "first_timestamp": "2025-03-06T18:00:00+01:00",
+              "last_timestamp": "2025-03-07T12:00:00+01:00"
+            },
+            "skewness_20": {
+              "count": 18,
+              "percentage": 4.0,
+              "min_value": -2.3962817400528196,
+              "max_value": 1.8718178501139697,
+              "first_timestamp": "2025-03-06T17:00:00+01:00",
+              "last_timestamp": "2025-03-21T03:00:00+01:00"
+            },
+            "kurtosis_20": {
+              "count": 31,
+              "percentage": 6.888888888888889,
+              "min_value": 3.5280885369074877,
+              "max_value": 6.702471164433044,
+              "first_timestamp": "2025-03-06T17:00:00+01:00",
+              "last_timestamp": "2025-03-19T15:00:00+01:00"
+            },
+            "hurst_exponent": {
+              "count": 31,
+              "percentage": 6.888888888888889,
+              "min_value": -0.04196566353259148,
+              "max_value": -0.021866023356387695,
+              "first_timestamp": "2025-03-06T21:00:00+01:00",
+              "last_timestamp": "2025-03-10T22:00:00+01:00"
+            },
+            "shannon_entropy": {
+              "count": 7,
+              "percentage": 1.5555555555555556,
+              "min_value": 1.3097558619082146,
+              "max_value": 1.4658712232324764,
+              "first_timestamp": "2025-03-07T04:00:00+01:00",
+              "last_timestamp": "2025-03-16T08:00:00+01:00"
+            }
+          },
+          "patterns": {
+            "pattern_doji": {
+              "count": 43,
+              "percentage": 9.555555555555555,
+              "min_value": 1.0,
+              "max_value": 1.0,
+              "first_timestamp": "2025-03-04T21:00:00+01:00",
+              "last_timestamp": "2025-03-22T23:00:00+01:00"
+            },
+            "pattern_engulfing": {
+              "count": 34,
+              "percentage": 7.555555555555555,
+              "min_value": 1.0,
+              "max_value": 1.0,
+              "first_timestamp": "2025-03-05T09:00:00+01:00",
+              "last_timestamp": "2025-03-23T10:00:00+01:00"
+            },
+            "pattern_hammer": {
+              "count": 8,
+              "percentage": 1.7777777777777777,
+              "min_value": 1.0,
+              "max_value": 1.0,
+              "first_timestamp": "2025-03-07T16:00:00+01:00",
+              "last_timestamp": "2025-03-15T22:00:00+01:00"
+            }
+          },
+          "cross_pair": {
+            "volume_rank_1h": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 2.0,
+              "max_value": 13.0,
+              "first_timestamp": "2025-03-22T13:00:00+01:00",
+              "last_timestamp": "2025-03-23T13:00:00+01:00"
+            },
+            "volatility_rank_1h": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 100.0,
+              "max_value": 100.0,
+              "first_timestamp": "2025-03-22T13:00:00+01:00",
+              "last_timestamp": "2025-03-23T13:00:00+01:00"
+            },
+            "btc_corr_24h": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 1.0,
+              "max_value": 1.0,
+              "first_timestamp": "2025-03-22T13:00:00+01:00",
+              "last_timestamp": "2025-03-23T13:00:00+01:00"
+            },
+            "prev_volume_rank": {
+              "count": 25,
+              "percentage": 5.555555555555555,
+              "min_value": 3.0,
+              "max_value": 20.0,
+              "first_timestamp": "2025-03-22T13:00:00+01:00",
+              "last_timestamp": "2025-03-23T13:00:00+01:00"
+            }
+          },
+          "labels": {
+            "future_return_1h_pct": {
+              "count": 41,
+              "percentage": 9.11111111111111,
+              "min_value": -0.04894918269765373,
+              "max_value": 0.03182583481432981,
+              "first_timestamp": "2025-03-05T02:00:00+01:00",
+              "last_timestamp": "2025-03-20T08:00:00+01:00"
+            },
+            "future_return_4h_pct": {
+              "count": 22,
+              "percentage": 4.888888888888889,
+              "min_value": -0.051063267573491805,
+              "max_value": 0.04378186904923055,
+              "first_timestamp": "2025-03-04T23:00:00+01:00",
+              "last_timestamp": "2025-03-20T07:00:00+01:00"
+            },
+            "future_return_12h_pct": {
+              "count": 18,
+              "percentage": 4.0,
+              "min_value": -0.06705101642494671,
+              "max_value": 0.045886063727067876,
+              "first_timestamp": "2025-03-05T22:00:00+01:00",
+              "last_timestamp": "2025-03-10T17:00:00+01:00"
+            },
+            "future_return_1d_pct": {
+              "count": 17,
+              "percentage": 3.7777777777777777,
+              "min_value": -0.06935671783183825,
+              "max_value": 0.07228119784906364,
+              "first_timestamp": "2025-03-04T20:00:00+01:00",
+              "last_timestamp": "2025-03-18T16:00:00+01:00"
+            },
+            "future_max_drawdown_12h_pct": {
+              "count": 18,
+              "percentage": 4.0,
+              "min_value": -0.07996276611716663,
+              "max_value": -0.054350048878281786,
+              "first_timestamp": "2025-03-06T05:00:00+01:00",
+              "last_timestamp": "2025-03-10T06:00:00+01:00"
+            },
+            "future_risk_adj_return_12h": {
+              "count": 67,
+              "percentage": 14.888888888888888,
+              "min_value": 4.611577964519217,
+              "max_value": 10800.000000942964,
+              "first_timestamp": "2025-03-04T20:00:00+01:00",
+              "last_timestamp": "2025-03-23T01:00:00+01:00"
+            }
+          }
+        },
+        "histograms": {
+          "price": {
+            "open_1h": "reports/histograms/BTC-USDT/open_1h.png",
+            "high_1h": "reports/histograms/BTC-USDT/high_1h.png",
+            "low_1h": "reports/histograms/BTC-USDT/low_1h.png",
+            "close_1h": "reports/histograms/BTC-USDT/close_1h.png"
+          },
+          "volume": {
+            "volume_1h": "reports/histograms/BTC-USDT/volume_1h.png"
+          },
+          "price_action": {
+            "upper_shadow": "reports/histograms/BTC-USDT/upper_shadow.png",
+            "lower_shadow": "reports/histograms/BTC-USDT/lower_shadow.png",
+            "relative_close_position": "reports/histograms/BTC-USDT/relative_close_position.png",
+            "log_return": "reports/histograms/BTC-USDT/log_return.png",
+            "gap_open": "reports/histograms/BTC-USDT/gap_open.png",
+            "price_velocity": "reports/histograms/BTC-USDT/price_velocity.png",
+            "price_acceleration": "reports/histograms/BTC-USDT/price_acceleration.png"
+          },
+          "momentum": {
+            "rsi_1h": "reports/histograms/BTC-USDT/rsi_1h.png",
+            "rsi_slope_1h": "reports/histograms/BTC-USDT/rsi_slope_1h.png",
+            "macd_slope_1h": "reports/histograms/BTC-USDT/macd_slope_1h.png",
+            "macd_hist_slope_1h": "reports/histograms/BTC-USDT/macd_hist_slope_1h.png",
+            "stoch_k_14": "reports/histograms/BTC-USDT/stoch_k_14.png",
+            "stoch_d_14": "reports/histograms/BTC-USDT/stoch_d_14.png",
+            "williams_r_14": "reports/histograms/BTC-USDT/williams_r_14.png",
+            "cci_14": "reports/histograms/BTC-USDT/cci_14.png",
+            "roc_10": "reports/histograms/BTC-USDT/roc_10.png",
+            "tsi": "reports/histograms/BTC-USDT/tsi.png",
+            "awesome_oscillator": "reports/histograms/BTC-USDT/awesome_oscillator.png",
+            "ppo": "reports/histograms/BTC-USDT/ppo.png"
+          },
+          "volatility": {
+            "atr_1h": "reports/histograms/BTC-USDT/atr_1h.png",
+            "true_range": "reports/histograms/BTC-USDT/true_range.png",
+            "normalized_atr_14": "reports/histograms/BTC-USDT/normalized_atr_14.png",
+            "bollinger_width_1h": "reports/histograms/BTC-USDT/bollinger_width_1h.png",
+            "bollinger_percent_b": "reports/histograms/BTC-USDT/bollinger_percent_b.png",
+            "donchian_channel_width_1h": "reports/histograms/BTC-USDT/donchian_channel_width_1h.png",
+            "keltner_channel_width": "reports/histograms/BTC-USDT/keltner_channel_width.png",
+            "historical_vol_30": "reports/histograms/BTC-USDT/historical_vol_30.png",
+            "chaikin_volatility": "reports/histograms/BTC-USDT/chaikin_volatility.png",
+            "z_score_20": "reports/histograms/BTC-USDT/z_score_20.png"
+          },
+          "volume_indicators": {
+            "money_flow_index_1h": "reports/histograms/BTC-USDT/money_flow_index_1h.png",
+            "obv_slope_1h": "reports/histograms/BTC-USDT/obv_slope_1h.png",
+            "volume_change_pct_1h": "reports/histograms/BTC-USDT/volume_change_pct_1h.png",
+            "vwma_20": "reports/histograms/BTC-USDT/vwma_20.png",
+            "chaikin_money_flow": "reports/histograms/BTC-USDT/chaikin_money_flow.png",
+            "klinger_oscillator": "reports/histograms/BTC-USDT/klinger_oscillator.png",
+            "volume_oscillator": "reports/histograms/BTC-USDT/volume_oscillator.png",
+            "volume_price_trend": "reports/histograms/BTC-USDT/volume_price_trend.png",
+            "volume_zone_oscillator": "reports/histograms/BTC-USDT/volume_zone_oscillator.png"
+          },
+          "statistical": {
+            "std_dev_returns_20": "reports/histograms/BTC-USDT/std_dev_returns_20.png",
+            "skewness_20": "reports/histograms/BTC-USDT/skewness_20.png",
+            "kurtosis_20": "reports/histograms/BTC-USDT/kurtosis_20.png",
+            "hurst_exponent": "reports/histograms/BTC-USDT/hurst_exponent.png",
+            "shannon_entropy": "reports/histograms/BTC-USDT/shannon_entropy.png",
+            "autocorr_1": "reports/histograms/BTC-USDT/autocorr_1.png"
+          },
+          "patterns": {
+            "pattern_doji": "reports/histograms/BTC-USDT/pattern_doji.png",
+            "pattern_engulfing": "reports/histograms/BTC-USDT/pattern_engulfing.png",
+            "pattern_hammer": "reports/histograms/BTC-USDT/pattern_hammer.png",
+            "pattern_morning_star": "reports/histograms/BTC-USDT/pattern_morning_star.png"
+          },
+          "time": {
+            "hour_of_day": "reports/histograms/BTC-USDT/hour_of_day.png",
+            "day_of_week": "reports/histograms/BTC-USDT/day_of_week.png",
+            "month_of_year": "reports/histograms/BTC-USDT/month_of_year.png",
+            "is_weekend": "reports/histograms/BTC-USDT/is_weekend.png",
+            "asian_session": "reports/histograms/BTC-USDT/asian_session.png",
+            "european_session": "reports/histograms/BTC-USDT/european_session.png",
+            "american_session": "reports/histograms/BTC-USDT/american_session.png"
+          },
+          "cross_pair": {
+            "volume_rank_1h": "reports/histograms/BTC-USDT/volume_rank_1h.png",
+            "volatility_rank_1h": "reports/histograms/BTC-USDT/volatility_rank_1h.png",
+            "performance_rank_btc_1h": "reports/histograms/BTC-USDT/performance_rank_btc_1h.png",
+            "performance_rank_eth_1h": "reports/histograms/BTC-USDT/performance_rank_eth_1h.png",
+            "btc_corr_24h": "reports/histograms/BTC-USDT/btc_corr_24h.png",
+            "prev_volume_rank": "reports/histograms/BTC-USDT/prev_volume_rank.png"
+          },
+          "labels": {
+            "future_return_1h_pct": "reports/histograms/BTC-USDT/future_return_1h_pct.png",
+            "future_return_4h_pct": "reports/histograms/BTC-USDT/future_return_4h_pct.png",
+            "future_return_12h_pct": "reports/histograms/BTC-USDT/future_return_12h_pct.png",
+            "future_return_1d_pct": "reports/histograms/BTC-USDT/future_return_1d_pct.png",
+            "future_max_return_24h_pct": "reports/histograms/BTC-USDT/future_max_return_24h_pct.png",
+            "future_max_drawdown_12h_pct": "reports/histograms/BTC-USDT/future_max_drawdown_12h_pct.png",
+            "was_profitable_12h": "reports/histograms/BTC-USDT/was_profitable_12h.png",
+            "future_risk_adj_return_12h": "reports/histograms/BTC-USDT/future_risk_adj_return_12h.png",
+            "profit_target_1pct": "reports/histograms/BTC-USDT/profit_target_1pct.png",
+            "profit_target_2pct": "reports/histograms/BTC-USDT/profit_target_2pct.png"
+          }
+        },
+        "issues": [
+          {
+            "issue_type": "high_zeros_percentage",
+            "feature_group": "patterns",
+            "zeros_count": 1715,
+            "total_cells": 1800,
+            "percentage": 95.27777777777777,
+            "details": "High percentage of zeros (95.28%) in patterns feature group"
+          },
+          {
+            "issue_type": "high_zeros_percentage",
+            "feature_group": "time",
+            "zeros_count": 1277,
+            "total_cells": 3150,
+            "percentage": 40.539682539682545,
+            "details": "High percentage of zeros (40.54%) in time feature group"
+          },
+          {
+            "issue_type": "high_zeros_percentage",
+            "feature_group": "cross_pair",
+            "zeros_count": 1702,
+            "total_cells": 1850,
+            "percentage": 92.0,
+            "details": "High percentage of zeros (92.00%) in cross_pair feature group"
+          },
+          {
+            "issue_type": "extreme_skewness",
+            "feature_group": "price_action",
+            "feature": "gap_open",
+            "skewness": 15.3184102828198,
+            "details": "Extreme skewness (15.32) in gap_open distribution"
+          },
+          {
+            "issue_type": "extreme_skewness",
+            "feature_group": "labels",
+            "feature": "future_risk_adj_return_12h",
+            "skewness": 14.951095002561855,
+            "details": "Extreme skewness (14.95) in future_risk_adj_return_12h distribution"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price",
+            "feature": "open_1h",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 77660.8,
+            "max_value": 92737.2,
+            "details": "High percentage of outliers (5.56%) in open_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price",
+            "feature": "high_1h",
+            "outliers_count": 33,
+            "percentage": 7.333333333333333,
+            "min_value": 79135.4,
+            "max_value": 92812.3,
+            "details": "High percentage of outliers (7.33%) in high_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price",
+            "feature": "low_1h",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 76600.0,
+            "max_value": 92122.7,
+            "details": "High percentage of outliers (5.56%) in low_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price",
+            "feature": "close_1h",
+            "outliers_count": 28,
+            "percentage": 6.222222222222222,
+            "min_value": 77659.2,
+            "max_value": 92737.1,
+            "details": "High percentage of outliers (6.22%) in close_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volume",
+            "feature": "volume_1h",
+            "outliers_count": 31,
+            "percentage": 6.888888888888889,
+            "min_value": 1113.4784476,
+            "max_value": 3454.04892919,
+            "details": "High percentage of outliers (6.89%) in volume_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price_action",
+            "feature": "upper_shadow",
+            "outliers_count": 29,
+            "percentage": 6.444444444444445,
+            "min_value": 566.0,
+            "max_value": 1559.699999999997,
+            "details": "High percentage of outliers (6.44%) in upper_shadow"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price_action",
+            "feature": "lower_shadow",
+            "outliers_count": 34,
+            "percentage": 7.555555555555555,
+            "min_value": 477.5,
+            "max_value": 1075.0,
+            "details": "High percentage of outliers (7.56%) in lower_shadow"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price_action",
+            "feature": "log_return",
+            "outliers_count": 41,
+            "percentage": 9.11111111111111,
+            "min_value": -0.05018778221522529,
+            "max_value": 0.03132988810220745,
+            "details": "High percentage of outliers (9.11%) in log_return"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price_action",
+            "feature": "gap_open",
+            "outliers_count": 144,
+            "percentage": 32.0,
+            "min_value": -0.00013654542471008835,
+            "max_value": 0.001082495841991049,
+            "details": "High percentage of outliers (32.00%) in gap_open"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price_action",
+            "feature": "price_velocity",
+            "outliers_count": 31,
+            "percentage": 6.888888888888889,
+            "min_value": -0.04895341286150168,
+            "max_value": 0.027603315741659307,
+            "details": "High percentage of outliers (6.89%) in price_velocity"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "price_action",
+            "feature": "price_acceleration",
+            "outliers_count": 48,
+            "percentage": 10.666666666666668,
+            "min_value": -0.07241810973189977,
+            "max_value": 0.06602501514379533,
+            "details": "High percentage of outliers (10.67%) in price_acceleration"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "momentum",
+            "feature": "macd_hist_slope_1h",
+            "outliers_count": 24,
+            "percentage": 5.333333333333334,
+            "min_value": -243.56468293254918,
+            "max_value": 110.24151956969126,
+            "details": "High percentage of outliers (5.33%) in macd_hist_slope_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volatility",
+            "feature": "true_range",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 1795.0999999999913,
+            "max_value": 6650.300000000003,
+            "details": "High percentage of outliers (5.56%) in true_range"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volatility",
+            "feature": "historical_vol_30",
+            "outliers_count": 23,
+            "percentage": 5.111111111111112,
+            "min_value": 0.20143834220504558,
+            "max_value": 0.21519701922827006,
+            "details": "High percentage of outliers (5.11%) in historical_vol_30"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volume_indicators",
+            "feature": "obv_slope_1h",
+            "outliers_count": 42,
+            "percentage": 9.333333333333334,
+            "min_value": -1771.1241804566664,
+            "max_value": 1206.26281344,
+            "details": "High percentage of outliers (9.33%) in obv_slope_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volume_indicators",
+            "feature": "volume_change_pct_1h",
+            "outliers_count": 36,
+            "percentage": 8.0,
+            "min_value": 1.5736624018771477,
+            "max_value": 12.676628915723812,
+            "details": "High percentage of outliers (8.00%) in volume_change_pct_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volume_indicators",
+            "feature": "klinger_oscillator",
+            "outliers_count": 41,
+            "percentage": 9.11111111111111,
+            "min_value": -114.75223058701141,
+            "max_value": 111.7171269894996,
+            "details": "High percentage of outliers (9.11%) in klinger_oscillator"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "volume_indicators",
+            "feature": "volume_price_trend",
+            "outliers_count": 53,
+            "percentage": 11.777777777777777,
+            "min_value": -301.35482794209435,
+            "max_value": -184.535707118266,
+            "details": "High percentage of outliers (11.78%) in volume_price_trend"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "statistical",
+            "feature": "kurtosis_20",
+            "outliers_count": 31,
+            "percentage": 6.888888888888889,
+            "min_value": 3.5280885369074877,
+            "max_value": 6.702471164433044,
+            "details": "High percentage of outliers (6.89%) in kurtosis_20"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "statistical",
+            "feature": "hurst_exponent",
+            "outliers_count": 31,
+            "percentage": 6.888888888888889,
+            "min_value": -0.04196566353259148,
+            "max_value": -0.021866023356387695,
+            "details": "High percentage of outliers (6.89%) in hurst_exponent"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "patterns",
+            "feature": "pattern_doji",
+            "outliers_count": 43,
+            "percentage": 9.555555555555555,
+            "min_value": 1.0,
+            "max_value": 1.0,
+            "details": "High percentage of outliers (9.56%) in pattern_doji"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "patterns",
+            "feature": "pattern_engulfing",
+            "outliers_count": 34,
+            "percentage": 7.555555555555555,
+            "min_value": 1.0,
+            "max_value": 1.0,
+            "details": "High percentage of outliers (7.56%) in pattern_engulfing"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "cross_pair",
+            "feature": "volume_rank_1h",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 2.0,
+            "max_value": 13.0,
+            "details": "High percentage of outliers (5.56%) in volume_rank_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "cross_pair",
+            "feature": "volatility_rank_1h",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 100.0,
+            "max_value": 100.0,
+            "details": "High percentage of outliers (5.56%) in volatility_rank_1h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "cross_pair",
+            "feature": "btc_corr_24h",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 1.0,
+            "max_value": 1.0,
+            "details": "High percentage of outliers (5.56%) in btc_corr_24h"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "cross_pair",
+            "feature": "prev_volume_rank",
+            "outliers_count": 25,
+            "percentage": 5.555555555555555,
+            "min_value": 3.0,
+            "max_value": 20.0,
+            "details": "High percentage of outliers (5.56%) in prev_volume_rank"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "labels",
+            "feature": "future_return_1h_pct",
+            "outliers_count": 41,
+            "percentage": 9.11111111111111,
+            "min_value": -0.04894918269765373,
+            "max_value": 0.03182583481432981,
+            "details": "High percentage of outliers (9.11%) in future_return_1h_pct"
+          },
+          {
+            "issue_type": "high_outliers_percentage",
+            "feature_group": "labels",
+            "feature": "future_risk_adj_return_12h",
+            "outliers_count": 67,
+            "percentage": 14.888888888888888,
+            "min_value": 4.611577964519217,
+            "max_value": 10800.000000942964,
+            "details": "High percentage of outliers (14.89%) in future_risk_adj_return_12h"
+          }
+        ],
+        "duration_seconds": 8.442782640457153
+      }
+    }
+  }
+}

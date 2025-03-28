@@ -1,7 +1,0 @@
-OKXsignal Comprehensive Validation Report
-=======================================
-
-Generated: 2025-03-28 12:07:20
-Pairs analyzed: 2
-Pairs with issues: 2
-
