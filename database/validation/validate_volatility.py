@@ -29,19 +29,18 @@ def calculate_true_range(high, low, close):
 def calculate_atr(high, low, close, length=14):
     """Calculate ATR independently"""
     # Calculate True Range first
-    tr = calculate_true_range(high, low, close)
+    tr_series = calculate_true_range(high, low, close)
     
-    # Initialize ATR
-    atr = pd.Series(index=tr.index)
-    atr.iloc[:length-1] = np.nan
+    # Initialize ATR with explicit dtype to avoid warning
+    atr = pd.Series(np.nan, index=tr_series.index, dtype=float)
     
     # First ATR is simple average of first 'length' TRs
-    if len(tr) >= length:
-        atr.iloc[length-1] = tr.iloc[:length].mean()
+    if len(tr_series) >= length:
+        atr.iloc[length-1] = tr_series.iloc[:length].mean()
         
         # Use Wilder's smoothing for subsequent values
-        for i in range(length, len(tr)):
-            atr.iloc[i] = (atr.iloc[i-1] * (length-1) + tr.iloc[i]) / length
+        for i in range(length, len(tr_series)):
+            atr.iloc[i] = (atr.iloc[i-1] * (length-1) + tr_series.iloc[i]) / length
     
     return atr.fillna(0)  # Fill NaN values with 0
 

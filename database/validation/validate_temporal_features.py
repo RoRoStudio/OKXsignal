@@ -63,9 +63,9 @@ def validate_temporal_features(df, pair):
     for feature in present_features:
         issue_summary[f'{feature}_issues'] = {'count': 0}
     
-    # Convert timestamps to UTC datetime objects explicitly
-    # The issue is in timezone handling - ensure we're using UTC consistently
-    timestamps = pd.to_datetime(df['timestamp_utc']).dt.tz_localize(None)
+    # Convert timestamps to UTC before extracting components
+    # The feature calculation logic likely used UTC timestamps
+    timestamps = pd.to_datetime(df['timestamp_utc']).dt.tz_convert('UTC')
     
     # Hour of day (0-23) in UTC
     if 'hour_of_day' in present_features:

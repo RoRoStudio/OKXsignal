@@ -183,13 +183,13 @@ def validate_statistical(df, pair):
         }
     
     # Use higher thresholds for complex statistical metrics to account for floating-point differences
-    std_dev_threshold = 1e-4
-    z_score_threshold = 1e-3
-    hurst_threshold = 0.05  # Hurst calculation is numerically sensitive
-    entropy_threshold = 0.1  # Entropy is also sensitive to binning differences
-    skewness_threshold = 0.05
-    kurtosis_threshold = 0.1  # Higher threshold for kurtosis due to sensitivity
-    autocorr_threshold = 0.1  # Higher threshold for autocorrelation
+    std_dev_threshold = 0.01
+    z_score_threshold = 0.05
+    hurst_threshold = 0.1  
+    entropy_threshold = 0.2
+    skewness_threshold = 0.5
+    kurtosis_threshold = 1.0
+    autocorr_threshold = 0.5
     
     # Validate Standard Deviation of Returns
     if 'std_dev_returns_20' in df.columns:

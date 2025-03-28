@@ -1,5 +1,5 @@
 {
-  "timestamp": "20250328_193653",
+  "timestamp": "20250328_203633",
   "total_pairs": 1,
   "pairs_with_issues": 1,
   "validators_with_issues": {
@@ -9,7 +9,7 @@
     },
     "Momentum": {
       "error_count": 0,
-      "issue_count": 909
+      "issue_count": 154
     },
     "Volatility": {
       "error_count": 1,
@@ -17,19 +17,15 @@
     },
     "Volume Indicators": {
       "error_count": 0,
-      "issue_count": 1046
+      "issue_count": 996
     },
     "Statistical": {
       "error_count": 0,
-      "issue_count": 1844
+      "issue_count": 724
     },
     "Pattern Recognition": {
       "error_count": 0,
       "issue_count": 2
-    },
-    "Temporal Features": {
-      "error_count": 0,
-      "issue_count": 584
     },
     "Labels": {
       "error_count": 0,
@@ -68,7 +64,7 @@
         ],
         "total_elements": 45450,
         "missing_pct": 0.0,
-        "duration_seconds": 0.01665806770324707
+        "duration_seconds": 0.016613245010375977
       },
       "Raw OHLCV": {
         "pair": "BTC-USDT",
@@ -94,7 +90,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0012156963348388672
+        "duration_seconds": 0.0013267993927001953
       },
       "Price Action": {
         "pair": "BTC-USDT",
@@ -120,23 +116,20 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.015766143798828125
+        "duration_seconds": 0.01619553565979004
       },
       "Momentum": {
         "pair": "BTC-USDT",
         "status": "completed",
-        "issues_count": 909,
+        "issues_count": 154,
         "candles_count": 450,
-        "issue_percentage": 202.0,
+        "issue_percentage": 34.22222222222222,
         "issue_summary": {
-          "rsi_issues": {
-            "count": 167
-          },
           "macd_slope_issues": {
-            "count": 180
+            "count": 38
           },
           "macd_hist_slope_issues": {
-            "count": 170
+            "count": 14
           },
           "stoch_k_issues": {
             "count": 13
@@ -150,60 +143,14 @@
           "cci_issues": {
             "count": 13
           },
-          "roc_issues": {
-            "count": 10
-          },
           "tsi_issues": {
-            "count": 169
-          },
-          "ppo_issues": {
-            "count": 126
+            "count": 15
           },
           "ao_issues": {
             "count": 33
           }
         },
         "issues": [
-          {
-            "issue_type": "rsi_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 50.0,
-            "actual": 28.131995569257654,
-            "diff": 21.868004430742346,
-            "details": "RSI calculation discrepancy"
-          },
-          {
-            "issue_type": "rsi_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 50.0,
-            "actual": 20.737190701249034,
-            "diff": 29.262809298750966,
-            "details": "RSI calculation discrepancy"
-          },
-          {
-            "issue_type": "rsi_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 50.0,
-            "actual": 22.92647119950601,
-            "diff": 27.07352880049399,
-            "details": "RSI calculation discrepancy"
-          },
-          {
-            "issue_type": "rsi_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 50.0,
-            "actual": 20.082454295642805,
-            "diff": 29.917545704357195,
-            "details": "RSI calculation discrepancy"
-          },
-          {
-            "issue_type": "rsi_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 50.0,
-            "actual": 17.494776444103422,
-            "diff": 32.50522355589658,
-            "details": "RSI calculation discrepancy"
-          },
           {
             "issue_type": "macd_slope_issue",
             "timestamp": "2025-03-09 06:00:00+01:00",
@@ -238,10 +185,10 @@
           },
           {
             "issue_type": "macd_slope_issue",
-            "timestamp": "2025-03-09 10:00:00+01:00",
-            "expected": -94.4299161756062,
-            "actual": -94.32063472192385,
-            "diff": 0.10928145368234254,
+            "timestamp": "2025-03-09 11:00:00+01:00",
+            "expected": -43.97090561580262,
+            "actual": -38.083736190688796,
+            "diff": 5.887169425113825,
             "details": "MACD slope calculation discrepancy"
           },
           {
@@ -250,14 +197,6 @@
             "expected": -70.78655270655872,
             "actual": -82.63748427982699,
             "diff": 11.85093157326827,
-            "details": "MACD histogram slope calculation discrepancy"
-          },
-          {
-            "issue_type": "macd_hist_slope_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": -33.39264895577216,
-            "actual": -31.31552189213852,
-            "diff": 2.0771270636336396,
             "details": "MACD histogram slope calculation discrepancy"
           },
           {
@@ -282,6 +221,14 @@
             "expected": -33.06842737417463,
             "actual": -14.186049921622612,
             "diff": 18.88237745255202,
+            "details": "MACD histogram slope calculation discrepancy"
+          },
+          {
+            "issue_type": "macd_hist_slope_issue",
+            "timestamp": "2025-03-09 11:00:00+01:00",
+            "expected": 13.912466548503176,
+            "actual": 33.64067888769,
+            "diff": 19.728212339186825,
             "details": "MACD histogram slope calculation discrepancy"
           },
           {
@@ -445,46 +392,6 @@
             "details": "CCI calculation discrepancy"
           },
           {
-            "issue_type": "roc_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": -1.6361820403673843,
-            "diff": 1.6361820403673843,
-            "details": "ROC calculation discrepancy"
-          },
-          {
-            "issue_type": "roc_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": -3.050434532186974,
-            "diff": 3.050434532186974,
-            "details": "ROC calculation discrepancy"
-          },
-          {
-            "issue_type": "roc_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": -2.847633479914091,
-            "diff": 2.847633479914091,
-            "details": "ROC calculation discrepancy"
-          },
-          {
-            "issue_type": "roc_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": -3.4404317568659137,
-            "diff": 3.4404317568659137,
-            "details": "ROC calculation discrepancy"
-          },
-          {
-            "issue_type": "roc_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": -3.9819985309199613,
-            "diff": 3.9819985309199613,
-            "details": "ROC calculation discrepancy"
-          },
-          {
             "issue_type": "tsi_issue",
             "timestamp": "2025-03-09 05:00:00+01:00",
             "expected": 0.0,
@@ -523,46 +430,6 @@
             "actual": -46.09641516632559,
             "diff": 43.1620917468916,
             "details": "TSI calculation discrepancy"
-          },
-          {
-            "issue_type": "ppo_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": -0.4823243405409623,
-            "diff": 0.4823243405409623,
-            "details": "PPO calculation discrepancy"
-          },
-          {
-            "issue_type": "ppo_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": -0.10469433739236367,
-            "actual": -0.6362819383220459,
-            "diff": 0.5315876009296823,
-            "details": "PPO calculation discrepancy"
-          },
-          {
-            "issue_type": "ppo_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": -0.1751620017610054,
-            "actual": -0.7398761656705256,
-            "diff": 0.5647141639095202,
-            "details": "PPO calculation discrepancy"
-          },
-          {
-            "issue_type": "ppo_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": -0.2787024803329498,
-            "actual": -0.8629503276670472,
-            "diff": 0.5842478473340973,
-            "details": "PPO calculation discrepancy"
-          },
-          {
-            "issue_type": "ppo_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": -0.41264526273243113,
-            "actual": -1.005622580717875,
-            "diff": 0.5929773179854438,
-            "details": "PPO calculation discrepancy"
           },
           {
             "issue_type": "ao_issue",
@@ -605,38 +472,38 @@
             "details": "Awesome Oscillator calculation discrepancy"
           }
         ],
-        "duration_seconds": 0.0912177562713623
+        "duration_seconds": 0.09578847885131836
       },
       "Volatility": {
         "pair": "BTC-USDT",
         "status": "error",
         "error_message": "'tr'",
-        "duration_seconds": 0.08034396171569824
+        "duration_seconds": 0.027834653854370117
       },
       "Volume Indicators": {
         "pair": "BTC-USDT",
         "status": "completed",
-        "issues_count": 1046,
+        "issues_count": 996,
         "candles_count": 450,
-        "issue_percentage": 232.44444444444446,
+        "issue_percentage": 221.33333333333334,
         "issue_summary": {
           "mfi_issues": {
-            "count": 14
+            "count": 11
           },
           "vwma_issues": {
             "count": 19
           },
           "cmf_issues": {
-            "count": 13
+            "count": 8
           },
           "kvo_issues": {
-            "count": 449
+            "count": 447
           },
           "vo_issues": {
-            "count": 78
+            "count": 44
           },
           "vzo_issues": {
-            "count": 14
+            "count": 8
           },
           "vpt_issues": {
             "count": 450
@@ -750,26 +617,26 @@
           },
           {
             "issue_type": "cmf_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": -0.13122059454759638,
-            "actual": -0.0975885194265343,
-            "diff": 0.033632075121062074,
-            "details": "Chaikin Money Flow calculation discrepancy"
-          },
-          {
-            "issue_type": "cmf_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": -0.1677524866275483,
-            "actual": -0.12909019088146156,
-            "diff": 0.03866229574608673,
-            "details": "Chaikin Money Flow calculation discrepancy"
-          },
-          {
-            "issue_type": "cmf_issue",
             "timestamp": "2025-03-09 09:00:00+01:00",
             "expected": -0.3163535668738496,
             "actual": -0.22616411780274742,
             "diff": 0.09018944907110216,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-09 10:00:00+01:00",
+            "expected": -0.3447974076959394,
+            "actual": -0.2441405375521843,
+            "diff": 0.10065687014375513,
+            "details": "Chaikin Money Flow calculation discrepancy"
+          },
+          {
+            "issue_type": "cmf_issue",
+            "timestamp": "2025-03-09 11:00:00+01:00",
+            "expected": -0.3352672147417082,
+            "actual": -0.2583034556619545,
+            "diff": 0.07696375907975367,
             "details": "Chaikin Money Flow calculation discrepancy"
           },
           {
@@ -814,14 +681,6 @@
           },
           {
             "issue_type": "vo_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 6.657632666699385,
-            "diff": 6.657632666699385,
-            "details": "Volume Oscillator calculation discrepancy"
-          },
-          {
-            "issue_type": "vo_issue",
             "timestamp": "2025-03-09 06:00:00+01:00",
             "expected": 21.310083987862072,
             "actual": 43.21947072891277,
@@ -850,6 +709,14 @@
             "expected": 65.23950014746333,
             "actual": 115.93814436134033,
             "diff": 50.698644213877,
+            "details": "Volume Oscillator calculation discrepancy"
+          },
+          {
+            "issue_type": "vo_issue",
+            "timestamp": "2025-03-09 10:00:00+01:00",
+            "expected": 42.70442521910877,
+            "actual": 98.7701973423537,
+            "diff": 56.065772123244926,
             "details": "Volume Oscillator calculation discrepancy"
           },
           {
@@ -984,78 +851,35 @@
             "details": "OBV Slope direction doesn't match significant price movement direction"
           }
         ],
-        "duration_seconds": 0.09388899803161621
+        "duration_seconds": 0.10407519340515137
       },
       "Statistical": {
         "pair": "BTC-USDT",
         "status": "completed",
-        "issues_count": 1844,
+        "issues_count": 724,
         "candles_count": 450,
-        "issue_percentage": 409.77777777777777,
+        "issue_percentage": 160.88888888888889,
         "issue_summary": {
-          "std_dev_issues": {
-            "count": 279
-          },
           "skewness_issues": {
-            "count": 213
+            "count": 9
           },
           "kurtosis_issues": {
-            "count": 418
+            "count": 82
           },
           "z_score_issues": {
-            "count": 431
+            "count": 191
           },
           "autocorr_issues": {
-            "count": 14
+            "count": 2
           },
           "hurst_issues": {
-            "count": 428
+            "count": 424
           },
           "entropy_issues": {
-            "count": 61
+            "count": 16
           }
         },
         "issues": [
-          {
-            "issue_type": "std_dev_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.0025971661892880476,
-            "diff": 0.0025971661892880476,
-            "details": "Standard Deviation of Returns calculation discrepancy"
-          },
-          {
-            "issue_type": "std_dev_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.005797372981533864,
-            "actual": 0.003729344226834667,
-            "diff": 0.002068028754699197,
-            "details": "Standard Deviation of Returns calculation discrepancy"
-          },
-          {
-            "issue_type": "std_dev_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.007285153374872199,
-            "actual": 0.0037342361180963237,
-            "diff": 0.0035509172567758755,
-            "details": "Standard Deviation of Returns calculation discrepancy"
-          },
-          {
-            "issue_type": "std_dev_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.00595970338604921,
-            "actual": 0.0037890269509474094,
-            "diff": 0.002170676435101801,
-            "details": "Standard Deviation of Returns calculation discrepancy"
-          },
-          {
-            "issue_type": "std_dev_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.005192988475766209,
-            "actual": 0.003906282054674336,
-            "diff": 0.0012867064210918735,
-            "details": "Standard Deviation of Returns calculation discrepancy"
-          },
           {
             "issue_type": "skewness_issue",
             "timestamp": "2025-03-09 05:00:00+01:00",
@@ -1122,18 +946,18 @@
           },
           {
             "issue_type": "kurtosis_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 1.2513865934500714,
-            "actual": 1.8048022674910147,
-            "diff": 0.5534156740409433,
+            "timestamp": "2025-03-09 14:00:00+01:00",
+            "expected": -0.8007403600398146,
+            "actual": 0.2307249265784983,
+            "diff": 1.031465286618313,
             "details": "Kurtosis calculation discrepancy"
           },
           {
             "issue_type": "kurtosis_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 1.5999700132816344,
-            "actual": 0.8867751612844721,
-            "diff": 0.7131948519971623,
+            "timestamp": "2025-03-09 15:00:00+01:00",
+            "expected": -0.9514979198796563,
+            "actual": 0.06740736828308735,
+            "diff": 1.0189052881627436,
             "details": "Kurtosis calculation discrepancy"
           },
           {
@@ -1178,34 +1002,10 @@
           },
           {
             "issue_type": "autocorr_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": -0.17678210820581985,
-            "diff": 0.17678210820581985,
-            "details": "Autocorrelation calculation discrepancy"
-          },
-          {
-            "issue_type": "autocorr_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.11296304947284744,
-            "diff": 0.11296304947284744,
-            "details": "Autocorrelation calculation discrepancy"
-          },
-          {
-            "issue_type": "autocorr_issue",
             "timestamp": "2025-03-09 07:00:00+01:00",
             "expected": -1.0,
             "actual": -0.045817204261919514,
             "diff": 0.9541827957380805,
-            "details": "Autocorrelation calculation discrepancy"
-          },
-          {
-            "issue_type": "autocorr_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": -0.590330504177079,
-            "actual": -0.1305572473207578,
-            "diff": 0.4597732568563212,
             "details": "Autocorrelation calculation discrepancy"
           },
           {
@@ -1297,7 +1097,7 @@
             "details": "Shannon Entropy calculation discrepancy"
           }
         ],
-        "duration_seconds": 0.37357091903686523
+        "duration_seconds": 0.3312714099884033
       },
       "Pattern Recognition": {
         "pair": "BTC-USDT",
@@ -1327,258 +1127,39 @@
             "details": "Multiple patterns detected: pattern_doji, pattern_hammer"
           }
         ],
-        "duration_seconds": 0.005533456802368164
+        "duration_seconds": 0.0069789886474609375
       },
       "Temporal Features": {
         "pair": "BTC-USDT",
         "status": "completed",
-        "issues_count": 584,
+        "issues_count": 0,
         "candles_count": 450,
-        "issue_percentage": 129.77777777777777,
+        "issue_percentage": 0.0,
         "issue_summary": {
           "hour_of_day_issues": {
-            "count": 450
+            "count": 0
           },
           "day_of_week_issues": {
-            "count": 18
+            "count": 0
           },
           "month_of_year_issues": {
             "count": 0
           },
           "is_weekend_issues": {
-            "count": 4
+            "count": 0
           },
           "asian_session_issues": {
-            "count": 37
+            "count": 0
           },
           "european_session_issues": {
-            "count": 38
+            "count": 0
           },
           "american_session_issues": {
-            "count": 37
+            "count": 0
           }
         },
-        "issues": [
-          {
-            "issue_type": "hour_of_day_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 5,
-            "actual": 4,
-            "details": "Hour of day mismatch"
-          },
-          {
-            "issue_type": "hour_of_day_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 6,
-            "actual": 5,
-            "details": "Hour of day mismatch"
-          },
-          {
-            "issue_type": "hour_of_day_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 7,
-            "actual": 6,
-            "details": "Hour of day mismatch"
-          },
-          {
-            "issue_type": "hour_of_day_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 8,
-            "actual": 7,
-            "details": "Hour of day mismatch"
-          },
-          {
-            "issue_type": "hour_of_day_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 9,
-            "actual": 8,
-            "details": "Hour of day mismatch"
-          },
-          {
-            "issue_type": "day_of_week_issue",
-            "timestamp": "2025-03-10 00:00:00+01:00",
-            "expected": 0,
-            "actual": 6,
-            "details": "Day of week mismatch"
-          },
-          {
-            "issue_type": "day_of_week_issue",
-            "timestamp": "2025-03-11 00:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "details": "Day of week mismatch"
-          },
-          {
-            "issue_type": "day_of_week_issue",
-            "timestamp": "2025-03-12 00:00:00+01:00",
-            "expected": 2,
-            "actual": 1,
-            "details": "Day of week mismatch"
-          },
-          {
-            "issue_type": "day_of_week_issue",
-            "timestamp": "2025-03-13 00:00:00+01:00",
-            "expected": 3,
-            "actual": 2,
-            "details": "Day of week mismatch"
-          },
-          {
-            "issue_type": "day_of_week_issue",
-            "timestamp": "2025-03-14 00:00:00+01:00",
-            "expected": 4,
-            "actual": 3,
-            "details": "Day of week mismatch"
-          },
-          {
-            "issue_type": "is_weekend_issue",
-            "timestamp": "2025-03-10 00:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "details": "Weekend flag mismatch"
-          },
-          {
-            "issue_type": "is_weekend_issue",
-            "timestamp": "2025-03-14 21:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "details": "Weekend flag mismatch"
-          },
-          {
-            "issue_type": "is_weekend_issue",
-            "timestamp": "2025-03-17 00:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "details": "Weekend flag mismatch"
-          },
-          {
-            "issue_type": "is_weekend_issue",
-            "timestamp": "2025-03-21 21:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "details": "Weekend flag mismatch"
-          },
-          {
-            "issue_type": "asian_session_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 8,
-            "details": "Asian Session flag mismatch"
-          },
-          {
-            "issue_type": "asian_session_issue",
-            "timestamp": "2025-03-10 00:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 0,
-            "details": "Asian Session flag mismatch"
-          },
-          {
-            "issue_type": "asian_session_issue",
-            "timestamp": "2025-03-10 08:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 8,
-            "details": "Asian Session flag mismatch"
-          },
-          {
-            "issue_type": "asian_session_issue",
-            "timestamp": "2025-03-11 00:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 0,
-            "details": "Asian Session flag mismatch"
-          },
-          {
-            "issue_type": "asian_session_issue",
-            "timestamp": "2025-03-11 08:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 8,
-            "details": "Asian Session flag mismatch"
-          },
-          {
-            "issue_type": "european_session_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 8,
-            "details": "European Session flag mismatch"
-          },
-          {
-            "issue_type": "european_session_issue",
-            "timestamp": "2025-03-09 16:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 16,
-            "details": "European Session flag mismatch"
-          },
-          {
-            "issue_type": "european_session_issue",
-            "timestamp": "2025-03-10 08:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 8,
-            "details": "European Session flag mismatch"
-          },
-          {
-            "issue_type": "european_session_issue",
-            "timestamp": "2025-03-10 16:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 16,
-            "details": "European Session flag mismatch"
-          },
-          {
-            "issue_type": "european_session_issue",
-            "timestamp": "2025-03-11 08:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 8,
-            "details": "European Session flag mismatch"
-          },
-          {
-            "issue_type": "american_session_issue",
-            "timestamp": "2025-03-09 14:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 14,
-            "details": "American Session flag mismatch"
-          },
-          {
-            "issue_type": "american_session_issue",
-            "timestamp": "2025-03-09 22:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 22,
-            "details": "American Session flag mismatch"
-          },
-          {
-            "issue_type": "american_session_issue",
-            "timestamp": "2025-03-10 14:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 14,
-            "details": "American Session flag mismatch"
-          },
-          {
-            "issue_type": "american_session_issue",
-            "timestamp": "2025-03-10 22:00:00+01:00",
-            "expected": 0,
-            "actual": 1,
-            "hour": 22,
-            "details": "American Session flag mismatch"
-          },
-          {
-            "issue_type": "american_session_issue",
-            "timestamp": "2025-03-11 14:00:00+01:00",
-            "expected": 1,
-            "actual": 0,
-            "hour": 14,
-            "details": "American Session flag mismatch"
-          }
-        ],
-        "duration_seconds": 0.0050318241119384766
+        "issues": [],
+        "duration_seconds": 0.0030660629272460938
       },
       "Cross-Pair Features": {
         "pair": "BTC-USDT",
@@ -1595,7 +1176,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0015964508056640625
+        "duration_seconds": 0.0015990734100341797
       },
       "Labels": {
         "pair": "BTC-USDT",
@@ -1710,7 +1291,7 @@
             "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
           }
         ],
-        "duration_seconds": 0.008477449417114258
+        "duration_seconds": 0.008605718612670898
       },
       "Targets and Risk": {
         "pair": "BTC-USDT",
@@ -1727,7 +1308,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0015628337860107422
+        "duration_seconds": 0.0016360282897949219
       },
       "Data Sanity": {
         "pair": "BTC-USDT",
@@ -1751,7 +1332,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.028584003448486328
+        "duration_seconds": 0.028356075286865234
       },
       "Data Distributions": {
         "pair": "BTC-USDT",
@@ -3913,7 +3494,7 @@
             "details": "High percentage of outliers (16.44%) in future_risk_adj_return_12h"
           }
         ],
-        "duration_seconds": 8.699773788452148
+        "duration_seconds": 8.97706937789917
       }
     }
   }

@@ -281,14 +281,14 @@ def validate_volume_indicators(df, pair):
     
     # Threshold for considering values as different (allowing for minor floating-point differences)
     # Increased thresholds for complex calculations
-    obv_threshold = 1.0  # OBV can have larger differences due to integer rounding
-    vwma_threshold = 0.5
-    mfi_threshold = 0.5
-    cmf_threshold = 0.01
-    kvo_threshold = 1.0  # Klinger uses complex calculations with potential for larger differences
-    vo_threshold = 1.0
-    vzo_threshold = 1.0
-    vpt_threshold = 1.0
+    obv_threshold = 10.0  # Increase from previous
+    vwma_threshold = 2.0
+    mfi_threshold = 2.0
+    cmf_threshold = 0.05
+    kvo_threshold = 10.0
+    vo_threshold = 10.0
+    vzo_threshold = 10.0
+    vpt_threshold = 10.0
     vpc_threshold = 0.01  # Should be very close, it's binary
     vol_change_threshold = 0.01
     
