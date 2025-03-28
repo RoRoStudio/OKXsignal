@@ -3,11 +3,13 @@
 Temporal Features Validator
 - Validates: hour_of_day, day_of_week, month_of_year, is_weekend, asian_session, etc.
 - Recalculates from timestamp_utc
+- Ensures time zone handling is consistent with feature processor
 """
 
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 from database.validation.validation_utils import main_validator
 
 def validate_temporal_features(df, pair):
@@ -61,10 +63,11 @@ def validate_temporal_features(df, pair):
     for feature in present_features:
         issue_summary[f'{feature}_issues'] = {'count': 0}
     
-    # Calculate expected values from timestamp_utc
-    timestamps = pd.to_datetime(df['timestamp_utc'])
+    # Convert timestamps to UTC datetime objects explicitly
+    # The issue is in timezone handling - ensure we're using UTC consistently
+    timestamps = pd.to_datetime(df['timestamp_utc']).dt.tz_localize(None)
     
-    # Hour of day (0-23)
+    # Hour of day (0-23) in UTC
     if 'hour_of_day' in present_features:
         expected_hour = timestamps.dt.hour
         hour_issues = df[df['hour_of_day'] != expected_hour]
@@ -118,11 +121,12 @@ def validate_temporal_features(df, pair):
                     'details': f"Month of year mismatch"
                 })
     
-    # Is weekend (Friday after 9 PM or Saturday or Sunday)
+    # Is weekend (Friday after 9 PM UTC or Saturday or Sunday)
     if 'is_weekend' in present_features:
         day_of_week = timestamps.dt.dayofweek
         hour_of_day = timestamps.dt.hour
         
+        # Weekend is defined as Friday after 21:00 UTC, or all day Saturday/Sunday
         expected_weekend = ((day_of_week == 4) & (hour_of_day >= 21)) | (day_of_week >= 5)
         expected_weekend = expected_weekend.astype(int)
         
@@ -142,18 +146,19 @@ def validate_temporal_features(df, pair):
                 })
     
     # Trading sessions
-    # Define default session times
-    default_sessions = {
+    # Define session times in UTC (matches feature processor)
+    session_hours = {
         'asian_session': {'start': 0, 'end': 8},
         'european_session': {'start': 8, 'end': 16},
         'american_session': {'start': 14, 'end': 22}
     }
     
-    for session in ['asian_session', 'european_session', 'american_session']:
+    for session, hours in session_hours.items():
         if session in present_features:
-            start_hour = default_sessions[session]['start']
-            end_hour = default_sessions[session]['end']
+            start_hour = hours['start']
+            end_hour = hours['end']
             
+            # Calculate if the hour falls within session hours
             expected_session = ((hour_of_day >= start_hour) & (hour_of_day < end_hour)).astype(int)
             session_issues = df[df[session] != expected_session]
             

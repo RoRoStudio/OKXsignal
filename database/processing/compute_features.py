@@ -966,14 +966,135 @@ def main():
 
     elif mode == "full_backfill":
         logger.info("Full backfill mode: computing all historical data")
-        logger.warning("Full backfill mode is not fully implemented yet")
-        # TODO: Implement full backfill if needed
-
-    # Runtime logging
-    end_time = datetime.now()
-    duration = (end_time - start_time_global).total_seconds()
-    with open(runtime_log_path, "a") as f:
-        f.write(f"[{end_time}] compute_features.py ({mode}) completed in {duration:.2f} seconds\n")
+        
+        # Get database connection for querying date ranges
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Find the date range for all data
+            cursor.execute("""
+                SELECT MIN(timestamp_utc), MAX(timestamp_utc) 
+                FROM candles_1h
+            """)
+            min_date, max_date = cursor.fetchone()
+            
+            # Get the total count of data points
+            cursor.execute("SELECT COUNT(*) FROM candles_1h")
+            total_candles = cursor.fetchone()[0]
+            
+            logger.info(f"Full backfill range: {min_date} to {max_date}")
+            logger.info(f"Total candles to process: {total_candles:,}")
+            
+            # Sort pairs by data volume for balanced processing
+            cursor.execute("""
+                SELECT pair, COUNT(*) as candle_count
+                FROM candles_1h
+                GROUP BY pair
+                ORDER BY candle_count DESC
+            """)
+            pair_counts = cursor.fetchall()
+            cursor.close()
+        
+        # Adjust batch size for full backfill (typically smaller due to memory constraints)
+        backfill_batch_size = max(1, min(int(batch_size / 2), 4))
+        logger.info(f"Using batch size of {backfill_batch_size} pairs for full backfill")
+        
+        # Group pairs into balanced batches based on data volume
+        batches = []
+        current_batch = []
+        current_batch_volume = 0
+        target_batch_volume = total_candles / max(1, (len(all_pairs) / backfill_batch_size))
+        
+        for pair, count in pair_counts:
+            if current_batch_volume + count > target_batch_volume * 1.5 or len(current_batch) >= backfill_batch_size:
+                if current_batch:  # Don't add empty batches
+                    batches.append(current_batch)
+                current_batch = [pair]
+                current_batch_volume = count
+            else:
+                current_batch.append(pair)
+                current_batch_volume += count
+        
+        # Add the last batch if not empty
+        if current_batch:
+            batches.append(current_batch)
+        
+        logger.info(f"Grouped {len(all_pairs)} pairs into {len(batches)} batches for processing")
+        
+        # Initialize counters
+        processed_pairs = 0
+        processed_candles = 0
+        pair_to_count = dict(pair_counts)
+        
+        # Start resource monitoring
+        if perf_monitor:
+            perf_monitor.start_resource_monitoring(interval=10.0)
+        
+        # Process each batch
+        for batch_idx, batch in enumerate(batches):
+            logger.info(f"Processing batch {batch_idx+1}/{len(batches)} with {len(batch)} pairs")
+            
+            # For each pair in the batch, process all historical data
+            with ThreadPoolExecutor(max_workers=backfill_batch_size) as executor:
+                futures = {}
+                
+                for pair in batch:
+                    # Process full history by passing None for rolling_window
+                    futures[executor.submit(process_pair_thread, pair, None, config_manager, args.debug, perf_monitor)] = pair
+                
+                # Wait for completion and collect results
+                for future in as_completed(futures):
+                    pair = futures[future]
+                    try:
+                        rows_updated = future.result()
+                        processed_pairs += 1
+                        # Get the count of candles for this pair
+                        pair_candles = pair_to_count.get(pair, 0)
+                        processed_candles += pair_candles
+                        
+                        # Log progress
+                        elapsed = (datetime.now() - start_time_global).total_seconds()
+                        if elapsed > 0:
+                            pairs_per_hour = (processed_pairs / elapsed) * 3600
+                            candles_per_second = processed_candles / elapsed
+                            percentage = (processed_pairs / len(all_pairs)) * 100
+                            
+                            remaining_pairs = len(all_pairs) - processed_pairs
+                            remaining_time = (remaining_pairs / pairs_per_hour) * 3600 if pairs_per_hour > 0 else 0
+                            
+                            logger.info(f"Progress: {processed_pairs}/{len(all_pairs)} pairs "
+                                    f"({percentage:.1f}%, {pairs_per_hour:.1f} pairs/hour, "
+                                    f"{candles_per_second:.0f} candles/sec, ~{remaining_time/3600:.1f}h remaining)")
+                    except Exception as e:
+                        logger.error(f"Error processing pair {pair}: {e}")
+            
+            # Clean up memory between batches
+            gc.collect()
+            
+            # Compute cross-pair features for each completed batch if enabled
+            if config_manager.is_feature_enabled('cross_pair'):
+                logger.info(f"Computing cross-pair features for batch {batch_idx+1}")
+                with get_db_connection() as conn:
+                    compute_cross_pair_features(conn, config_manager, args.debug, perf_monitor)
+        
+        # Final cross-pair computation after all individual pairs are done
+        if config_manager.is_feature_enabled('cross_pair'):
+            logger.info("Computing final cross-pair features")
+            with get_db_connection() as conn:
+                compute_cross_pair_features(conn, config_manager, args.debug, perf_monitor)
+        
+        # Save performance summary
+        summary_file, report_file = perf_monitor.save_summary()
+        logger.info(f"Performance summary saved to {summary_file}")
+        logger.info(f"Performance report saved to {report_file}")
+        
+        # Runtime logging
+        end_time = datetime.now()
+        duration = (end_time - start_time_global).total_seconds()
+        with open(runtime_log_path, "a") as f:
+            f.write(f"[{end_time}] compute_features.py ({mode}) completed in {duration:.2f} seconds\n")
+        
+        logger.info(f"Full backfill completed successfully. Total runtime: {duration:.2f} seconds")
     
     logger.info(f"Total runtime: {duration:.2f} seconds")
 

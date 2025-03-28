@@ -3,6 +3,7 @@
 Data Sanity Validator
 - Global check for any absurd values: rsi > 100, volume < 0, etc.
 - Detects floating-point overflows, division by zero
+- Allows legitimate negative values for oscillator metrics
 """
 
 import pandas as pd
@@ -44,7 +45,7 @@ def validate_data_sanity(df, pair):
             'min': 0, 
             'max': 100,
             'columns': ['rsi_1h', 'rsi_4h', 'rsi_1d', 'stoch_k_14', 'stoch_d_14',
-                       'money_flow_index_1h', 'chaikin_money_flow']
+                       'money_flow_index_1h']
         },
         # Correlation coefficients (-1 to 1)
         'correlations': {
@@ -64,7 +65,8 @@ def validate_data_sanity(df, pair):
             'allowed_values': [0, 1],
             'columns': ['pattern_doji', 'pattern_engulfing', 'pattern_hammer', 'pattern_morning_star',
                        'was_profitable_12h', 'is_weekend', 'asian_session', 'european_session', 
-                       'american_session', 'profit_target_1pct', 'profit_target_2pct']
+                       'american_session', 'profit_target_1pct', 'profit_target_2pct',
+                       'volume_price_confirmation']
         },
         # Time features
         'time': {
@@ -81,15 +83,50 @@ def validate_data_sanity(df, pair):
         }
     }
     
+    # Define metrics that can legitimately be negative 
+    # These should be excluded from range checks
+    legitimetely_negative_metrics = [
+        # Price derivatives
+        'log_return', 'gap_open', 'price_velocity', 'price_acceleration',
+        # Volume change metrics
+        'volume_change_pct_1h', 'volume_change_pct_4h', 'volume_change_pct_1d',
+        # Oscillator metrics
+        'volume_zone_oscillator', 'volume_price_trend', 'volume_oscillator',
+        'macd_slope_1h', 'macd_hist_slope_1h', 'rsi_slope_1h',
+        'williams_r_14', 'cci_14', 'roc_10', 'tsi', 'awesome_oscillator', 'ppo',
+        'chaikin_money_flow', 'klinger_oscillator',
+        # Statistical metrics
+        'skewness_20', 'kurtosis_20', 'z_score_20', 'hurst_exponent',
+        # Return metrics
+        'future_return_1h_pct', 'future_return_4h_pct', 'future_return_12h_pct',
+        'future_return_1d_pct', 'future_return_3d_pct', 'future_return_1w_pct',
+        'future_return_2w_pct', 'future_max_drawdown_12h_pct', 'future_risk_adj_return_12h'
+    ]
+    
+    # Columns to ignore for absurd value checks
+    # These are metrics where large values are normal or expected
+    exclude_from_absurd_checks = [
+        'quote_volume_1h', 'obv_1h', 'future_risk_adj_return_12h',
+        'awesome_oscillator', 'volume_price_trend'
+    ]
+    
     # Check for NaN values in any column
     nan_counts = df.isna().sum()
     columns_with_nan = nan_counts[nan_counts > 0]
     
-    if not columns_with_nan.empty:
-        issue_summary['nan_issues']['count'] = columns_with_nan.sum()
+    # Exclude performance rank columns which can legitimately be NaN
+    # for pairs like BTC-USDT or ETH-USDT
+    excluded_nan_columns = ['performance_rank_btc_1h', 'performance_rank_eth_1h', 
+                          'btc_corr_24h', 'prev_volume_rank']
+    
+    filtered_nan_columns = {col: count for col, count in columns_with_nan.items() 
+                           if col not in excluded_nan_columns}
+    
+    if filtered_nan_columns:
+        issue_summary['nan_issues']['count'] = sum(filtered_nan_columns.values())
         
         # Record NaN issues by column
-        for col, count in columns_with_nan.items():
+        for col, count in filtered_nan_columns.items():
             issues.append({
                 'issue_type': 'nan_issue',
                 'column': col,
@@ -122,6 +159,10 @@ def validate_data_sanity(df, pair):
             max_val = constraint_info.get('max', float('inf'))
             
             for col in [c for c in constraint_info['columns'] if c in df.columns]:
+                # Skip if this column can legitimately be negative
+                if col in legitimetely_negative_metrics:
+                    continue
+                    
                 # Find values outside valid range
                 invalid_rows = df[(df[col] < min_val) | (df[col] > max_val)]
                 
@@ -188,14 +229,28 @@ def validate_data_sanity(df, pair):
                                 'details': f"{col} outside valid range [{min_val}, {max_val}]"
                             })
     
-    # Check for absurdly large values in any numerical column
+    # Check for absurdly large values in numerical columns
+    # But exclude certain metrics where large values are normal
     for col in df.select_dtypes(include=[np.number]).columns:
-        # Skip certain columns like timestamps or primary keys
-        if col in ['timestamp_utc', 'id']:
+        # Skip non-numeric or specifically excluded columns
+        if col in ['timestamp_utc', 'id'] or col in exclude_from_absurd_checks:
             continue
             
-        # Check for values that are likely absurd (arbitrary large threshold)
-        absurd_threshold = 1e6  # May need adjustment based on the specific feature
+        # Determine a reasonable threshold based on column statistics
+        # Default absurd threshold is 1 million, but adjust based on column type
+        if col == 'volume_1h':
+            absurd_threshold = df[col].mean() * 100  # 100x the mean volume
+        elif col in ['open_1h', 'high_1h', 'low_1h', 'close_1h']:
+            absurd_threshold = df[col].mean() * 10  # 10x the mean price
+        elif col.startswith('future_return') or col.endswith('_pct'):
+            absurd_threshold = 2.0  # 200% change is very large
+        elif 'rank' in col:
+            absurd_threshold = 100  # Ranks shouldn't exceed 100
+        else:
+            # General threshold
+            absurd_threshold = 1e6
+            
+        # Check for values that exceed the threshold
         absurd_rows = df[df[col] > absurd_threshold]
         
         if not absurd_rows.empty:
@@ -215,7 +270,7 @@ def validate_data_sanity(df, pair):
     # Calculate total issues
     total_issues = sum(category['count'] for category in issue_summary.values())
     
-    # Calculate issue percentage based on number of candles
+    # Calculate issue percentage based on number of cells
     issue_percentage = (total_issues / (len(df) * len(df.columns))) * 100 if len(df) > 0 else 0
     
     return {

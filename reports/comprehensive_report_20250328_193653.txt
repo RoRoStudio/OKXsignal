@@ -1,7 +1,7 @@
 OKXsignal Comprehensive Validation Report
 =======================================
 
-Generated: 2025-03-28 13:57:34
+Generated: 2025-03-28 19:36:53
 Pairs analyzed: 1
 Pairs with issues: 1
 
@@ -12,23 +12,21 @@ Validator Summary
 +---------------------+---------------+---------------+
 | Validator           |   Issue Count |   Error Count |
 +=====================+===============+===============+
-| Raw OHLCV           |          1654 |             0 |
+| Data Completeness   |             1 |             0 |
 +---------------------+---------------+---------------+
-| Momentum            |           854 |             0 |
+| Momentum            |           909 |             0 |
 +---------------------+---------------+---------------+
-| Volatility          |          2024 |             0 |
+| Volatility          |             0 |             1 |
 +---------------------+---------------+---------------+
-| Volume Indicators   |          1249 |             0 |
+| Volume Indicators   |          1046 |             0 |
 +---------------------+---------------+---------------+
-| Statistical         |          1957 |             0 |
+| Statistical         |          1844 |             0 |
 +---------------------+---------------+---------------+
-| Pattern Recognition |             4 |             0 |
+| Pattern Recognition |             2 |             0 |
 +---------------------+---------------+---------------+
-| Temporal Features   |           586 |             0 |
+| Temporal Features   |           584 |             0 |
 +---------------------+---------------+---------------+
 | Labels              |            34 |             0 |
-+---------------------+---------------+---------------+
-| Data Sanity         |          1579 |             0 |
 +---------------------+---------------+---------------+
 | Data Distributions  |            33 |             0 |
 +---------------------+---------------+---------------+
@@ -38,28 +36,28 @@ Top Pairs with Issues
 +----------+---------------+
 | Pair     |   Issue Count |
 +==========+===============+
-| BTC-USDT |          9974 |
+| BTC-USDT |          4453 |
 +----------+---------------+
 
 Validator Details
 ----------------
 
 Data Completeness:
-  Pairs with issues: 0/1
-  Total issues found: 0
+  Pairs with issues: 1/1
+  Total issues found: 1
   Most common issue types:
+    - timestamp_gaps: 1
     - missing_values: 0
-    - timestamp_gaps: 0
     - future_return_issues: 0
 
 Raw OHLCV:
-  Pairs with issues: 1/1
-  Total issues found: 1654
+  Pairs with issues: 0/1
+  Total issues found: 0
   Most common issue types:
-    - negative_volume: 1654
     - high_low_issues: 0
     - open_high_issues: 0
     - low_close_issues: 0
+    - negative_volume: 0
     - taker_buy_issues: 0
 
 Price Action:
@@ -74,60 +72,54 @@ Price Action:
 
 Momentum:
   Pairs with issues: 1/1
-  Total issues found: 854
+  Total issues found: 909
   Most common issue types:
-    - macd_slope_issues: 168
-    - rsi_issues: 164
-    - macd_hist_slope_issues: 159
-    - tsi_issues: 152
-    - ppo_issues: 114
+    - macd_slope_issues: 180
+    - macd_hist_slope_issues: 170
+    - tsi_issues: 169
+    - rsi_issues: 167
+    - ppo_issues: 126
 
 Volatility:
   Pairs with issues: 1/1
-  Total issues found: 2024
-  Most common issue types:
-    - bb_width_issues: 450
-    - hist_vol_issues: 450
-    - z_score_issues: 449
-    - percent_b_issues: 448
-    - atr_issues: 208
+  Total issues found: 0
 
 Volume Indicators:
   Pairs with issues: 1/1
-  Total issues found: 1249
+  Total issues found: 1046
   Most common issue types:
-    - kvo_issues: 450
     - vpt_issues: 450
-    - vo_issues: 210
-    - vzo_issues: 76
+    - kvo_issues: 449
+    - vo_issues: 78
     - vwma_issues: 19
+    - mfi_issues: 14
 
 Statistical:
   Pairs with issues: 1/1
-  Total issues found: 1957
+  Total issues found: 1844
   Most common issue types:
-    - entropy_issues: 449
-    - hurst_issues: 444
-    - autocorr_issues: 442
-    - std_dev_issues: 330
-    - range_issues: 254
+    - z_score_issues: 431
+    - hurst_issues: 428
+    - kurtosis_issues: 418
+    - std_dev_issues: 279
+    - skewness_issues: 213
 
 Pattern Recognition:
   Pairs with issues: 1/1
-  Total issues found: 4
+  Total issues found: 2
   Most common issue types:
-    - multiple_patterns: 4
+    - multiple_patterns: 2
     - pattern_logic: 0
 
 Temporal Features:
   Pairs with issues: 1/1
-  Total issues found: 586
+  Total issues found: 584
   Most common issue types:
     - hour_of_day_issues: 450
-    - asian_session_issues: 38
-    - european_session_issues: 37
+    - european_session_issues: 38
+    - asian_session_issues: 37
     - american_session_issues: 37
-    - day_of_week_issues: 19
+    - day_of_week_issues: 18
 
 Cross-Pair Features:
   Pairs with issues: 0/1
@@ -154,19 +146,19 @@ Targets and Risk:
     - risk_adj_return_issues: 0
 
 Data Sanity:
-  Pairs with issues: 1/1
-  Total issues found: 1579
+  Pairs with issues: 0/1
+  Total issues found: 0
   Most common issue types:
-    - nan_issues: 850
-    - absurd_values: 450
-    - range_violations: 279
+    - range_violations: 0
     - infinity_issues: 0
+    - nan_issues: 0
+    - absurd_values: 0
 
 Data Distributions:
   Pairs with issues: 1/1
   Total issues found: 33
   Most common issue types:
-    - total_outliers: 1331
+    - total_outliers: 1297
     - feature_coverage: 96.20253164556962
     - outliers_by_group: 0
     - zeros_by_group: 0

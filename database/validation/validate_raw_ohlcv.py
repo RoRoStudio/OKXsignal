@@ -2,7 +2,7 @@
 """
 Raw OHLCV Data Validator
 - Ensures that open_1h <= high_1h, low_1h <= close_1h, etc.
-- Ensures all volume_* values are non-negative
+- Ensures all base volume values are non-negative
 - Checks taker_buy_base_1h <= volume_1h
 """
 
@@ -109,24 +109,27 @@ def validate_raw_ohlcv(df, pair):
                 'details': f"Low ({row['low_1h']}) > Open ({row['open_1h']})"
             })
     
-    # Check for negative volume issues
-    volume_columns = [col for col in df.columns if 'volume' in col.lower()]
+    # Check for negative volume in BASE VOLUME ONLY
+    # Exclude derivative metrics that can legitimately be negative
+    exclude_terms = ['change_pct', 'oscillator', 'zone', 'trend', 'slope', '_price_', 'correlation']
+    base_volume_columns = ['volume_1h', 'quote_volume_1h', 'taker_buy_base_1h']
     
-    for col in volume_columns:
-        negative_volume = df[df[col] < 0]
-        
-        if not negative_volume.empty:
-            issue_summary['negative_volume']['count'] += len(negative_volume)
+    for col in base_volume_columns:
+        if col in df.columns:
+            negative_volume = df[df[col] < 0]
             
-            # Record first few issues for reporting
-            for idx, row in negative_volume.head(5).iterrows():
-                issues.append({
-                    'issue_type': 'negative_volume',
-                    'column': col,
-                    'timestamp': row['timestamp_utc'],
-                    'value': row[col],
-                    'details': f"Negative volume in {col}: {row[col]}"
-                })
+            if not negative_volume.empty:
+                issue_summary['negative_volume']['count'] += len(negative_volume)
+                
+                # Record first few issues for reporting
+                for idx, row in negative_volume.head(5).iterrows():
+                    issues.append({
+                        'issue_type': 'negative_volume',
+                        'column': col,
+                        'timestamp': row['timestamp_utc'],
+                        'value': row[col],
+                        'details': f"Negative volume in {col}: {row[col]}"
+                    })
     
     # Check taker_buy_base_1h <= volume_1h if both columns exist
     if 'taker_buy_base_1h' in df.columns and 'volume_1h' in df.columns:

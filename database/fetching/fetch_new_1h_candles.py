@@ -6,19 +6,24 @@ from datetime import datetime, timezone, timedelta
 from config.config_loader import load_config
 from database.db import fetch_data, get_connection
 from psycopg2.extras import execute_values
+from asyncio import Queue
 
 config = load_config()
 
 OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/candles"
 CANDLES_RATE_LIMIT = 40
 BATCH_INTERVAL = 2
+RATE_LIMIT = 40  # max concurrent requests per interval
+INTERVAL = 2     # seconds
+MAX_CONCURRENT_PAIRS = 10  # Limit how many pairs run in parallel
+
 
 # Configure logging
 logging.basicConfig(level=config['LOG_LEVEL'].upper(), format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def get_known_timestamps(pair):
     query = "SELECT timestamp_utc FROM candles_1h WHERE pair = %s;"
-    return {row["timestamp_utc"] for row in await fetch_data(query, (pair,))}
+    return {row["timestamp_utc"] for row in fetch_data(query, (pair,))}
 
 async def fetch_active_pairs():
     async with aiohttp.ClientSession() as session:
@@ -30,7 +35,8 @@ async def fetch_active_pairs():
                 if inst["quoteCcy"] == "USDT" and inst["state"] == "live"
             ]
 
-async def fetch_candles(session, pair, direction, ref_ts=None):
+async def fetch_candles(session, pair, direction, semaphore, ref_ts=None):
+
     params = {
         "instId": pair,
         "bar": "1H",
@@ -44,9 +50,15 @@ async def fetch_candles(session, pair, direction, ref_ts=None):
     else:
         raise ValueError("Invalid fetch direction")
 
-    async with session.get(OKX_CANDLES_URL, params=params) as response:
-        response.raise_for_status()
-        return await response.json().get("data", [])
+    async with semaphore:
+        async with session.get(OKX_CANDLES_URL, params=params) as response:
+            if response.status == 429:
+                logging.warning(f"Rate limited for {pair}, sleeping {INTERVAL}s...")
+                await asyncio.sleep(INTERVAL)
+                return await fetch_candles(session, pair, direction, semaphore, ref_ts)
+            response.raise_for_status()
+            data = await response.json()
+            return data.get("data", [])
 
 async def insert_candles(pair, candles, known_ts):
     query = """
@@ -99,12 +111,12 @@ async def enforce_rate_limit(request_count, start_time):
         return 0, time.time()
     return request_count, start_time
 
-async def process_pair(pair, session, request_count, start_time):
+async def process_pair(pair, session, request_count, start_time, semaphore):
     logging.info(f"Processing {pair}")
     known_ts = await get_known_timestamps(pair)
 
     # Initial call → latest candles (newest to oldest)
-    candles = await fetch_candles(session, pair, direction="before")
+    candles = await fetch_candles(session, pair, direction="before", semaphore=semaphore)
     if not candles:
         logging.warning(f"No candles returned for {pair}")
         return
@@ -119,7 +131,7 @@ async def process_pair(pair, session, request_count, start_time):
 
     # Paginate backward using AFTER
     while True:
-        candles = await fetch_candles(session, pair, direction="after", ref_ts=after_ts)
+        candles = await fetch_candles(session, pair, direction="after", ref_ts=after_ts, semaphore=semaphore)
         if not candles:
             break
 
@@ -137,6 +149,16 @@ async def process_pair(pair, session, request_count, start_time):
 
     logging.info(f"Finished {pair}: {total_inserted} candles inserted")
 
+async def worker(queue, session, request_count, start_time, semaphore):
+    while not queue.empty():
+        pair = await queue.get()
+        try:
+            await process_pair(pair, session, request_count, start_time, semaphore)
+        except Exception as e:
+            logging.error(f"Failed processing {pair}: {e}")
+        finally:
+            queue.task_done()
+
 async def main():
     logging.info("Fetching latest 1H candles from OKX...")
     pairs = await fetch_active_pairs()
@@ -144,13 +166,19 @@ async def main():
 
     request_count = {OKX_CANDLES_URL: 0}
     start_time = time.time()
+    semaphore = asyncio.Semaphore(RATE_LIMIT)
+
+    queue = Queue()
+    for pair in pairs:
+        queue.put_nowait(pair)
 
     async with aiohttp.ClientSession() as session:
-        tasks = [
-            process_pair(pair, session, request_count, start_time)
-            for pair in pairs
+        workers = [
+            worker(queue, session, request_count, start_time, semaphore)
+            for _ in range(MAX_CONCURRENT_PAIRS)
         ]
-        await asyncio.gather(*tasks)
+        await asyncio.gather(*workers)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

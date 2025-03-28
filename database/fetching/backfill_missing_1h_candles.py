@@ -1,68 +1,69 @@
-"""
-backfill_missing_1h_candles.py
-Finds and fills missing 1-hour candles in PostgreSQL using OKX API.
-"""
-
-import requests
+import asyncio
+import aiohttp
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from config.config_loader import load_config
 from database.db import fetch_data, get_connection
 from psycopg2.extras import execute_values
 
 config = load_config()
 OKX_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
-CANDLES_RATE_LIMIT = 20
-BATCH_INTERVAL = 2
-
+RATE_LIMIT = 20
+INTERVAL = 2
+MAX_CONCURRENT_PAIRS = 5
+semaphore = None
 
 def fetch_all_pairs():
     query = "SELECT DISTINCT pair FROM public.candles_1h;"
     return [row["pair"] for row in fetch_data(query)]
 
+def fetch_existing_timestamps(pair):
+    query = "SELECT timestamp_utc FROM public.candles_1h WHERE pair = %s;"
+    return {
+        row["timestamp_utc"].replace(minute=0, second=0, microsecond=0)
+        for row in fetch_data(query, (pair,))
+    }
 
-def fetch_timestamps(pair):
-    query = """
-    SELECT timestamp_utc FROM public.candles_1h 
-    WHERE pair = %s ORDER BY timestamp_utc ASC;
-    """
-    return [row["timestamp_utc"] for row in fetch_data(query, (pair,))]
+def find_missing_timestamps(timestamps):
+    if len(timestamps) < 2:
+        return []
 
-
-def find_gaps(timestamps):
-    gaps = []
+    timestamps = sorted(timestamps)
+    missing = []
     expected_delta = timedelta(hours=1)
+
     for i in range(1, len(timestamps)):
         current = timestamps[i]
         prev = timestamps[i - 1]
-        delta = current - prev
-        if delta > expected_delta:
-            missing_start = prev + expected_delta
-            while missing_start < current:
-                gaps.append(missing_start)
-                missing_start += expected_delta
-    return gaps
+        while prev + expected_delta < current:
+            prev += expected_delta
+            missing.append(prev)
+    return missing
 
+async def fetch_candles(session, pair, after_utc):
+    async with semaphore:
+        params = {
+            "instId": pair,
+            "bar": "1H",
+            "limit": 100,
+            "after": str(int(after_utc.timestamp() * 1000))
+        }
+        try:
+            async with session.get(OKX_CANDLES_URL, params=params) as response:
+                if response.status == 429:
+                    print(f"\u26a0\ufe0f Rate limited for {pair}, sleeping {INTERVAL}s...")
+                    await asyncio.sleep(INTERVAL)
+                    return await fetch_candles(session, pair, after_utc)
+                response.raise_for_status()
+                data = await response.json()
+                return data.get("data", [])
+        except Exception as e:
+            print(f"❌ Error fetching {pair} after {after_utc}: {e}")
+            return []
 
-def fetch_candles(pair, after_utc):
-    params = {
-        "instId": pair,
-        "bar": "1H",
-        "limit": 100,
-        "after": str(int(after_utc.timestamp() * 1000))
-    }
-
-    response = requests.get(OKX_CANDLES_URL, params=params)
-    try:
-        return response.json().get("data", [])
-    except Exception as e:
-        print(f"❌ Error fetching {pair} after {after_utc}: {e}")
-        return []
-
-
-def insert_candles(pair, candles):
+def insert_candles(pair, candles, existing_ts):
     query = """
-    INSERT INTO public.candles_1h 
+    INSERT INTO public.candles_1h
     (pair, timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h, quote_volume_1h)
     VALUES %s
     ON CONFLICT (pair, timestamp_utc) DO NOTHING;
@@ -70,86 +71,124 @@ def insert_candles(pair, candles):
     rows = []
     for c in candles:
         try:
-            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)
+            from_zone = timezone.utc
+            to_zone = timezone(timedelta(hours=1))
+            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=from_zone).astimezone(to_zone)
+
+
+            print(f"📦 Fetched candle UTC {utc_ts} for {pair}")
+            if utc_ts in existing_ts:
+                print(f"⏩ Skipped duplicate candle {utc_ts} for {pair}")
+                continue
+            else:
+                print(f"⬆️ New candle {utc_ts} for {pair}, will insert")
+
             row = (
-                pair,
-                utc_ts,
-                float(c[1]),
-                float(c[2]),
-                float(c[3]),
-                float(c[4]),
-                float(c[5]),
-                float(c[6])
+                pair, utc_ts, float(c[1]), float(c[2]), float(c[3]), float(c[4]),
+                float(c[5]), float(c[6])
             )
             rows.append(row)
         except Exception as e:
-            print(f"⚠️ Malformed candle for {pair}: {e} | Raw: {c}")
+            print(f"⚠\ufe0f Malformed candle for {pair}: {e} | Raw: {c}")
 
-    if rows:
-        conn = get_connection()
-        cursor = conn.cursor()
-        try:
-            execute_values(cursor, query, rows)
-            conn.commit()
-            print(f"✅ Inserted {len(rows)} gap candles for {pair} | {rows[0][1]} → {rows[-1][1]}")
-            return len(rows)
-        except Exception as e:
-            print(f"❌ Insert failed for {pair}: {e}")
-            conn.rollback()
-        finally:
-            cursor.close()
-            conn.close()
+    if not rows:
+        return 0
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        execute_values(cursor, query, rows)
+        conn.commit()
+        print(f"✅ Inserted {len(rows)} candles for {pair} | {rows[0][1]} → {rows[-1][1]}")
+        return len(rows)
+    except Exception as e:
+        print(f"❌ Insert failed for {pair}: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+
     return 0
 
+async def process_pair(pair, session):
+    try:
+        print(f"\n🔁 Checking {pair}")
+        existing_ts = fetch_existing_timestamps(pair)
+        now = datetime.now(timezone.utc)
 
-def enforce_rate_limit(request_count, start_time):
-    request_count += 1
-    if request_count >= CANDLES_RATE_LIMIT:
-        elapsed = time.time() - start_time
-        if elapsed < BATCH_INTERVAL:
-            time.sleep(BATCH_INTERVAL - elapsed)
-        return 0, time.time()
-    return request_count, start_time
+        missing_ts = find_missing_timestamps(existing_ts)
+        missing_ts = [ts for ts in missing_ts if ts < now]
+
+        if not missing_ts:
+            print(f"✔️ No gaps for {pair}")
+            return 0
+
+        print(f"🧩 Found {len(missing_ts)} missing 1H timestamps for {pair}")
+        inserted_total = 0
+
+        while True:
+            earliest_gap = min(find_missing_timestamps(existing_ts), default=None)
+            if not earliest_gap or earliest_gap >= now:
+                break
+
+            print(f"⏳ Fetching from earliest gap: {earliest_gap}")
+            candles = await fetch_candles(session, pair, earliest_gap - timedelta(seconds=1))
+
+            if not candles:
+                print(f"⚠️ No candles returned for {pair} after {earliest_gap}")
+                break
+
+            inserted = insert_candles(pair, candles, existing_ts)
+            if inserted > 0:
+                new_ts = {datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) for c in candles}
+                existing_ts.update(new_ts)
+                inserted_total += inserted
+            else:
+                print(f"⚠️ No new inserts from candles fetched after {earliest_gap}")
+
+            await asyncio.sleep(INTERVAL / RATE_LIMIT)
+
+        if inserted_total == 0:
+            print(f"✔️ No candles inserted for {pair}")
+        else:
+            print(f"✅ Total inserted for {pair}: {inserted_total}")
+
+        return inserted_total
+
+    except Exception as e:
+        print(f"❌ Failed to process {pair}: {e}")
+        return 0
 
 
-def main():
+async def main():
+    global semaphore
+    semaphore = asyncio.Semaphore(RATE_LIMIT)
+
     print("🚀 Scanning for gaps in 1H candle history...")
-
     pairs = fetch_all_pairs()
-    print(f"✅ Found {len(pairs)} pairs with existing data")
+    print(f"📈 Found {len(pairs)} pairs with existing data")
 
     total_inserted = 0
-    request_count = {OKX_CANDLES_URL: 0}
-    start_time = time.time()
+    queue = asyncio.Queue()
+    for p in pairs:
+        await queue.put(p)
 
-    for index, pair in enumerate(pairs, start=1):
-        try:
-            print(f"\n🔁 Checking {pair}")
-            timestamps = fetch_timestamps(pair)
-            if len(timestamps) < 2:
-                print(f"⚠️ Not enough data to find gaps for {pair}")
-                continue
-
-            gaps = find_gaps(timestamps)
-            print(f"🧩 Found {len(gaps)} missing 1H timestamps for {pair}")
-
-            for gap_start in gaps:
-                candles = fetch_candles(pair, gap_start)
-                inserted = insert_candles(pair, candles)
+    async def worker():
+        nonlocal total_inserted
+        async with aiohttp.ClientSession() as session:
+            while not queue.empty():
+                pair = await queue.get()
+                inserted = await process_pair(pair, session)
                 total_inserted += inserted
+                queue.task_done()
 
-                request_count[OKX_CANDLES_URL], start_time = enforce_rate_limit(
-                    request_count[OKX_CANDLES_URL], start_time
-                )
+    workers = [asyncio.create_task(worker()) for _ in range(MAX_CONCURRENT_PAIRS)]
+    await queue.join()
 
-            if index % 50 == 0:
-                print(f"📊 Progress: {index}/{len(pairs)} | Total inserted: {total_inserted}")
+    for w in workers:
+        w.cancel()
 
-        except Exception as e:
-            print(f"❌ Failed to process {pair}: {e}")
-
-    print(f"\n✅ Backfill complete: Inserted {total_inserted} missing candles across {len(pairs)} pairs")
-
+    print(f"\n✅ Backfill complete: Inserted {total_inserted} missing candles")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
