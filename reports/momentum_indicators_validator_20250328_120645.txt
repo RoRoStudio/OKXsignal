@@ -1,0 +1,42 @@
+OKXsignal Validation Report: Momentum Indicators Validator
+==================================================
+
+Generated: 2025-03-28 12:06:45
+Duration: 0.24 seconds
+
+Summary
+-------
+Total pairs analyzed: 2
+Pairs with issues: 2
+Total issues found: 1575
+Pairs with errors: 0
+
+VALIDATION RESULT: SIGNIFICANT ISSUES ✗
+
+Pairs with Issues
+----------------
+BTC-USDT: 854 issues
+  - rsi_issues: 164 issues
+  - macd_slope_issues: 168 issues
+  - macd_hist_slope_issues: 159 issues
+  - stoch_k_issues: 13 issues
+  - stoch_d_issues: 15 issues
+  - williams_r_issues: 13 issues
+  - cci_issues: 13 issues
+  - roc_issues: 10 issues
+  - tsi_issues: 152 issues
+  - ppo_issues: 114 issues
+  - ao_issues: 33 issues
+ETH-USDT: 721 issues
+  - rsi_issues: 141 issues
+  - macd_slope_issues: 113 issues
+  - macd_hist_slope_issues: 104 issues
+  - stoch_k_issues: 13 issues
+  - stoch_d_issues: 15 issues
+  - williams_r_issues: 13 issues
+  - cci_issues: 13 issues
+  - roc_issues: 10 issues
+  - tsi_issues: 159 issues
+  - ppo_issues: 107 issues
+  - ao_issues: 33 issues
+

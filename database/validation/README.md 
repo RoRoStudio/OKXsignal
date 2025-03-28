@@ -1,0 +1,108 @@
+# 🧪 OKXsignal Feature Validation Suite
+
+This directory contains a modular validation framework to ensure the accuracy, consistency, and sanity of all computed features in the `candles_1h` dataset.
+
+Each script is responsible for validating a specific feature group. You can run all at once, or debug them individually.
+
+---
+
+## 📁 Modules Overview
+
+### 1. `validate_price_action.py`
+Validates candle structure fields:
+- `candle_body_size`, `upper_shadow`, `lower_shadow`
+- `relative_close_position`, `gap_open`
+- `price_velocity`, `price_acceleration`, `log_return`
+
+---
+
+### 2. `validate_momentum_indicators.py`
+Validates momentum-based indicators:
+- `rsi_*`, `macd_*`, `stoch_k_14`, `stoch_d_14`
+- `williams_r_14`, `cci_14`, `roc_10`, `tsi`
+- `ppo`, `awesome_oscillator`
+
+---
+
+### 3. `validate_volatility_indicators.py`
+Validates volatility measurements:
+- `atr_*`, `bollinger_width_*`, `bollinger_percent_b`
+- `true_range`, `keltner_channel_width`
+- `normalized_atr_14`, `historical_vol_30`
+- `chaikin_volatility`
+
+---
+
+### 4. `validate_volume_indicators.py`
+Validates volume-related metrics:
+- `obv_slope_1h`, `volume_change_pct_*`, `money_flow_index_*`
+- `chaikin_money_flow`, `vwma_20`, `klinger_oscillator`
+- `volume_zone_oscillator`, `volume_price_trend`
+- `volume_oscillator`, `volume_price_confirmation`
+
+---
+
+### 5. `validate_statistical_features.py`
+Validates advanced statistical fields:
+- `std_dev_returns_20`, `skewness_20`, `kurtosis_20`
+- `z_score_20`, `hurst_exponent`, `shannon_entropy`, `autocorr_1`
+
+---
+
+### 6. `validate_time_features.py`
+Validates temporal/categorical flags:
+- `hour_of_day`, `day_of_week`, `month_of_year`, `is_weekend`
+- `asian_session`, `european_session`, `american_session`
+
+---
+
+### 7. `validate_pattern_features.py`
+Validates candlestick pattern flags:
+- `pattern_doji`, `pattern_engulfing`, `pattern_hammer`, `pattern_morning_star`
+
+---
+
+### 8. `validate_support_resistance.py`
+Validates trend boundary indicators:
+- `support_level`, `resistance_level`
+
+---
+
+### 9. `validate_cross_pair_features.py`
+Validates market-relative features:
+- `performance_rank_btc_1h`, `performance_rank_eth_1h`
+- `volume_rank_1h`, `volatility_rank_1h`
+- `btc_corr_24h`, `prev_volume_rank`
+
+---
+
+### 10. `validate_target_labels.py`
+Validates model target labels:
+- `future_return_*`, `future_max_return_24h_pct`, `future_max_drawdown_12h_pct`
+- `was_profitable_12h`, `future_risk_adj_return_12h`
+- `profit_target_1pct`, `profit_target_2pct`
+
+---
+
+### 11. `validate_metadata_flags.py`
+Validates control flags:
+- `features_computed`, `targets_computed` (if still present)
+
+---
+
+### 12. `shared_utils.py`
+Common utilities:
+- Resampling helpers
+- Feature recomputation logic
+- Rolling window comparisons
+
+---
+
+## 🚀 Usage
+
+### ✅ Run All Validators (recommended)
+```bash
+python -m database.validation.run_validations --rolling-window 450
+python -m database.validation.validate_price_action --rolling-window 450
+--pairs BTC-USDT,ETH-USDT
+--skip momentum,statistical

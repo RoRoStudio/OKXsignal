@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 import math
-from validation_utils import main_validator
+from database.validation.validation_utils import main_validator
 
 def calculate_std_dev_returns(returns, window=20):
     """Calculate standard deviation of returns independently"""

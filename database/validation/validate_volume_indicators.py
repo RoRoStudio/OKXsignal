@@ -7,7 +7,7 @@ Volume Indicators Validator
 
 import pandas as pd
 import numpy as np
-from validation_utils import main_validator
+from database.validation.validation_utils import main_validator
 
 def calculate_obv(close, volume):
     """Calculate On-Balance Volume (OBV) independently"""

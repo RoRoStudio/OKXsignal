@@ -113,11 +113,17 @@ def fetch_data(conn, pair, limit=None):
             return pd.DataFrame()
         
         # Convert to DataFrame
-        df = pd.DataFrame(rows)
+        # Use column names from cursor description rather than relying on DictCursor
+        columns = [desc[0] for desc in cursor.description]
+        df = pd.DataFrame(rows, columns=columns)
         
-        # Convert timestamp to datetime
+        # Convert timestamp to datetime if the column exists
         if 'timestamp_utc' in df.columns:
             df['timestamp_utc'] = pd.to_datetime(df['timestamp_utc'])
+        else:
+            # If timestamp_utc doesn't exist, log a warning and return empty DataFrame
+            logging.warning(f"timestamp_utc column not found for {pair}")
+            return pd.DataFrame()
         
         # Sort by timestamp (ascending)
         df = df.sort_values('timestamp_utc').reset_index(drop=True)
@@ -214,11 +220,11 @@ def generate_report(validation_results, validator_name, output_dir="reports"):
     }
     
     # Save JSON report
-    with open(json_path, 'w') as f:
+    with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(validation_results, f, indent=2, default=str)
     
-    # Generate text report
-    with open(txt_path, 'w') as f:
+    # Generate text report - ADD encoding='utf-8' here
+    with open(txt_path, 'w', encoding='utf-8') as f:
         f.write(f"OKXsignal Validation Report: {validator_name}\n")
         f.write("=" * 50 + "\n\n")
         
