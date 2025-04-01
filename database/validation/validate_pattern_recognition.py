@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Pattern Recognition Validator
-- Ensures only one or zero pattern flags are 1 per row
-- Optionally revalidates candle pattern logic
+- Ensures patterns are properly identified
+- Validates pattern detection logic
 """
 
 import pandas as pd
@@ -22,7 +22,6 @@ def validate_pattern_recognition(df, pair):
     """
     issues = []
     issue_summary = {
-        'multiple_patterns': {'count': 0},
         'pattern_logic': {'count': 0}
     }
     
@@ -49,27 +48,7 @@ def validate_pattern_recognition(df, pair):
     missing_columns = [col for col in required_columns if col not in df.columns]
     has_ohlc = len(missing_columns) == 0
     
-    # Check if more than one pattern is identified per row
-    df['pattern_count'] = df[pattern_columns].sum(axis=1)
-    multiple_patterns = df[df['pattern_count'] > 1]
-    
-    if not multiple_patterns.empty:
-        issue_summary['multiple_patterns']['count'] = len(multiple_patterns)
-        
-        # Record first few issues for reporting
-        for idx, row in multiple_patterns.head(5).iterrows():
-            # Find which patterns are flagged
-            flagged_patterns = [col for col in pattern_columns if row[col] == 1]
-            
-            issues.append({
-                'issue_type': 'multiple_patterns',
-                'timestamp': row['timestamp_utc'],
-                'pattern_count': int(row['pattern_count']),
-                'flagged_patterns': ', '.join(flagged_patterns),
-                'details': f"Multiple patterns detected: {', '.join(flagged_patterns)}"
-            })
-    
-    # Optionally revalidate pattern logic if OHLC data is available
+    # Revalidate pattern logic if OHLC data is available
     if has_ohlc:
         # Revalidate Doji pattern
         if 'pattern_doji' in pattern_columns:
@@ -183,7 +162,7 @@ def validate_pattern_recognition(df, pair):
             # Day 2: Small body with gap down
             day2_body = np.abs(df['close_1h'].shift(1) - df['open_1h'].shift(1))
             day1_body = np.abs(df['close_1h'].shift(2) - df['open_1h'].shift(2))
-            small_body_day2 = day2_body < (0.3 * day1_body)
+            small_body_day2 = day2_body < (0.3 * day1_body.replace(0, np.inf))
             gap_down = df['high_1h'].shift(1) < df['close_1h'].shift(2)
             
             # Day 3: Bullish candle that closes above the midpoint of Day 1

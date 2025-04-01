@@ -1,7 +1,7 @@
 OKXsignal Comprehensive Validation Report
 =======================================
 
-Generated: 2025-03-28 20:36:33
+Generated: 2025-04-01 09:18:03
 Pairs analyzed: 1
 Pairs with issues: 1
 
@@ -9,32 +9,30 @@ VALIDATION RESULT: SIGNIFICANT ISSUES ✗
 
 Validator Summary
 ----------------
-+---------------------+---------------+---------------+
-| Validator           |   Issue Count |   Error Count |
-+=====================+===============+===============+
-| Data Completeness   |             1 |             0 |
-+---------------------+---------------+---------------+
-| Momentum            |           154 |             0 |
-+---------------------+---------------+---------------+
-| Volatility          |             0 |             1 |
-+---------------------+---------------+---------------+
-| Volume Indicators   |           996 |             0 |
-+---------------------+---------------+---------------+
-| Statistical         |           724 |             0 |
-+---------------------+---------------+---------------+
-| Pattern Recognition |             2 |             0 |
-+---------------------+---------------+---------------+
-| Labels              |            34 |             0 |
-+---------------------+---------------+---------------+
-| Data Distributions  |            33 |             0 |
-+---------------------+---------------+---------------+
++--------------------+---------------+---------------+
+| Validator          |   Issue Count |   Error Count |
++====================+===============+===============+
+| Data Completeness  |             1 |             0 |
++--------------------+---------------+---------------+
+| Momentum           |           154 |             0 |
++--------------------+---------------+---------------+
+| Volatility         |           630 |             0 |
++--------------------+---------------+---------------+
+| Volume Indicators  |           996 |             0 |
++--------------------+---------------+---------------+
+| Statistical        |           724 |             0 |
++--------------------+---------------+---------------+
+| Labels             |            34 |             0 |
++--------------------+---------------+---------------+
+| Data Distributions |            33 |             0 |
++--------------------+---------------+---------------+
 
 Top Pairs with Issues
 -------------------
 +----------+---------------+
 | Pair     |   Issue Count |
 +==========+===============+
-| BTC-USDT |          1944 |
+| BTC-USDT |          2572 |
 +----------+---------------+
 
 Validator Details
@@ -80,7 +78,13 @@ Momentum:
 
 Volatility:
   Pairs with issues: 1/1
-  Total issues found: 0
+  Total issues found: 630
+  Most common issue types:
+    - hist_vol_issues: 450
+    - z_score_issues: 69
+    - atr_issues: 28
+    - kc_width_issues: 28
+    - bb_width_issues: 19
 
 Volume Indicators:
   Pairs with issues: 1/1
@@ -103,10 +107,9 @@ Statistical:
     - skewness_issues: 9
 
 Pattern Recognition:
-  Pairs with issues: 1/1
-  Total issues found: 2
+  Pairs with issues: 0/1
+  Total issues found: 0
   Most common issue types:
-    - multiple_patterns: 2
     - pattern_logic: 0
 
 Temporal Features:

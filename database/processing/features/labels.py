@@ -2,6 +2,7 @@
 """
 Label Features
 - Computes target features like future returns and profit targets
+- Ensures zero values for recent points lacking future data
 """
 
 import logging
@@ -67,6 +68,8 @@ class LabelFeatures(BaseFeatureComputer):
                 if self.use_gpu:
                     try:
                         df[col_name] = compute_future_return_gpu(close, shift)
+                        # Zero out values that don't have enough future data
+                        df[col_name].iloc[-shift:] = 0
                     except Exception as e:
                         logging.warning(f"GPU calculation failed for {col_name}: {e}")
                         self.use_gpu = False
@@ -74,6 +77,8 @@ class LabelFeatures(BaseFeatureComputer):
                 if not self.use_gpu and self.use_numba:
                     try:
                         df[col_name] = compute_future_return_numba(close, shift)
+                        # Zero out values that don't have enough future data
+                        df[col_name].iloc[-shift:] = 0
                     except Exception as e:
                         logging.warning(f"Numba calculation failed for {col_name}: {e}")
                         self.use_numba = False
@@ -96,12 +101,15 @@ class LabelFeatures(BaseFeatureComputer):
                 df[f'future_return_{horizon_name}_pct'] = 0.0
         
         # Max future return calculation
+        max_return_window = params['max_return_window']
         try:
             if self.use_gpu:
                 try:
                     df['future_max_return_24h_pct'] = compute_max_future_return_gpu(
-                        close, high, params['max_return_window']
+                        close, high, max_return_window
                     )
+                    # Zero out values that don't have enough future data
+                    df['future_max_return_24h_pct'].iloc[-max_return_window:] = 0
                 except Exception as e:
                     logging.warning(f"GPU calculation failed for max future return: {e}")
                     self.use_gpu = False
@@ -109,8 +117,10 @@ class LabelFeatures(BaseFeatureComputer):
             if not self.use_gpu and self.use_numba:
                 try:
                     df['future_max_return_24h_pct'] = compute_max_future_return_numba(
-                        close, high, params['max_return_window']
+                        close, high, max_return_window
                     )
+                    # Zero out values that don't have enough future data
+                    df['future_max_return_24h_pct'].iloc[-max_return_window:] = 0
                 except Exception as e:
                     logging.warning(f"Numba calculation failed for max future return: {e}")
                     self.use_numba = False
@@ -120,7 +130,7 @@ class LabelFeatures(BaseFeatureComputer):
                 max_future_return = np.zeros(len(close))
                 
                 for i in range(len(close) - 1):
-                    end_idx = min(i + params['max_return_window'], len(high))
+                    end_idx = min(i + max_return_window, len(high))
                     if i + 1 < end_idx:
                         max_high = np.max(high[i+1:end_idx])
                         # Avoid division by zero
@@ -128,17 +138,22 @@ class LabelFeatures(BaseFeatureComputer):
                             max_future_return[i] = (max_high - close[i]) / close[i]
                             
                 df['future_max_return_24h_pct'] = max_future_return
+                # Zero out values that don't have enough future data
+                df['future_max_return_24h_pct'].iloc[-max_return_window:] = 0
                 
         except Exception as e:
             self._handle_exceptions(df, 'future_max_return_24h_pct', 0, "Max Future Return", e)
         
         # Max future drawdown calculation
+        max_drawdown_window = params['max_drawdown_window']
         try:
             if self.use_gpu:
                 try:
                     df['future_max_drawdown_12h_pct'] = compute_max_future_drawdown_gpu(
-                        close, low, params['max_drawdown_window']
+                        close, low, max_drawdown_window
                     )
+                    # Zero out values that don't have enough future data
+                    df['future_max_drawdown_12h_pct'].iloc[-max_drawdown_window:] = 0
                 except Exception as e:
                     logging.warning(f"GPU calculation failed for max future drawdown: {e}")
                     self.use_gpu = False
@@ -146,8 +161,10 @@ class LabelFeatures(BaseFeatureComputer):
             if not self.use_gpu and self.use_numba:
                 try:
                     df['future_max_drawdown_12h_pct'] = compute_max_future_drawdown_numba(
-                        close, low, params['max_drawdown_window']
+                        close, low, max_drawdown_window
                     )
+                    # Zero out values that don't have enough future data
+                    df['future_max_drawdown_12h_pct'].iloc[-max_drawdown_window:] = 0
                 except Exception as e:
                     logging.warning(f"Numba calculation failed for max future drawdown: {e}")
                     self.use_numba = False
@@ -157,7 +174,7 @@ class LabelFeatures(BaseFeatureComputer):
                 max_future_drawdown = np.zeros(len(close))
                 
                 for i in range(len(close) - 1):
-                    end_idx = min(i + params['max_drawdown_window'], len(low))
+                    end_idx = min(i + max_drawdown_window, len(low))
                     if i + 1 < end_idx:
                         min_low = np.min(low[i+1:end_idx])
                         # Avoid division by zero
@@ -165,11 +182,13 @@ class LabelFeatures(BaseFeatureComputer):
                             max_future_drawdown[i] = (min_low - close[i]) / close[i]
                             
                 df['future_max_drawdown_12h_pct'] = max_future_drawdown
+                # Zero out values that don't have enough future data  
+                df['future_max_drawdown_12h_pct'].iloc[-max_drawdown_window:] = 0
                 
         except Exception as e:
             self._handle_exceptions(df, 'future_max_drawdown_12h_pct', 0, "Max Future Drawdown", e)
         
-        # Was profitable
+        # Was profitable calculation - this depends on future_return_12h_pct which we've already fixed
         df['was_profitable_12h'] = (df['future_return_12h_pct'] > 0).astype(int)
         
         # Risk-adjusted return (return / max drawdown)
@@ -184,7 +203,7 @@ class LabelFeatures(BaseFeatureComputer):
         except Exception as e:
             self._handle_exceptions(df, 'future_risk_adj_return_12h', 0, "Risk-Adjusted Return", e)
         
-        # Target hit indicators (simple profit targets)
+        # Target hit indicators (simple profit targets) - these depend on future_max_return_24h_pct which we've already fixed
         df['profit_target_1pct'] = (df['future_max_return_24h_pct'] > 0.01).astype(int)
         df['profit_target_2pct'] = (df['future_max_return_24h_pct'] > 0.02).astype(int)
         

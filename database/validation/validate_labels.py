@@ -163,7 +163,8 @@ def validate_labels(df, pair):
         recent_cutoff = len(df) - shift
         if recent_cutoff > 0:
             recent_data = df.iloc[recent_cutoff:]
-            non_zero_recent = recent_data[recent_data[label] != 0]
+            # Make sure we're filtering to non-zero and non-NaN values 
+            non_zero_recent = recent_data[(recent_data[label] != 0) & (~recent_data[label].isna())]
             
             if not non_zero_recent.empty:
                 issue_summary['future_leakage']['count'] += len(non_zero_recent)
@@ -209,7 +210,8 @@ def validate_labels(df, pair):
         recent_cutoff = len(df) - 24  # 24h
         if recent_cutoff > 0:
             recent_data = df.iloc[recent_cutoff:]
-            non_zero_recent = recent_data[recent_data['future_max_return_24h_pct'] != 0]
+            non_zero_recent = recent_data[(recent_data['future_max_return_24h_pct'] != 0) & 
+                                         (~recent_data['future_max_return_24h_pct'].isna())]
             
             if not non_zero_recent.empty:
                 issue_summary['future_leakage']['count'] += len(non_zero_recent)
@@ -255,7 +257,8 @@ def validate_labels(df, pair):
         recent_cutoff = len(df) - 12  # 12h
         if recent_cutoff > 0:
             recent_data = df.iloc[recent_cutoff:]
-            non_zero_recent = recent_data[recent_data['future_max_drawdown_12h_pct'] != 0]
+            non_zero_recent = recent_data[(recent_data['future_max_drawdown_12h_pct'] != 0) &
+                                         (~recent_data['future_max_drawdown_12h_pct'].isna())]
             
             if not non_zero_recent.empty:
                 issue_summary['future_leakage']['count'] += len(non_zero_recent)
