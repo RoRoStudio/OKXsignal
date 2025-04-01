@@ -61,45 +61,45 @@ def compute_distribution_statistics(df, column):
     
     return stats_dict
 
-def create_histogram(df, column, output_dir, pair):
-    """Create a histogram for a column"""
-    plt.figure(figsize=(10, 6))
+# def create_histogram(df, column, output_dir, pair):
+#     """Create a histogram for a column"""
+#     plt.figure(figsize=(10, 6))
     
-    # Drop NaN values
-    data = df[column].dropna()
+#     # Drop NaN values
+#     data = df[column].dropna()
     
-    if len(data) == 0:
-        plt.close()
-        return None
+#     if len(data) == 0:
+#         plt.close()
+#         return None
     
-    # Create histogram
-    plt.hist(data, bins=50, alpha=0.7, color='steelblue')
+#     # Create histogram
+#     plt.hist(data, bins=50, alpha=0.7, color='steelblue')
     
-    # Add titles and labels
-    plt.title(f"{pair} - {column} Distribution")
-    plt.xlabel(column)
-    plt.ylabel("Frequency")
+#     # Add titles and labels
+#     plt.title(f"{pair} - {column} Distribution")
+#     plt.xlabel(column)
+#     plt.ylabel("Frequency")
     
-    # Add key statistics as text
-    stats_text = f"Mean: {data.mean():.4f}\n"
-    stats_text += f"Median: {data.median():.4f}\n"
-    stats_text += f"Std Dev: {data.std():.4f}\n"
-    stats_text += f"Min: {data.min():.4f}\n"
-    stats_text += f"Max: {data.max():.4f}\n"
-    stats_text += f"Skew: {data.skew():.4f}\n"
-    stats_text += f"Outliers: {((data < data.quantile(0.25) - 1.5 * (data.quantile(0.75) - data.quantile(0.25))) | (data > data.quantile(0.75) + 1.5 * (data.quantile(0.75) - data.quantile(0.25)))).sum()}"
+#     # Add key statistics as text
+#     stats_text = f"Mean: {data.mean():.4f}\n"
+#     stats_text += f"Median: {data.median():.4f}\n"
+#     stats_text += f"Std Dev: {data.std():.4f}\n"
+#     stats_text += f"Min: {data.min():.4f}\n"
+#     stats_text += f"Max: {data.max():.4f}\n"
+#     stats_text += f"Skew: {data.skew():.4f}\n"
+#     stats_text += f"Outliers: {((data < data.quantile(0.25) - 1.5 * (data.quantile(0.75) - data.quantile(0.25))) | (data > data.quantile(0.75) + 1.5 * (data.quantile(0.75) - data.quantile(0.25)))).sum()}"
     
-    plt.annotate(stats_text, xy=(0.05, 0.95), xycoords='axes fraction', 
-                 bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="steelblue", alpha=0.8),
-                 verticalalignment='top')
+#     plt.annotate(stats_text, xy=(0.05, 0.95), xycoords='axes fraction', 
+#                  bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="steelblue", alpha=0.8),
+#                  verticalalignment='top')
     
-    # Save the histogram
-    os.makedirs(f"{output_dir}/histograms/{pair}", exist_ok=True)
-    filename = f"{output_dir}/histograms/{pair}/{column.replace('/', '_')}.png"
-    plt.savefig(filename)
-    plt.close()
+#     # Save the histogram
+#     os.makedirs(f"{output_dir}/histograms/{pair}", exist_ok=True)
+#     filename = f"{output_dir}/histograms/{pair}/{column.replace('/', '_')}.png"
+#     plt.savefig(filename)
+#     plt.close()
     
-    return filename
+#     return filename
 
 def detect_outliers(df, column):
     """Detect outliers in a column using the IQR method"""
@@ -190,10 +190,10 @@ def validate_data_distributions(df, pair, output_dir="reports"):
                 col_stats = compute_distribution_statistics(df, col)
                 group_stats[col] = col_stats
                 
-                # Create histogram
-                if col_stats['count'] > 0:
-                    histogram_path = create_histogram(df, col, output_dir, pair)
-                    group_histograms[col] = histogram_path
+                # # Create histogram
+                # if col_stats['count'] > 0:
+                #     histogram_path = create_histogram(df, col, output_dir, pair)
+                #     group_histograms[col] = histogram_path
                 
                 # Check for significant outliers
                 if col_stats['outliers_count'] > 0:

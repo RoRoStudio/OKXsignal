@@ -1,5 +1,5 @@
 {
-  "timestamp": "20250401_091803",
+  "timestamp": "20250401_100032",
   "total_pairs": 1,
   "pairs_with_issues": 1,
   "validators_with_issues": {
@@ -12,8 +12,8 @@
       "issue_count": 154
     },
     "Volatility": {
-      "error_count": 0,
-      "issue_count": 630
+      "error_count": 1,
+      "issue_count": 0
     },
     "Volume Indicators": {
       "error_count": 0,
@@ -60,7 +60,7 @@
         ],
         "total_elements": 45450,
         "missing_pct": 0.0,
-        "duration_seconds": 0.016562223434448242
+        "duration_seconds": 0.016614675521850586
       },
       "Raw OHLCV": {
         "pair": "BTC-USDT",
@@ -86,7 +86,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0013079643249511719
+        "duration_seconds": 0.0016109943389892578
       },
       "Price Action": {
         "pair": "BTC-USDT",
@@ -112,7 +112,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.016873598098754883
+        "duration_seconds": 0.021677255630493164
       },
       "Momentum": {
         "pair": "BTC-USDT",
@@ -468,320 +468,13 @@
             "details": "Awesome Oscillator calculation discrepancy"
           }
         ],
-        "duration_seconds": 0.09814095497131348
+        "duration_seconds": 0.10209798812866211
       },
       "Volatility": {
         "pair": "BTC-USDT",
-        "status": "completed",
-        "issues_count": 630,
-        "candles_count": 450,
-        "issue_percentage": 140.0,
-        "issue_summary": {
-          "atr_issues": {
-            "count": 28
-          },
-          "bb_width_issues": {
-            "count": 19
-          },
-          "percent_b_issues": {
-            "count": 17
-          },
-          "dc_width_issues": {
-            "count": 19
-          },
-          "kc_width_issues": {
-            "count": 28
-          },
-          "hist_vol_issues": {
-            "count": 450
-          },
-          "z_score_issues": {
-            "count": 69
-          }
-        },
-        "issues": [
-          {
-            "issue_type": "atr_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 523.2918393795474,
-            "diff": 523.2918393795474,
-            "details": "ATR calculation discrepancy"
-          },
-          {
-            "issue_type": "atr_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": 573.2067079952943,
-            "diff": 573.2067079952943,
-            "details": "ATR calculation discrepancy"
-          },
-          {
-            "issue_type": "atr_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": 591.4705145670586,
-            "diff": 591.4705145670586,
-            "details": "ATR calculation discrepancy"
-          },
-          {
-            "issue_type": "atr_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": 621.9154778122684,
-            "diff": 621.9154778122684,
-            "details": "ATR calculation discrepancy"
-          },
-          {
-            "issue_type": "atr_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": 680.7286579685351,
-            "diff": 680.7286579685351,
-            "details": "ATR calculation discrepancy"
-          },
-          {
-            "issue_type": "bb_width_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 1971.0476621330017,
-            "diff": 1971.0476621330017,
-            "details": "Bollinger Band Width calculation discrepancy"
-          },
-          {
-            "issue_type": "bb_width_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2875.472895994666,
-            "diff": 2875.472895994666,
-            "details": "Bollinger Band Width calculation discrepancy"
-          },
-          {
-            "issue_type": "bb_width_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": 3425.627882359666,
-            "diff": 3425.627882359666,
-            "details": "Bollinger Band Width calculation discrepancy"
-          },
-          {
-            "issue_type": "bb_width_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": 4047.5399533049786,
-            "diff": 4047.5399533049786,
-            "details": "Bollinger Band Width calculation discrepancy"
-          },
-          {
-            "issue_type": "bb_width_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": 4746.951773759676,
-            "diff": 4746.951773759676,
-            "details": "Bollinger Band Width calculation discrepancy"
-          },
-          {
-            "issue_type": "percent_b_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.5,
-            "actual": -0.1574879059989011,
-            "diff": 0.6574879059989012,
-            "details": "Bollinger %B calculation discrepancy"
-          },
-          {
-            "issue_type": "percent_b_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.5,
-            "actual": -0.29365901976635844,
-            "diff": 0.7936590197663584,
-            "details": "Bollinger %B calculation discrepancy"
-          },
-          {
-            "issue_type": "percent_b_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.5,
-            "actual": -0.0979239632382234,
-            "diff": 0.5979239632382234,
-            "details": "Bollinger %B calculation discrepancy"
-          },
-          {
-            "issue_type": "percent_b_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.5,
-            "actual": -0.09793850781477118,
-            "diff": 0.5979385078147712,
-            "details": "Bollinger %B calculation discrepancy"
-          },
-          {
-            "issue_type": "percent_b_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.5,
-            "actual": -0.09339975088242253,
-            "diff": 0.5933997508824225,
-            "details": "Bollinger %B calculation discrepancy"
-          },
-          {
-            "issue_type": "dc_width_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2278.0999999999913,
-            "diff": 2278.0999999999913,
-            "details": "Donchian Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "dc_width_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": 3041.800000000003,
-            "diff": 3041.800000000003,
-            "details": "Donchian Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "dc_width_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": 3528.699999999997,
-            "diff": 3528.699999999997,
-            "details": "Donchian Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "dc_width_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": 3771.199999999997,
-            "diff": 3771.199999999997,
-            "details": "Donchian Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "dc_width_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": 4198.800000000003,
-            "diff": 4198.800000000003,
-            "details": "Donchian Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "kc_width_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2093.167357518192,
-            "diff": 2093.167357518192,
-            "details": "Keltner Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "kc_width_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2292.8268319811905,
-            "diff": 2292.8268319811905,
-            "details": "Keltner Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "kc_width_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2365.8820582682383,
-            "diff": 2365.8820582682383,
-            "details": "Keltner Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "kc_width_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2487.6619112490735,
-            "diff": 2487.6619112490735,
-            "details": "Keltner Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "kc_width_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": 2722.914631874126,
-            "diff": 2722.914631874126,
-            "details": "Keltner Channel Width calculation discrepancy"
-          },
-          {
-            "issue_type": "hist_vol_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.03858946537018649,
-            "diff": 0.03858946537018649,
-            "details": "Historical Volatility calculation discrepancy"
-          },
-          {
-            "issue_type": "hist_vol_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.05190651818785315,
-            "diff": 0.05190651818785315,
-            "details": "Historical Volatility calculation discrepancy"
-          },
-          {
-            "issue_type": "hist_vol_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.05232735222424074,
-            "diff": 0.05232735222424074,
-            "details": "Historical Volatility calculation discrepancy"
-          },
-          {
-            "issue_type": "hist_vol_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.054518843479853106,
-            "diff": 0.054518843479853106,
-            "details": "Historical Volatility calculation discrepancy"
-          },
-          {
-            "issue_type": "hist_vol_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": 0.056145113346761956,
-            "diff": 0.056145113346761956,
-            "details": "Historical Volatility calculation discrepancy"
-          },
-          {
-            "issue_type": "z_score_issue",
-            "timestamp": "2025-03-09 05:00:00+01:00",
-            "expected": 0.0,
-            "actual": -3.281075181161486,
-            "diff": 3.281075181161486,
-            "details": "Z-Score calculation discrepancy"
-          },
-          {
-            "issue_type": "z_score_issue",
-            "timestamp": "2025-03-09 06:00:00+01:00",
-            "expected": 0.0,
-            "actual": -4.631333972980001,
-            "diff": 4.631333972980001,
-            "details": "Z-Score calculation discrepancy"
-          },
-          {
-            "issue_type": "z_score_issue",
-            "timestamp": "2025-03-09 07:00:00+01:00",
-            "expected": 0.0,
-            "actual": -2.8492913327097407,
-            "diff": 2.8492913327097407,
-            "details": "Z-Score calculation discrepancy"
-          },
-          {
-            "issue_type": "z_score_issue",
-            "timestamp": "2025-03-09 08:00:00+01:00",
-            "expected": 0.0,
-            "actual": -2.825969525134477,
-            "diff": 2.825969525134477,
-            "details": "Z-Score calculation discrepancy"
-          },
-          {
-            "issue_type": "z_score_issue",
-            "timestamp": "2025-03-09 09:00:00+01:00",
-            "expected": 0.0,
-            "actual": -2.7837551030964476,
-            "diff": 2.7837551030964476,
-            "details": "Z-Score calculation discrepancy"
-          }
-        ],
-        "duration_seconds": 0.1302487850189209
+        "status": "error",
+        "error_message": "unsupported operand type(s) for *: 'dict' and 'int'",
+        "duration_seconds": 0.05376911163330078
       },
       "Volume Indicators": {
         "pair": "BTC-USDT",
@@ -1154,7 +847,7 @@
             "details": "OBV Slope direction doesn't match significant price movement direction"
           }
         ],
-        "duration_seconds": 0.09707379341125488
+        "duration_seconds": 0.10877847671508789
       },
       "Statistical": {
         "pair": "BTC-USDT",
@@ -1400,7 +1093,7 @@
             "details": "Shannon Entropy calculation discrepancy"
           }
         ],
-        "duration_seconds": 0.34368300437927246
+        "duration_seconds": 0.3966200351715088
       },
       "Pattern Recognition": {
         "pair": "BTC-USDT",
@@ -1412,7 +1105,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.00465703010559082
+        "duration_seconds": 0.004662275314331055
       },
       "Temporal Features": {
         "pair": "BTC-USDT",
@@ -1444,7 +1137,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0032317638397216797
+        "duration_seconds": 0.004225015640258789
       },
       "Cross-Pair Features": {
         "pair": "BTC-USDT",
@@ -1461,7 +1154,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0017330646514892578
+        "duration_seconds": 0.0016891956329345703
       },
       "Labels": {
         "pair": "BTC-USDT",
@@ -1576,7 +1269,7 @@
             "details": "Future leakage detected: future_max_drawdown_12h_pct has non-zero value without enough future data"
           }
         ],
-        "duration_seconds": 0.010513067245483398
+        "duration_seconds": 0.010223627090454102
       },
       "Targets and Risk": {
         "pair": "BTC-USDT",
@@ -1593,7 +1286,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.0016641616821289062
+        "duration_seconds": 0.0017473697662353516
       },
       "Data Sanity": {
         "pair": "BTC-USDT",
@@ -1617,7 +1310,7 @@
           }
         },
         "issues": [],
-        "duration_seconds": 0.02810978889465332
+        "duration_seconds": 0.027771711349487305
       },
       "Data Distributions": {
         "pair": "BTC-USDT",
@@ -3359,106 +3052,7 @@
             }
           }
         },
-        "histograms": {
-          "price": {
-            "open_1h": "reports/histograms/BTC-USDT/open_1h.png",
-            "high_1h": "reports/histograms/BTC-USDT/high_1h.png",
-            "low_1h": "reports/histograms/BTC-USDT/low_1h.png",
-            "close_1h": "reports/histograms/BTC-USDT/close_1h.png"
-          },
-          "volume": {
-            "volume_1h": "reports/histograms/BTC-USDT/volume_1h.png"
-          },
-          "price_action": {
-            "upper_shadow": "reports/histograms/BTC-USDT/upper_shadow.png",
-            "lower_shadow": "reports/histograms/BTC-USDT/lower_shadow.png",
-            "relative_close_position": "reports/histograms/BTC-USDT/relative_close_position.png",
-            "log_return": "reports/histograms/BTC-USDT/log_return.png",
-            "gap_open": "reports/histograms/BTC-USDT/gap_open.png",
-            "price_velocity": "reports/histograms/BTC-USDT/price_velocity.png",
-            "price_acceleration": "reports/histograms/BTC-USDT/price_acceleration.png"
-          },
-          "momentum": {
-            "rsi_1h": "reports/histograms/BTC-USDT/rsi_1h.png",
-            "rsi_slope_1h": "reports/histograms/BTC-USDT/rsi_slope_1h.png",
-            "macd_slope_1h": "reports/histograms/BTC-USDT/macd_slope_1h.png",
-            "macd_hist_slope_1h": "reports/histograms/BTC-USDT/macd_hist_slope_1h.png",
-            "stoch_k_14": "reports/histograms/BTC-USDT/stoch_k_14.png",
-            "stoch_d_14": "reports/histograms/BTC-USDT/stoch_d_14.png",
-            "williams_r_14": "reports/histograms/BTC-USDT/williams_r_14.png",
-            "cci_14": "reports/histograms/BTC-USDT/cci_14.png",
-            "roc_10": "reports/histograms/BTC-USDT/roc_10.png",
-            "tsi": "reports/histograms/BTC-USDT/tsi.png",
-            "awesome_oscillator": "reports/histograms/BTC-USDT/awesome_oscillator.png",
-            "ppo": "reports/histograms/BTC-USDT/ppo.png"
-          },
-          "volatility": {
-            "atr_1h": "reports/histograms/BTC-USDT/atr_1h.png",
-            "true_range": "reports/histograms/BTC-USDT/true_range.png",
-            "normalized_atr_14": "reports/histograms/BTC-USDT/normalized_atr_14.png",
-            "bollinger_width_1h": "reports/histograms/BTC-USDT/bollinger_width_1h.png",
-            "bollinger_percent_b": "reports/histograms/BTC-USDT/bollinger_percent_b.png",
-            "donchian_channel_width_1h": "reports/histograms/BTC-USDT/donchian_channel_width_1h.png",
-            "keltner_channel_width": "reports/histograms/BTC-USDT/keltner_channel_width.png",
-            "historical_vol_30": "reports/histograms/BTC-USDT/historical_vol_30.png",
-            "chaikin_volatility": "reports/histograms/BTC-USDT/chaikin_volatility.png",
-            "z_score_20": "reports/histograms/BTC-USDT/z_score_20.png"
-          },
-          "volume_indicators": {
-            "money_flow_index_1h": "reports/histograms/BTC-USDT/money_flow_index_1h.png",
-            "obv_slope_1h": "reports/histograms/BTC-USDT/obv_slope_1h.png",
-            "volume_change_pct_1h": "reports/histograms/BTC-USDT/volume_change_pct_1h.png",
-            "vwma_20": "reports/histograms/BTC-USDT/vwma_20.png",
-            "chaikin_money_flow": "reports/histograms/BTC-USDT/chaikin_money_flow.png",
-            "klinger_oscillator": "reports/histograms/BTC-USDT/klinger_oscillator.png",
-            "volume_oscillator": "reports/histograms/BTC-USDT/volume_oscillator.png",
-            "volume_price_trend": "reports/histograms/BTC-USDT/volume_price_trend.png",
-            "volume_zone_oscillator": "reports/histograms/BTC-USDT/volume_zone_oscillator.png"
-          },
-          "statistical": {
-            "std_dev_returns_20": "reports/histograms/BTC-USDT/std_dev_returns_20.png",
-            "skewness_20": "reports/histograms/BTC-USDT/skewness_20.png",
-            "kurtosis_20": "reports/histograms/BTC-USDT/kurtosis_20.png",
-            "hurst_exponent": "reports/histograms/BTC-USDT/hurst_exponent.png",
-            "shannon_entropy": "reports/histograms/BTC-USDT/shannon_entropy.png",
-            "autocorr_1": "reports/histograms/BTC-USDT/autocorr_1.png"
-          },
-          "patterns": {
-            "pattern_doji": "reports/histograms/BTC-USDT/pattern_doji.png",
-            "pattern_engulfing": "reports/histograms/BTC-USDT/pattern_engulfing.png",
-            "pattern_hammer": "reports/histograms/BTC-USDT/pattern_hammer.png",
-            "pattern_morning_star": "reports/histograms/BTC-USDT/pattern_morning_star.png"
-          },
-          "time": {
-            "hour_of_day": "reports/histograms/BTC-USDT/hour_of_day.png",
-            "day_of_week": "reports/histograms/BTC-USDT/day_of_week.png",
-            "month_of_year": "reports/histograms/BTC-USDT/month_of_year.png",
-            "is_weekend": "reports/histograms/BTC-USDT/is_weekend.png",
-            "asian_session": "reports/histograms/BTC-USDT/asian_session.png",
-            "european_session": "reports/histograms/BTC-USDT/european_session.png",
-            "american_session": "reports/histograms/BTC-USDT/american_session.png"
-          },
-          "cross_pair": {
-            "volume_rank_1h": "reports/histograms/BTC-USDT/volume_rank_1h.png",
-            "volatility_rank_1h": "reports/histograms/BTC-USDT/volatility_rank_1h.png",
-            "performance_rank_btc_1h": "reports/histograms/BTC-USDT/performance_rank_btc_1h.png",
-            "performance_rank_eth_1h": "reports/histograms/BTC-USDT/performance_rank_eth_1h.png",
-            "btc_corr_24h": "reports/histograms/BTC-USDT/btc_corr_24h.png",
-            "prev_volume_rank": "reports/histograms/BTC-USDT/prev_volume_rank.png"
-          },
-          "labels": {
-            "future_return_1h_pct": "reports/histograms/BTC-USDT/future_return_1h_pct.png",
-            "future_return_4h_pct": "reports/histograms/BTC-USDT/future_return_4h_pct.png",
-            "future_return_12h_pct": "reports/histograms/BTC-USDT/future_return_12h_pct.png",
-            "future_return_1d_pct": "reports/histograms/BTC-USDT/future_return_1d_pct.png",
-            "future_max_return_24h_pct": "reports/histograms/BTC-USDT/future_max_return_24h_pct.png",
-            "future_max_drawdown_12h_pct": "reports/histograms/BTC-USDT/future_max_drawdown_12h_pct.png",
-            "was_profitable_12h": "reports/histograms/BTC-USDT/was_profitable_12h.png",
-            "future_risk_adj_return_12h": "reports/histograms/BTC-USDT/future_risk_adj_return_12h.png",
-            "profit_target_1pct": "reports/histograms/BTC-USDT/profit_target_1pct.png",
-            "profit_target_2pct": "reports/histograms/BTC-USDT/profit_target_2pct.png"
-          }
-        },
+        "histograms": {},
         "issues": [
           {
             "issue_type": "high_zeros_percentage",
@@ -3779,7 +3373,7 @@
             "details": "High percentage of outliers (16.44%) in future_risk_adj_return_12h"
           }
         ],
-        "duration_seconds": 9.169116497039795
+        "duration_seconds": 0.17636752128601074
       }
     }
   }

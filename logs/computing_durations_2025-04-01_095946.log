@@ -1,0 +1,20 @@
+Timestamp,Pair,Operation,Duration(s)
+2025-04-01 09:59:58,BTC-USDT,db_get_columns,0.003766
+2025-04-01 09:59:58,BTC-USDT,fetch_data,0.016821
+2025-04-01 09:59:58,BTC-USDT,price_action_features,0.000162
+2025-04-01 09:59:58,BTC-USDT,momentum_features,0.032890
+2025-04-01 09:59:58,BTC-USDT,volatility_features,0.028078
+2025-04-01 09:59:58,BTC-USDT,volume_features,0.019928
+2025-04-01 09:59:58,BTC-USDT,statistical_features,0.071356
+2025-04-01 09:59:58,BTC-USDT,pattern_features,0.007193
+2025-04-01 09:59:58,BTC-USDT,time_features,0.002289
+2025-04-01 09:59:58,BTC-USDT,label_features,0.000167
+2025-04-01 09:59:58,BTC-USDT,compute_4h_features,0.045747
+2025-04-01 09:59:58,BTC-USDT,compute_1d_features,0.024719
+2025-04-01 09:59:58,BTC-USDT,multi_timeframe_features_total,0.074770
+2025-04-01 09:59:58,BTC-USDT,multi_timeframe_features,0.076550
+2025-04-01 09:59:58,BTC-USDT,compute_features_total,0.239976
+2025-04-01 09:59:58,BTC-USDT,database_update,0.061360
+2025-04-01 09:59:58,BTC-USDT,TOTAL,0.404469
+2025-04-01 10:00:07,CROSS_PAIR,cross_pair_features,9.165343
+2025-04-01 10:00:07,CROSS_PAIR,TOTAL,9.165870

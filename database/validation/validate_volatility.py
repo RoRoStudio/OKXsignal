@@ -11,7 +11,8 @@ from database.validation.validation_utils import main_validator
 
 def calculate_true_range(high, low, close):
     """Calculate True Range independently"""
-    tr = pd.Series(index=high.index)
+    # Initialize with explicit dtype to avoid warning
+    tr = pd.Series(np.nan, index=high.index, dtype=float)
     
     # First row has no previous close, so use high-low
     tr.iloc[0] = high.iloc[0] - low.iloc[0]
@@ -170,20 +171,33 @@ def validate_volatility(df, pair):
             'missing_columns': missing_base_columns
         }
     
-    # Higher threshold to allow for implementation differences
-    threshold = 0.05
+    # Threshold for considering values as different (allowing for minor floating-point differences)
+    threshold = 1e-4
     
     # Validate ATR and True Range
     if 'atr_1h' in df.columns or 'true_range' in df.columns:
-        # Calculate true range
+        # Calculate expected True Range
         expected_tr = calculate_true_range(df['high_1h'], df['low_1h'], df['close_1h'])
+        
+        # Calculate expected ATR
+        atr_length = 14  # Standard ATR period
+        expected_atr = pd.Series(np.nan, index=df.index, dtype=float)
+        
+        # First ATR is simple average of first 'length' TRs
+        if len(expected_tr) >= atr_length:
+            expected_atr.iloc[atr_length-1] = expected_tr.iloc[:atr_length].mean()
+            
+            # Use Wilder's smoothing for subsequent values
+            for i in range(atr_length, len(expected_tr)):
+                expected_atr.iloc[i] = (expected_atr.iloc[i-1] * (atr_length-1) + expected_tr.iloc[i]) / atr_length
+        
+        expected_atr = expected_atr.fillna(0)
         
         # Validate True Range
         if 'true_range' in df.columns:
             # Calculate absolute differences
             tr_diff = np.abs(df['true_range'] - expected_tr)
-            relative_diff = tr_diff / expected_tr.replace(0, 1).abs()
-            tr_issues = df[relative_diff > threshold]
+            tr_issues = df[tr_diff > threshold]
             
             issue_count = len(tr_issues)
             if issue_count > 0:
@@ -202,12 +216,9 @@ def validate_volatility(df, pair):
         
         # Validate ATR
         if 'atr_1h' in df.columns:
-            expected_atr = calculate_atr(df['high_1h'], df['low_1h'], df['close_1h'])
-            
-            # Calculate absolute differences with relative threshold
+            # Calculate absolute differences
             atr_diff = np.abs(df['atr_1h'] - expected_atr)
-            relative_diff = atr_diff / expected_atr.replace(0, 1).abs()
-            atr_issues = df[relative_diff > threshold]
+            atr_issues = df[atr_diff > threshold]
             
             issue_count = len(atr_issues)
             if issue_count > 0:

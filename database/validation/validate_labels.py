@@ -163,8 +163,9 @@ def validate_labels(df, pair):
         recent_cutoff = len(df) - shift
         if recent_cutoff > 0:
             recent_data = df.iloc[recent_cutoff:]
-            # Make sure we're filtering to non-zero and non-NaN values 
-            non_zero_recent = recent_data[(recent_data[label] != 0) & (~recent_data[label].isna())]
+            # Set a small epsilon to handle floating point precision issues
+            epsilon = 1e-10
+            non_zero_recent = recent_data[abs(recent_data[label]) > epsilon]
             
             if not non_zero_recent.empty:
                 issue_summary['future_leakage']['count'] += len(non_zero_recent)
@@ -178,7 +179,7 @@ def validate_labels(df, pair):
                         'value': float(row[label]),
                         'details': f"Future leakage detected: {label} has non-zero value without enough future data"
                     })
-    
+            
     # Validate future_max_return_24h_pct
     if 'future_max_return_24h_pct' in present_labels:
         # Calculate expected maximum future return

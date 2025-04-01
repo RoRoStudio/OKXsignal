@@ -1,7 +1,7 @@
 OKXsignal Comprehensive Validation Report
 =======================================
 
-Generated: 2025-04-01 09:18:03
+Generated: 2025-04-01 09:54:53
 Pairs analyzed: 1
 Pairs with issues: 1
 
@@ -16,7 +16,7 @@ Validator Summary
 +--------------------+---------------+---------------+
 | Momentum           |           154 |             0 |
 +--------------------+---------------+---------------+
-| Volatility         |           630 |             0 |
+| Volatility         |             0 |             1 |
 +--------------------+---------------+---------------+
 | Volume Indicators  |           996 |             0 |
 +--------------------+---------------+---------------+
@@ -32,7 +32,7 @@ Top Pairs with Issues
 +----------+---------------+
 | Pair     |   Issue Count |
 +==========+===============+
-| BTC-USDT |          2572 |
+| BTC-USDT |          1942 |
 +----------+---------------+
 
 Validator Details
@@ -78,13 +78,7 @@ Momentum:
 
 Volatility:
   Pairs with issues: 1/1
-  Total issues found: 630
-  Most common issue types:
-    - hist_vol_issues: 450
-    - z_score_issues: 69
-    - atr_issues: 28
-    - kc_width_issues: 28
-    - bb_width_issues: 19
+  Total issues found: 0
 
 Volume Indicators:
   Pairs with issues: 1/1

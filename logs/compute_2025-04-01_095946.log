@@ -1,0 +1,71 @@
+[INFO] 2025-04-01 09:59:46,633 | GPU monitoring initialized for 1 GPUs: Unknown GPU
+[INFO] 2025-04-01 09:59:46,634 | Resource monitor initialized: CPU cores: 8 physical / 16 logical, RAM: 23.43 GB
+[INFO] 2025-04-01 09:59:46,884 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-04-01 09:59:46,885 | System memory: 20.74 GB available / 23.43 GB total
+[INFO] 2025-04-01 09:59:46,890 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-04-01 09:59:46,894 | Loaded config from /root/OKXsignal/config/config.ini
+[INFO] 2025-04-01 09:59:46,975 | GPU detected: Device 0, Memory: 12.00 GB
+[INFO] 2025-04-01 09:59:46,975 | GPU acceleration is available
+[INFO] 2025-04-01 09:59:47,162 | Database connection pool initialized with 3-29 connections
+[INFO] 2025-04-01 09:59:47,163 | Starting compute_features.py in ROLLING_UPDATE mode with rolling_window=450
+[INFO] 2025-04-01 09:59:47,163 | Using 24 parallel workers with max 29 database connections
+[INFO] 2025-04-01 09:59:47,163 | Numba: enabled, GPU: disabled
+[INFO] 2025-04-01 09:59:47,164 | Database connection test successful
+[INFO] 2025-04-01 09:59:47,164 | Processing 1 specified pairs
+[INFO] 2025-04-01 09:59:47,164 | Rolling update mode: computing last 450 rows per pair
+[INFO] 2025-04-01 09:59:47,164 | Calibrating optimal batch size...
+[INFO] 2025-04-01 09:59:51,316 | Testing batch size 4...
+[INFO] 2025-04-01 09:59:51,317 | Computing features for 1INCH-USDT
+[INFO] 2025-04-01 09:59:51,318 | Computing features for AAVE-USDT
+[INFO] 2025-04-01 09:59:51,318 | Computing features for ACA-USDT
+[INFO] 2025-04-01 09:59:51,319 | Computing features for ACE-USDT
+[INFO] 2025-04-01 09:59:51,384 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:51,504 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:51,619 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:51,726 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:54,890 | AAVE-USDT: Updated 10/10 rows in 3.57s
+[INFO] 2025-04-01 09:59:54,890 | 1INCH-USDT: Updated 10/10 rows in 3.57s
+[INFO] 2025-04-01 09:59:54,891 | ACE-USDT: Updated 10/10 rows in 3.57s
+[INFO] 2025-04-01 09:59:54,891 | ACA-USDT: Updated 10/10 rows in 3.57s
+[INFO] 2025-04-01 09:59:55,207 | Batch size 4: 1.03 pairs/sec
+[INFO] 2025-04-01 09:59:55,280 | Testing batch size 8...
+[INFO] 2025-04-01 09:59:55,280 | Computing features for 1INCH-USDT
+[INFO] 2025-04-01 09:59:55,281 | Computing features for AAVE-USDT
+[INFO] 2025-04-01 09:59:55,282 | Computing features for ACA-USDT
+[INFO] 2025-04-01 09:59:55,282 | Computing features for ACE-USDT
+[INFO] 2025-04-01 09:59:55,283 | Computing features for ACH-USDT
+[INFO] 2025-04-01 09:59:55,283 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,284 | Computing features for ACT-USDT
+[INFO] 2025-04-01 09:59:55,284 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,284 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,284 | Computing features for ADA-USDT
+[INFO] 2025-04-01 09:59:55,285 | Computing features for AERGO-USDT
+[INFO] 2025-04-01 09:59:55,548 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,612 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,707 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,968 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:55,970 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:57,440 | ACA-USDT: Updated 10/10 rows in 2.16s
+[INFO] 2025-04-01 09:59:57,532 | 1INCH-USDT: Updated 10/10 rows in 2.25s
+[INFO] 2025-04-01 09:59:57,697 | ACE-USDT: Updated 10/10 rows in 2.41s
+[INFO] 2025-04-01 09:59:57,792 | AAVE-USDT: Updated 10/10 rows in 2.51s
+[INFO] 2025-04-01 09:59:57,906 | ACH-USDT: Updated 10/10 rows in 2.62s
+[INFO] 2025-04-01 09:59:57,971 | ADA-USDT: Updated 10/10 rows in 2.69s
+[INFO] 2025-04-01 09:59:58,048 | AERGO-USDT: Updated 10/10 rows in 2.76s
+[INFO] 2025-04-01 09:59:58,126 | ACT-USDT: Updated 10/10 rows in 2.84s
+[INFO] 2025-04-01 09:59:58,203 | Batch size 8: 2.74 pairs/sec
+[INFO] 2025-04-01 09:59:58,279 | Optimal batch size determined: 8 (2.74 pairs/sec)
+[INFO] 2025-04-01 09:59:58,279 | Using auto-calibrated batch size: 8
+[INFO] 2025-04-01 09:59:58,279 | Grouped 1 pairs into 1 balanced batches
+[INFO] 2025-04-01 09:59:58,279 | Processing batch 1/1 with 1 pairs
+[INFO] 2025-04-01 09:59:58,279 | Computing features for BTC-USDT
+[INFO] 2025-04-01 09:59:58,280 | GPU is available: Device #0, Free: 10.98 GB / 12.00 GB
+[INFO] 2025-04-01 09:59:58,684 | BTC-USDT: Updated 450/450 rows in 0.40s
+[INFO] 2025-04-01 09:59:58,746 | Progress: 1/1 pairs processed (0.08 pairs/sec, ~0s remaining)
+[INFO] 2025-04-01 09:59:58,833 | Computing cross-pair features
+[INFO] 2025-04-01 10:00:07,998 | Updated 1 rows with cross-pair features
+[INFO] 2025-04-01 10:00:08,002 | Performance summary saved to logs/performance_summary_2025-04-01_100008.json
+[INFO] 2025-04-01 10:00:08,002 | Performance report saved to logs/performance_report_2025-04-01_100008.txt
+[INFO] 2025-04-01 10:00:08,002 | Performance summary saved to logs/performance_summary_2025-04-01_100008.json
+[INFO] 2025-04-01 10:00:08,002 | Performance report saved to logs/performance_report_2025-04-01_100008.txt
+[INFO] 2025-04-01 10:00:08,002 | Rolling update mode completed.
