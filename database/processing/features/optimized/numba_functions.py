@@ -428,7 +428,9 @@ def hurst_exponent_numba(prices, max_lag):
                 # Hurst exponent = slope / 2
                 hurst = slope / 2
                 
-                # This ensures Hurst is always between 0 and 1
+                # EXPLICITLY CLAMP HURST EXPONENT to [0,1] range
+                hurst = max(0.0, min(1.0, hurst))
+                
                 hurst_values[end_idx] = hurst
             else:
                 hurst_values[end_idx] = 0.5

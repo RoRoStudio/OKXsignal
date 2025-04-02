@@ -63,21 +63,33 @@ class CrossPairFeatures(BaseFeatureComputer):
                         # Get volume values for this timestamp
                         volumes = timestamp_df['volume_1h'].values
                         
-                        # Sort indices in ascending order (lowest volume → highest volume)
-                        sorted_indices = np.argsort(volumes)
-                        
-                        # Create evenly spaced ranks from 0 to 100
-                        evenly_spaced_ranks = np.linspace(0, 100, len(sorted_indices))
-                        
-                        # Initialize ranks array
-                        vol_ranks = np.zeros(len(sorted_indices))
-                        
-                        # Assign ranks to the sorted indices (higher volumes get higher ranks)
-                        for i, rank in enumerate(evenly_spaced_ranks):
-                            vol_ranks[sorted_indices[i]] = rank
-                        
-                        # Set ranks in the dataframe
-                        df.loc[mask, 'volume_rank_1h'] = vol_ranks.round().astype(int)
+                        if any(v > 0 for v in volumes):
+                            # Initialize ranks array
+                            vol_ranks = np.zeros(len(volumes))
+                            
+                            # Get the sorted indices (ascending order)
+                            sorted_indices = np.argsort(volumes)
+                            
+                            # Assign ranks from 0 to 100 based on position in sorted array
+                            for i in range(len(sorted_indices)):
+                                vol_ranks[sorted_indices[i]] = (i * 100) / (len(sorted_indices) - 1) if len(sorted_indices) > 1 else 50
+                            
+                            # Handle ties by averaging ranks
+                            unique_values, unique_indices = np.unique(volumes, return_inverse=True)
+                            for i, val in enumerate(unique_values):
+                                # Find all indices with this value
+                                mask_indices = unique_indices == i
+                                if np.sum(mask_indices) > 1:  # If there are ties
+                                    # Calculate average rank for these tied values
+                                    avg_rank = np.mean(vol_ranks[mask_indices])
+                                    # Assign the average rank to all tied values
+                                    vol_ranks[mask_indices] = avg_rank
+                            
+                            # Set ranks in the dataframe
+                            df.loc[mask, 'volume_rank_1h'] = vol_ranks.round().astype(int)
+                        else:
+                            # All volumes are 0, assign default ranks
+                            df.loc[mask, 'volume_rank_1h'] = 50
                     else:
                         # Default value for a single pair
                         df.loc[mask, 'volume_rank_1h'] = 50
@@ -101,21 +113,33 @@ class CrossPairFeatures(BaseFeatureComputer):
                         # Get ATR values for this timestamp
                         atr_values = timestamp_df['atr_1h'].values
                         
-                        # Sort indices in ascending order (lowest ATR → highest ATR)
-                        sorted_indices = np.argsort(atr_values)
-                        
-                        # Create evenly spaced ranks from 0 to 100
-                        evenly_spaced_ranks = np.linspace(0, 100, len(sorted_indices))
-                        
-                        # Initialize ranks array
-                        atr_ranks = np.zeros(len(sorted_indices))
-                        
-                        # Assign ranks to the sorted indices (higher ATR = higher rank)
-                        for i, rank in enumerate(evenly_spaced_ranks):
-                            atr_ranks[sorted_indices[i]] = rank
-                        
-                        # Set ranks in the dataframe
-                        df.loc[mask, 'volatility_rank_1h'] = atr_ranks.round().astype(int)
+                        if any(a > 0 for a in atr_values):
+                            # Initialize ranks array
+                            atr_ranks = np.zeros(len(atr_values))
+                            
+                            # Get the sorted indices (ascending order)
+                            sorted_indices = np.argsort(atr_values)
+                            
+                            # Assign ranks from 0 to 100 based on position in sorted array
+                            for i in range(len(sorted_indices)):
+                                atr_ranks[sorted_indices[i]] = (i * 100) / (len(sorted_indices) - 1) if len(sorted_indices) > 1 else 50
+                            
+                            # Handle ties by averaging ranks
+                            unique_values, unique_indices = np.unique(atr_values, return_inverse=True)
+                            for i, val in enumerate(unique_values):
+                                # Find all indices with this value
+                                mask_indices = unique_indices == i
+                                if np.sum(mask_indices) > 1:  # If there are ties
+                                    # Calculate average rank for these tied values
+                                    avg_rank = np.mean(atr_ranks[mask_indices])
+                                    # Assign the average rank to all tied values
+                                    atr_ranks[mask_indices] = avg_rank
+                            
+                            # Set ranks in the dataframe
+                            df.loc[mask, 'volatility_rank_1h'] = atr_ranks.round().astype(int)
+                        else:
+                            # All ATR values are 0, assign default ranks
+                            df.loc[mask, 'volatility_rank_1h'] = 50
                     else:
                         # Default value for a single pair
                         df.loc[mask, 'volatility_rank_1h'] = 50
@@ -196,19 +220,28 @@ class CrossPairFeatures(BaseFeatureComputer):
                         if pairs_count > 1:
                             # Get relative performance values
                             rel_perf = (timestamp_df['future_return_1h_pct'] - btc_return) / abs(btc_return)
-                            
-                            # Sort indices by relative performance
-                            sorted_indices = np.argsort(rel_perf.values)
-                            
-                            # Create evenly spaced ranks
-                            evenly_spaced_ranks = np.linspace(0, 100, pairs_count)
+                            rel_perf_values = rel_perf.values
                             
                             # Initialize ranks array
                             perf_ranks = np.zeros(pairs_count)
                             
-                            # Assign ranks to each position
-                            for i, idx in enumerate(sorted_indices):
-                                perf_ranks[idx] = evenly_spaced_ranks[i]
+                            # Get the sorted indices (ascending order)
+                            sorted_indices = np.argsort(rel_perf_values)
+                            
+                            # Assign ranks from 0 to 100 based on position in sorted array
+                            for i in range(len(sorted_indices)):
+                                perf_ranks[sorted_indices[i]] = (i * 100) / (len(sorted_indices) - 1) if len(sorted_indices) > 1 else 50
+                            
+                            # Handle ties by averaging ranks
+                            unique_values, unique_indices = np.unique(rel_perf_values, return_inverse=True)
+                            for i, val in enumerate(unique_values):
+                                # Find all indices with this value
+                                mask_indices = unique_indices == i
+                                if np.sum(mask_indices) > 1:  # If there are ties
+                                    # Calculate average rank for these tied values
+                                    avg_rank = np.mean(perf_ranks[mask_indices])
+                                    # Assign the average rank to all tied values
+                                    perf_ranks[mask_indices] = avg_rank
                             
                             # Update the original dataframe with calculated ranks
                             df.loc[mask, 'performance_rank_btc_1h'] = perf_ranks.round().astype(int)
@@ -233,19 +266,28 @@ class CrossPairFeatures(BaseFeatureComputer):
                         if pairs_count > 1:
                             # Get relative performance values
                             rel_perf = (timestamp_df['future_return_1h_pct'] - eth_return) / abs(eth_return)
-                            
-                            # Sort indices by relative performance
-                            sorted_indices = np.argsort(rel_perf.values)
-                            
-                            # Create evenly spaced ranks
-                            evenly_spaced_ranks = np.linspace(0, 100, pairs_count)
+                            rel_perf_values = rel_perf.values
                             
                             # Initialize ranks array
                             perf_ranks = np.zeros(pairs_count)
                             
-                            # Assign ranks to each position
-                            for i, idx in enumerate(sorted_indices):
-                                perf_ranks[idx] = evenly_spaced_ranks[i]
+                            # Get the sorted indices (ascending order)
+                            sorted_indices = np.argsort(rel_perf_values)
+                            
+                            # Assign ranks from 0 to 100 based on position in sorted array
+                            for i in range(len(sorted_indices)):
+                                perf_ranks[sorted_indices[i]] = (i * 100) / (len(sorted_indices) - 1) if len(sorted_indices) > 1 else 50
+                            
+                            # Handle ties by averaging ranks
+                            unique_values, unique_indices = np.unique(rel_perf_values, return_inverse=True)
+                            for i, val in enumerate(unique_values):
+                                # Find all indices with this value
+                                mask_indices = unique_indices == i
+                                if np.sum(mask_indices) > 1:  # If there are ties
+                                    # Calculate average rank for these tied values
+                                    avg_rank = np.mean(perf_ranks[mask_indices])
+                                    # Assign the average rank to all tied values
+                                    perf_ranks[mask_indices] = avg_rank
                             
                             # Update the original dataframe with calculated ranks
                             df.loc[mask, 'performance_rank_eth_1h'] = perf_ranks.round().astype(int)

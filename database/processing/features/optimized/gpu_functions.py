@@ -280,6 +280,10 @@ def hurst_exponent_gpu(prices, max_lag):
                         
                         # Calculate Hurst exponent (slope/2)
                         hurst = slope / 2
+                        
+                        # EXPLICITLY CLAMP HURST EXPONENT to [0,1] range
+                        hurst = max(0.0, min(1.0, hurst))
+                        
                         hurst_values[end_idx] = hurst
                     except:
                         hurst_values[end_idx] = 0.5

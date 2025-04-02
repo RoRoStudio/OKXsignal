@@ -58,19 +58,27 @@ class VolatilityFeatures(BaseFeatureComputer):
             
             # Calculate ATR as the rolling average of True Range
             atr = tr.rolling(window=params['atr_length']).mean()
-            df['atr_1h'] = atr.fillna(0)
             
-            # Store the True Range as well
-            df['true_range'] = tr.fillna(0)
+            # Ensure ATR is always positive - use a small positive value instead of zero
+            min_price = close.min() if close.min() > 0 else 0.01
+            min_atr_value = min_price * 0.0001  # Use 0.01% of minimum price as minimum ATR
             
-            # Normalized ATR (ATR / Close price)
-            # Add safety against division by zero
-            df['normalized_atr_14'] = np.where(close > 0, df['atr_1h'] / close, 0)
+            df['atr_1h'] = atr.fillna(min_atr_value).clip(lower=min_atr_value)
+            
+            # Store the True Range as well - ensure it's also positive
+            df['true_range'] = tr.fillna(min_atr_value).clip(lower=min_atr_value)
+            
+            # Normalized ATR (ATR / Close price) - add safety against division by zero
+            df['normalized_atr_14'] = np.where(close > 0, df['atr_1h'] / close, min_atr_value)
             
         except Exception as e:
-            self._handle_exceptions(df, 'atr_1h', 0, "ATR", e)
-            df['true_range'] = 0
-            df['normalized_atr_14'] = 0
+            # Use a small positive value as default instead of 0
+            min_price = close.min() if close.min() > 0 else 0.01
+            min_atr_value = min_price * 0.0001
+            
+            self._handle_exceptions(df, 'atr_1h', min_atr_value, "ATR", e)
+            df['true_range'] = min_atr_value
+            df['normalized_atr_14'] = min_atr_value
         
         # Bollinger Bands
         try:
