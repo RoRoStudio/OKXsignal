@@ -21,6 +21,14 @@ OKX_HISTORY_CANDLES_URL = "https://www.okx.com/api/v5/market/history-candles"
 HISTORY_CANDLES_RATE_LIMIT = 20
 BATCH_INTERVAL = 2
 
+def convert_hk_timestamp_to_utc(unix_timestamp_ms):
+    """
+    Properly converts an OKX Hong Kong timestamp (Unix milliseconds) to UTC datetime
+    """
+    hk_timezone = timezone(timedelta(hours=8))
+    hk_ts = datetime.fromtimestamp(int(unix_timestamp_ms) / 1000, tz=hk_timezone)
+    return hk_ts.astimezone(timezone.utc)
+
 def fetch_active_pairs():
     response = requests.get(OKX_INSTRUMENTS_URL)
     data = response.json()
@@ -63,7 +71,9 @@ def insert_candles(pair, candles):
     rows = []
     for c in candles:
         try:
-            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)  # HK → UTC
+            # Use the helper function for consistent conversion
+            utc_ts = convert_hk_timestamp_to_utc(c[0])
+            
             row = (
                 pair,
                 utc_ts,

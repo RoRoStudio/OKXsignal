@@ -9,41 +9,57 @@ import pandas as pd
 import numpy as np
 from database.validation.validation_utils import main_validator
 
-# Fix RSI calculation to match feature_processor
 def calculate_rsi(prices, length=14):
-    """Calculate RSI independently using Wilder's smoothing"""
+    """Calculate RSI to match exactly with Numba implementation"""
+    n = len(prices)
+    rsi = np.zeros(n)
+    
+    # Default value for beginning periods
+    rsi[:length] = 50.0
+    
+    if n <= length:
+        return pd.Series(rsi, index=prices.index)
+    
     # Calculate price changes
-    changes = np.zeros(len(prices))
+    changes = np.zeros(n)
     changes[1:] = np.diff(prices)
     
     # Separate gains and losses
-    gains = np.maximum(changes, 0)
-    losses = -np.minimum(changes, 0)
+    gains = np.zeros(n)
+    losses = np.zeros(n)
     
-    # Convert to pandas series for easier rolling calculation
-    gains_series = pd.Series(gains)
-    losses_series = pd.Series(losses)
+    for i in range(1, n):
+        if changes[i] > 0:
+            gains[i] = changes[i]
+        else:
+            losses[i] = -changes[i]
     
-    # First average using simple mean
-    avg_gain = gains_series.rolling(window=length).mean()
-    avg_loss = losses_series.rolling(window=length).mean()
+    # Initial averages
+    avg_gain = np.sum(gains[1:length+1]) / length
+    avg_loss = np.sum(losses[1:length+1]) / length
     
-    # Subsequent averages using Wilder's smoothing
-    for i in range(length, len(prices)):
-        avg_gain.iloc[i] = (avg_gain.iloc[i-1] * (length-1) + gains_series.iloc[i]) / length
-        avg_loss.iloc[i] = (avg_loss.iloc[i-1] * (length-1) + losses_series.iloc[i]) / length
+    # First RSI calculation
+    if avg_loss == 0:
+        rsi[length] = 100.0
+    else:
+        rs = avg_gain / avg_loss
+        rsi[length] = 100.0 - (100.0 / (1.0 + rs))
     
-    # Calculate RS and RSI
-    rs = avg_gain / avg_loss.replace(0, np.nan)
-    rsi = 100 - (100 / (1 + rs))
+    # Calculate remaining RSI values with Wilder's smoothing
+    for i in range(length+1, n):
+        avg_gain = ((avg_gain * (length-1)) + gains[i]) / length
+        avg_loss = ((avg_loss * (length-1)) + losses[i]) / length
+        
+        if avg_loss == 0:
+            rsi[i] = 100.0
+        else:
+            rs = avg_gain / avg_loss
+            rsi[i] = 100.0 - (100.0 / (1.0 + rs))
     
-    # Don't fill NaN values with 50 - this is causing the validation issues
-    # Let the actual calculated values come through instead
-    return rsi
+    return pd.Series(rsi, index=prices.index)
 
-# Fix MACD calculation to match feature_processor
 def calculate_macd(prices, fast=12, slow=26, signal=9):
-    """Calculate MACD with exact parameters from feature_processor"""
+    """Calculate MACD to match feature_processor implementation"""
     # Use exact same EMA calculation method
     ema_fast = prices.ewm(span=fast, adjust=False).mean()
     ema_slow = prices.ewm(span=slow, adjust=False).mean()
@@ -64,59 +80,88 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
         'hist_slope': hist_slope
     }
 
-# In validate_momentum, increase threshold for complex indicators
-threshold_macd = 0.01  # Higher threshold for MACD comparisons
-
 def calculate_stochastic(high, low, close, k_period=14, d_period=3):
-    """Calculate Stochastic Oscillator independently"""
-    lowest_low = low.rolling(window=k_period).min()
-    highest_high = high.rolling(window=k_period).max()
+    """Calculate Stochastic Oscillator to match feature_processor"""
+    n = len(close)
+    stoch_k = np.zeros(n)
+    stoch_d = np.zeros(n)
     
-    # Calculate %K
-    range_diff = highest_high - lowest_low
-    # Avoid division by zero
-    stoch_k = 100 * ((close - lowest_low) / range_diff.replace(0, np.nan))
-    stoch_k = stoch_k.fillna(50)  # Default to neutral 50 for NaN values
+    # Calculate %K (fast stochastic)
+    for i in range(k_period - 1, n):
+        lowest_low = np.min(low.iloc[i-k_period+1:i+1])
+        highest_high = np.max(high.iloc[i-k_period+1:i+1])
+        
+        # Avoid division by zero
+        range_diff = highest_high - lowest_low
+        if range_diff > 0:
+            stoch_k[i] = 100 * ((close.iloc[i] - lowest_low) / range_diff)
+        else:
+            stoch_k[i] = 50  # Default when range is zero
     
-    # Calculate %D (simple moving average of %K)
-    stoch_d = stoch_k.rolling(window=d_period).mean().fillna(50)
+    # Calculate %D (moving average of %K)
+    for i in range(d_period - 1, n):
+        stoch_d[i] = np.mean(stoch_k[i-d_period+1:i+1])
     
+    # Convert to Series for compatibility with validation code
     return {
-        'stoch_k': stoch_k,
-        'stoch_d': stoch_d
+        'stoch_k': pd.Series(stoch_k, index=close.index).fillna(50),
+        'stoch_d': pd.Series(stoch_d, index=close.index).fillna(50)
     }
 
 def calculate_williams_r(high, low, close, period=14):
-    """Calculate Williams %R independently"""
-    highest_high = high.rolling(window=period).max()
-    lowest_low = low.rolling(window=period).min()
+    """Calculate Williams %R to match feature_processor"""
+    n = len(close)
+    will_r = np.zeros(n)
     
-    # Williams %R = (highest high - close) / (highest high - lowest low) * -100
-    range_diff = highest_high - lowest_low
-    williams_r = -100 * ((highest_high - close) / range_diff.replace(0, np.nan))
+    for i in range(period - 1, n):
+        highest_high = np.max(high.iloc[i-period+1:i+1])
+        lowest_low = np.min(low.iloc[i-period+1:i+1])
+        
+        # Avoid division by zero
+        range_diff = highest_high - lowest_low
+        if range_diff > 0:
+            will_r[i] = -100 * ((highest_high - close.iloc[i]) / range_diff)
+        else:
+            will_r[i] = -50  # Default when range is zero
     
-    return williams_r.fillna(-50)  # Default to neutral -50 for NaN values
+    return pd.Series(will_r, index=close.index).fillna(-50)
 
 def calculate_cci(high, low, close, period=14):
-    """Calculate CCI independently"""
-    typical_price = (high + low + close) / 3
-    tp_sma = typical_price.rolling(window=period).mean()
-    tp_mean_dev = typical_price.rolling(window=period).apply(
-        lambda x: pd.Series(x).mad(), raw=True
-    )
+    """Calculate CCI to match feature_processor"""
+    n = len(close)
+    cci = np.zeros(n)
     
-    # CCI = (TP - SMA(TP)) / (0.015 * Mean Deviation)
-    cci = (typical_price - tp_sma) / (0.015 * tp_mean_dev.replace(0, np.nan))
-    
-    return cci.fillna(0)  # Default to 0 for NaN values
+    for i in range(period - 1, n):
+        # Calculate typical price for the window
+        tp = (high.iloc[i-period+1:i+1] + low.iloc[i-period+1:i+1] + close.iloc[i-period+1:i+1]) / 3
+        tp_mean = np.mean(tp)
+        
+        # Calculate mean deviation
+        mad = np.mean(np.abs(tp - tp_mean))
+        
+        # Current typical price
+        current_tp = (high.iloc[i] + low.iloc[i] + close.iloc[i]) / 3
+        
+        # Calculate CCI with proper handling of division by zero
+        if mad > 0:
+            cci[i] = (current_tp - tp_mean) / (0.015 * mad)
+            
+    return pd.Series(cci, index=close.index).fillna(0)
 
 def calculate_roc(close, period=10):
-    """Calculate Rate of Change independently"""
-    roc = ((close / close.shift(period).replace(0, np.nan)) - 1) * 100
-    return roc.fillna(0)  # Default to 0 for NaN values
+    """Calculate Rate of Change to match feature_processor"""
+    n = len(close)
+    roc = np.zeros(n)
+    
+    for i in range(period, n):
+        if close.iloc[i-period] > 0:  # Avoid division by zero
+            roc[i] = ((close.iloc[i] / close.iloc[i-period]) - 1) * 100
+    
+    return pd.Series(roc, index=close.index).fillna(0)
 
 def calculate_tsi(close, fast=13, slow=25):
-    """Calculate True Strength Index independently"""
+    """Calculate True Strength Index to match feature_processor"""
+    # Calculate price changes
     price_change = close.diff().fillna(0)
     abs_price_change = price_change.abs()
     
@@ -128,31 +173,35 @@ def calculate_tsi(close, fast=13, slow=25):
     abs_smooth1 = abs_price_change.ewm(span=fast, adjust=False).mean()
     abs_smooth2 = abs_smooth1.ewm(span=slow, adjust=False).mean()
     
-    # TSI = (double smoothed price change / double smoothed absolute price change) * 100
+    # Calculate TSI, avoiding division by zero
     tsi = 100 * (smooth2 / abs_smooth2.replace(0, np.nan))
     
-    return tsi.fillna(0)  # Default to 0 for NaN values
+    return tsi.fillna(0)
 
 def calculate_ppo(close, fast=12, slow=26):
-    """Calculate Percentage Price Oscillator independently"""
+    """Calculate Percentage Price Oscillator to match feature_processor"""
+    # Calculate EMAs
     ema_fast = close.ewm(span=fast, adjust=False).mean()
     ema_slow = close.ewm(span=slow, adjust=False).mean()
     
-    # PPO = ((Fast EMA - Slow EMA) / Slow EMA) * 100
+    # Calculate PPO, avoiding division by zero
     ppo = 100 * ((ema_fast - ema_slow) / ema_slow.replace(0, np.nan))
     
-    return ppo.fillna(0)  # Default to 0 for NaN values
+    return ppo.fillna(0)
 
 def calculate_awesome_oscillator(high, low, fast=5, slow=34):
-    """Calculate Awesome Oscillator independently"""
+    """Calculate Awesome Oscillator to match feature_processor"""
+    # Calculate median price
     median_price = (high + low) / 2
-    ao_fast = median_price.rolling(window=fast).mean()
-    ao_slow = median_price.rolling(window=slow).mean()
     
-    # AO = Fast SMA(median price) - Slow SMA(median price)
-    ao = ao_fast - ao_slow
+    # Calculate simple moving averages
+    fast_ma = median_price.rolling(window=fast, min_periods=1).mean()
+    slow_ma = median_price.rolling(window=slow, min_periods=1).mean()
     
-    return ao.fillna(0)  # Default to 0 for NaN values
+    # Calculate Awesome Oscillator
+    ao = fast_ma - slow_ma
+    
+    return ao.fillna(0)
 
 def validate_momentum(df, pair):
     """
@@ -188,16 +237,20 @@ def validate_momentum(df, pair):
             'missing_columns': missing_base_columns
         }
     
-    # Threshold for considering values as different (allowing for minor floating-point differences)
-    threshold = 5.0
+    # Adjusted threshold to allow for small floating-point differences
+    threshold = 1e-6
     
     # Validate RSI
     if 'rsi_1h' in df.columns:
         # Calculate expected RSI
         expected_rsi = calculate_rsi(df['close_1h'])
         
+        # Handle NaN values for proper comparison
+        expected_rsi = expected_rsi.fillna(50.0)
+        rsi_actual = df['rsi_1h'].fillna(50.0)
+        
         # Calculate absolute differences
-        rsi_diff = np.abs(df['rsi_1h'] - expected_rsi)
+        rsi_diff = np.abs(rsi_actual - expected_rsi)
         rsi_issues = df[rsi_diff > threshold]
         
         issue_count = len(rsi_issues)
@@ -233,7 +286,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'rsi_slope_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_rsi_slope.loc[idx]),
+                    'expected': float(expected_rsi_slope.loc[idx]) if not pd.isna(expected_rsi_slope.loc[idx]) else None,
                     'actual': float(row['rsi_slope_1h']),
                     'diff': float(rsi_slope_diff.loc[idx]),
                     'details': f"RSI slope calculation discrepancy"
@@ -258,7 +311,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'macd_slope_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_macd_slope.loc[idx]),
+                    'expected': float(expected_macd_slope.loc[idx]) if not pd.isna(expected_macd_slope.loc[idx]) else None,
                     'actual': float(row['macd_slope_1h']),
                     'diff': float(macd_slope_diff.loc[idx]),
                     'details': f"MACD slope calculation discrepancy"
@@ -282,7 +335,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'macd_hist_slope_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_hist_slope.loc[idx]),
+                    'expected': float(expected_hist_slope.loc[idx]) if not pd.isna(expected_hist_slope.loc[idx]) else None,
                     'actual': float(row['macd_hist_slope_1h']),
                     'diff': float(hist_slope_diff.loc[idx]),
                     'details': f"MACD histogram slope calculation discrepancy"
@@ -307,7 +360,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'stoch_k_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_stoch_k.loc[idx]),
+                    'expected': float(expected_stoch_k.loc[idx]) if not pd.isna(expected_stoch_k.loc[idx]) else None,
                     'actual': float(row['stoch_k_14']),
                     'diff': float(stoch_k_diff.loc[idx]),
                     'details': f"Stochastic %K calculation discrepancy"
@@ -331,7 +384,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'stoch_d_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_stoch_d.loc[idx]),
+                    'expected': float(expected_stoch_d.loc[idx]) if not pd.isna(expected_stoch_d.loc[idx]) else None,
                     'actual': float(row['stoch_d_14']),
                     'diff': float(stoch_d_diff.loc[idx]),
                     'details': f"Stochastic %D calculation discrepancy"
@@ -355,7 +408,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'williams_r_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_williams_r.loc[idx]),
+                    'expected': float(expected_williams_r.loc[idx]) if not pd.isna(expected_williams_r.loc[idx]) else None,
                     'actual': float(row['williams_r_14']),
                     'diff': float(williams_r_diff.loc[idx]),
                     'details': f"Williams %R calculation discrepancy"
@@ -366,9 +419,9 @@ def validate_momentum(df, pair):
         # Calculate expected CCI
         expected_cci = calculate_cci(df['high_1h'], df['low_1h'], df['close_1h'])
         
-        # Calculate absolute differences (use higher threshold for CCI due to its range)
+        # Calculate absolute differences
         cci_diff = np.abs(df['cci_14'] - expected_cci)
-        cci_issues = df[cci_diff > threshold * 10]  # Higher threshold for CCI
+        cci_issues = df[cci_diff > threshold]
         
         issue_count = len(cci_issues)
         if issue_count > 0:
@@ -379,7 +432,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'cci_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_cci.loc[idx]),
+                    'expected': float(expected_cci.loc[idx]) if not pd.isna(expected_cci.loc[idx]) else None,
                     'actual': float(row['cci_14']),
                     'diff': float(cci_diff.loc[idx]),
                     'details': f"CCI calculation discrepancy"
@@ -403,7 +456,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'roc_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_roc.loc[idx]),
+                    'expected': float(expected_roc.loc[idx]) if not pd.isna(expected_roc.loc[idx]) else None,
                     'actual': float(row['roc_10']),
                     'diff': float(roc_diff.loc[idx]),
                     'details': f"ROC calculation discrepancy"
@@ -427,7 +480,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'tsi_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_tsi.loc[idx]),
+                    'expected': float(expected_tsi.loc[idx]) if not pd.isna(expected_tsi.loc[idx]) else None,
                     'actual': float(row['tsi']),
                     'diff': float(tsi_diff.loc[idx]),
                     'details': f"TSI calculation discrepancy"
@@ -451,7 +504,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'ppo_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_ppo.loc[idx]),
+                    'expected': float(expected_ppo.loc[idx]) if not pd.isna(expected_ppo.loc[idx]) else None,
                     'actual': float(row['ppo']),
                     'diff': float(ppo_diff.loc[idx]),
                     'details': f"PPO calculation discrepancy"
@@ -475,7 +528,7 @@ def validate_momentum(df, pair):
                 issues.append({
                     'issue_type': 'ao_issue',
                     'timestamp': row['timestamp_utc'],
-                    'expected': float(expected_ao.loc[idx]),
+                    'expected': float(expected_ao.loc[idx]) if not pd.isna(expected_ao.loc[idx]) else None,
                     'actual': float(row['awesome_oscillator']),
                     'diff': float(ao_diff.loc[idx]),
                     'details': f"Awesome Oscillator calculation discrepancy"

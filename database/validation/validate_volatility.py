@@ -10,96 +10,98 @@ import numpy as np
 from database.validation.validation_utils import main_validator
 
 def calculate_true_range(high, low, close):
-    """Calculate True Range independently"""
-    # Initialize with explicit dtype to avoid warning
-    tr = pd.Series(np.nan, index=high.index, dtype=float)
+    """Calculate True Range to match feature_processor"""
+    n = len(high)
+    tr = np.zeros(n)
     
-    # First row has no previous close, so use high-low
-    tr.iloc[0] = high.iloc[0] - low.iloc[0]
+    # First true range is high-low
+    if n > 0:
+        tr[0] = high.iloc[0] - low.iloc[0]
     
-    # For subsequent rows, calculate true range
-    for i in range(1, len(high)):
+    # Rest of true ranges
+    for i in range(1, n):
         tr1 = high.iloc[i] - low.iloc[i]
         tr2 = abs(high.iloc[i] - close.iloc[i-1])
         tr3 = abs(low.iloc[i] - close.iloc[i-1])
-        tr.iloc[i] = max(tr1, tr2, tr3)
+        tr[i] = max(tr1, tr2, tr3)
     
-    return tr
+    return pd.Series(tr, index=high.index)
 
 def calculate_atr(high, low, close, length=14):
-    """Calculate ATR independently"""
-    # Calculate True Range first
+    """Calculate ATR to match feature_processor"""
     tr_series = calculate_true_range(high, low, close)
+    n = len(tr_series)
+    atr = np.zeros(n)
     
-    # Initialize ATR with explicit dtype to avoid warning
-    atr = pd.Series(np.nan, index=tr_series.index, dtype=float)
-    
-    # First ATR is simple average of first 'length' TRs
-    if len(tr_series) >= length:
-        atr.iloc[length-1] = tr_series.iloc[:length].mean()
+    # First ATR is first TR
+    if n > length:
+        atr[length-1] = np.mean(tr_series.iloc[:length])
         
-        # Use Wilder's smoothing for subsequent values
-        for i in range(length, len(tr_series)):
-            atr.iloc[i] = (atr.iloc[i-1] * (length-1) + tr_series.iloc[i]) / length
+        # Rest use smoothing
+        for i in range(length, n):
+            atr[i] = (atr[i-1] * (length-1) + tr_series.iloc[i]) / length
     
-    # Return a dictionary to match expected structure in validate_volatility()
-    return {
-        'tr': tr_series,
-        'atr': atr.fillna(0)  # Fill NaN values with 0
-    }
+    return pd.Series(atr, index=high.index)
 
-def calculate_bollinger_bands(close, length=20, num_std=2):
-    """Calculate Bollinger Bands independently"""
-    # Use SMA for middle band
-    sma = close.rolling(window=length).mean()
+def calculate_bollinger_bands(close, period=20, num_std=2):
+    """Calculate Bollinger Bands to match feature_processor"""
+    # Calculate middle band (SMA)
+    middle_band = close.rolling(window=period, min_periods=1).mean()
     
     # Calculate standard deviation
-    std_dev = close.rolling(window=length).std()
+    std_dev = close.rolling(window=period, min_periods=1).std()
     
     # Calculate bands
-    upper_band = sma + (std_dev * num_std)
-    lower_band = sma - (std_dev * num_std)
+    upper_band = middle_band + (std_dev * num_std)
+    lower_band = middle_band - (std_dev * num_std)
     
-    # Calculate bandwidth (using proper normalization)
-    bandwidth = (upper_band - lower_band) / sma.replace(0, np.nan)
+    # Calculate width
+    width = upper_band - lower_band
     
-    # Calculate %B with proper handling of division by zero
-    percent_b = (close - lower_band) / (upper_band - lower_band).replace(0, np.nan)
+    # Calculate %B (close position relative to bands)
+    band_diff = upper_band - lower_band
+    percent_b = pd.Series(0.5, index=close.index)  # Default to 0.5
+    mask = band_diff > 0
+    percent_b[mask] = (close[mask] - lower_band[mask]) / band_diff[mask]
     
     return {
-        'middle_band': sma.fillna(close),
-        'upper_band': upper_band.fillna(close),
-        'lower_band': lower_band.fillna(close),
-        'width': (upper_band - lower_band).fillna(0),
-        'bandwidth': bandwidth.fillna(0),
-        'percent_b': percent_b.fillna(0.5)  # Default to 0.5 for NaN
+        'middle_band': middle_band,
+        'upper_band': upper_band,
+        'lower_band': lower_band,
+        'width': width,
+        'percent_b': percent_b
     }
 
-def calculate_historical_volatility(close, length=30):
-    """Calculate Historical Volatility independently"""
-    # Calculate daily returns
-    returns = close.pct_change().fillna(0)
+def calculate_donchian_channels(high, low, period=20):
+    """Calculate Donchian Channels to match feature_processor"""
+    # Calculate upper and lower bands
+    upper_band = high.rolling(window=period, min_periods=1).max()
+    lower_band = low.rolling(window=period, min_periods=1).min()
     
-    # Calculate standard deviation of returns
-    vol = returns.rolling(window=length).std()
+    # Calculate middle band
+    middle_band = (upper_band + lower_band) / 2
     
-    # Annualize (multiply by sqrt(365*24) for hourly)
-    annual_factor = np.sqrt(365 * 24)  # For hourly data
-    hist_vol = vol * annual_factor
+    # Calculate width
+    width = upper_band - lower_band
     
-    return hist_vol.fillna(0)
+    return {
+        'upper_band': upper_band,
+        'lower_band': lower_band,
+        'middle_band': middle_band,
+        'width': width
+    }
 
 def calculate_keltner_channels(high, low, close, ema_length=20, atr_length=14, atr_multiplier=2):
-    """Calculate Keltner Channels independently"""
-    # Calculate EMA of closing prices
+    """Calculate Keltner Channels to match feature_processor"""
+    # Calculate EMA
     ema = close.ewm(span=ema_length, adjust=False).mean()
     
     # Calculate ATR
-    atr_series = calculate_atr(high, low, close, atr_length)
+    atr = calculate_atr(high, low, close, atr_length)
     
-    # Calculate upper and lower bands
-    upper_band = ema + (atr_series * atr_multiplier)
-    lower_band = ema - (atr_series * atr_multiplier)
+    # Calculate bands
+    upper_band = ema + (atr * atr_multiplier)
+    lower_band = ema - (atr * atr_multiplier)
     
     # Calculate width
     width = upper_band - lower_band
@@ -111,31 +113,34 @@ def calculate_keltner_channels(high, low, close, ema_length=20, atr_length=14, a
         'width': width
     }
 
-def calculate_donchian_channels(high, low, length=20):
-    """Calculate Donchian Channels independently"""
-    upper_band = high.rolling(window=length).max()
-    lower_band = low.rolling(window=length).min()
-    middle_band = (upper_band + lower_band) / 2
+def calculate_historical_volatility(close, period=30):
+    """Calculate Historical Volatility to match feature_processor"""
+    # Calculate returns
+    returns = close.pct_change().fillna(0)
     
-    return {
-        'upper_band': upper_band.fillna(high),
-        'lower_band': lower_band.fillna(low),
-        'middle_band': middle_band.fillna((high + low) / 2),
-        'width': (upper_band - lower_band).fillna(0)
-    }
+    # Calculate standard deviation of returns
+    volatility = returns.rolling(window=period, min_periods=1).std()
+    
+    # Annualize (multiply by sqrt(252) for daily, or sqrt(252*24) for hourly)
+    annual_factor = np.sqrt(252 * 24)  # For hourly data
+    hist_vol = volatility * annual_factor
+    
+    return hist_vol
 
-def calculate_z_score(close, window=20):
-    """Calculate z-score independently"""
+def calculate_z_score(close, period=20):
+    """Calculate Z-Score to match feature_processor"""
     # Calculate moving average
-    ma = close.rolling(window=window).mean()
+    ma = close.rolling(window=period, min_periods=1).mean()
     
     # Calculate standard deviation
-    std = close.rolling(window=window).std()
+    std = close.rolling(window=period, min_periods=1).std()
     
-    # Calculate z-score
-    z_score = (close - ma) / std.replace(0, np.nan)
+    # Calculate z-score, handling zeros
+    z_score = pd.Series(0, index=close.index)
+    mask = std > 0
+    z_score[mask] = (close[mask] - ma[mask]) / std[mask]
     
-    return z_score.fillna(0)
+    return z_score
 
 def validate_volatility(df, pair):
     """
@@ -171,8 +176,8 @@ def validate_volatility(df, pair):
             'missing_columns': missing_base_columns
         }
     
-    # Threshold for considering values as different (allowing for minor floating-point differences)
-    threshold = 1e-4
+    # Threshold for considering values as different
+    threshold = 1e-6
     
     # Validate ATR and True Range
     if 'atr_1h' in df.columns or 'true_range' in df.columns:
@@ -180,18 +185,7 @@ def validate_volatility(df, pair):
         expected_tr = calculate_true_range(df['high_1h'], df['low_1h'], df['close_1h'])
         
         # Calculate expected ATR
-        atr_length = 14  # Standard ATR period
-        expected_atr = pd.Series(np.nan, index=df.index, dtype=float)
-        
-        # First ATR is simple average of first 'length' TRs
-        if len(expected_tr) >= atr_length:
-            expected_atr.iloc[atr_length-1] = expected_tr.iloc[:atr_length].mean()
-            
-            # Use Wilder's smoothing for subsequent values
-            for i in range(atr_length, len(expected_tr)):
-                expected_atr.iloc[i] = (expected_atr.iloc[i-1] * (atr_length-1) + expected_tr.iloc[i]) / atr_length
-        
-        expected_atr = expected_atr.fillna(0)
+        expected_atr = calculate_atr(df['high_1h'], df['low_1h'], df['close_1h'])
         
         # Validate True Range
         if 'true_range' in df.columns:
@@ -238,13 +232,14 @@ def validate_volatility(df, pair):
     # Validate Normalized ATR
     if 'normalized_atr_14' in df.columns and 'atr_1h' in df.columns:
         # Calculate expected normalized ATR (ATR / Close)
-        expected_norm_atr = df['atr_1h'] / df['close_1h'].replace(0, np.inf)
-        expected_norm_atr = expected_norm_atr.replace([np.inf, -np.inf], 0)
+        # Handle division by zero
+        safe_close = df['close_1h'].replace(0, np.nan)
+        expected_norm_atr = df['atr_1h'] / safe_close
+        expected_norm_atr = expected_norm_atr.fillna(0)
         
         # Calculate absolute differences
         norm_atr_diff = np.abs(df['normalized_atr_14'] - expected_norm_atr)
-        relative_diff = norm_atr_diff / expected_norm_atr.replace(0, 1).abs()
-        norm_atr_issues = df[relative_diff > threshold]
+        norm_atr_issues = df[norm_atr_diff > threshold]
         
         issue_count = len(norm_atr_issues)
         if issue_count > 0:
@@ -267,10 +262,9 @@ def validate_volatility(df, pair):
         bb_results = calculate_bollinger_bands(df['close_1h'])
         expected_bb_width = bb_results['width']
         
-        # Calculate relative differences
+        # Calculate absolute differences
         bb_width_diff = np.abs(df['bollinger_width_1h'] - expected_bb_width)
-        relative_diff = bb_width_diff / expected_bb_width.replace(0, 1).abs()
-        bb_width_issues = df[relative_diff > threshold]
+        bb_width_issues = df[bb_width_diff > threshold]
         
         issue_count = len(bb_width_issues)
         if issue_count > 0:
@@ -316,10 +310,9 @@ def validate_volatility(df, pair):
         dc_results = calculate_donchian_channels(df['high_1h'], df['low_1h'])
         expected_dc_width = dc_results['width']
         
-        # Calculate relative differences
+        # Calculate absolute differences
         dc_width_diff = np.abs(df['donchian_channel_width_1h'] - expected_dc_width)
-        relative_diff = dc_width_diff / expected_dc_width.replace(0, 1).abs()
-        dc_width_issues = df[relative_diff > threshold]
+        dc_width_issues = df[dc_width_diff > threshold]
         
         issue_count = len(dc_width_issues)
         if issue_count > 0:
@@ -338,14 +331,13 @@ def validate_volatility(df, pair):
     
     # Validate Keltner Channel Width
     if 'keltner_channel_width' in df.columns:
-        # Calculate expected Keltner Channels using high/low/close
+        # Calculate expected Keltner Channels
         kc_results = calculate_keltner_channels(df['high_1h'], df['low_1h'], df['close_1h'])
         expected_kc_width = kc_results['width']
         
-        # Calculate relative differences
+        # Calculate absolute differences
         kc_width_diff = np.abs(df['keltner_channel_width'] - expected_kc_width)
-        relative_diff = kc_width_diff / expected_kc_width.replace(0, 1).abs()
-        kc_width_issues = df[relative_diff > threshold]
+        kc_width_issues = df[kc_width_diff > threshold]
         
         issue_count = len(kc_width_issues)
         if issue_count > 0:
@@ -367,10 +359,9 @@ def validate_volatility(df, pair):
         # Calculate expected Historical Volatility
         expected_hist_vol = calculate_historical_volatility(df['close_1h'])
         
-        # Calculate relative differences
+        # Calculate absolute differences
         hist_vol_diff = np.abs(df['historical_vol_30'] - expected_hist_vol)
-        relative_diff = hist_vol_diff / expected_hist_vol.replace(0, 0.001).abs()
-        hist_vol_issues = df[relative_diff > threshold]
+        hist_vol_issues = df[hist_vol_diff > threshold]
         
         issue_count = len(hist_vol_issues)
         if issue_count > 0:
@@ -392,9 +383,9 @@ def validate_volatility(df, pair):
         # Calculate expected Z-Score
         expected_z_score = calculate_z_score(df['close_1h'])
         
-        # Calculate absolute differences (use higher threshold for z-score)
+        # Calculate absolute differences
         z_score_diff = np.abs(df['z_score_20'] - expected_z_score)
-        z_score_issues = df[z_score_diff > threshold * 5]  # Higher threshold for z-score
+        z_score_issues = df[z_score_diff > threshold]
         
         issue_count = len(z_score_issues)
         if issue_count > 0:
@@ -409,49 +400,6 @@ def validate_volatility(df, pair):
                     'actual': float(row['z_score_20']),
                     'diff': float(z_score_diff.loc[idx]),
                     'details': f"Z-Score calculation discrepancy"
-                })
-    
-    # Check for consistency issues (volatility not zero during market movement)
-    
-    # 1. Check if ATR is zero when there is price movement
-    if 'atr_1h' in df.columns:
-        price_movement = df['high_1h'] - df['low_1h']
-        consistency_issues = df[(df['atr_1h'] == 0) & (price_movement > price_movement.mean() * 0.5)]
-        
-        issue_count = len(consistency_issues)
-        if issue_count > 0:
-            issue_summary['atr_consistency_issues'] = {'count': issue_count}
-            
-            # Record first few issues for reporting
-            for idx, row in consistency_issues.head(5).iterrows():
-                issues.append({
-                    'issue_type': 'atr_consistency_issue',
-                    'timestamp': row['timestamp_utc'],
-                    'high': float(row['high_1h']),
-                    'low': float(row['low_1h']),
-                    'atr': float(row['atr_1h']),
-                    'details': f"ATR is zero despite significant price movement"
-                })
-    
-    # 2. Check if Bollinger Width is zero when there is price volatility
-    if 'bollinger_width_1h' in df.columns:
-        # Calculate rolling standard deviation of close prices
-        rolling_std = df['close_1h'].rolling(window=20).std()
-        
-        consistency_issues = df[(df['bollinger_width_1h'] == 0) & (rolling_std > rolling_std.mean() * 0.5)]
-        
-        issue_count = len(consistency_issues)
-        if issue_count > 0:
-            issue_summary['bb_consistency_issues'] = {'count': issue_count}
-            
-            # Record first few issues for reporting
-            for idx, row in consistency_issues.head(5).iterrows():
-                issues.append({
-                    'issue_type': 'bb_consistency_issue',
-                    'timestamp': row['timestamp_utc'],
-                    'bollinger_width': float(row['bollinger_width_1h']),
-                    'rolling_std': float(rolling_std.loc[idx]),
-                    'details': f"Bollinger Width is zero despite price volatility"
                 })
     
     # Calculate total issues

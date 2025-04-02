@@ -17,6 +17,13 @@ RATE_LIMIT = 40  # max concurrent requests per interval
 INTERVAL = 2     # seconds
 MAX_CONCURRENT_PAIRS = 10  # Limit how many pairs run in parallel
 
+def convert_hk_timestamp_to_utc(unix_timestamp_ms):
+    """
+    Properly converts an OKX Hong Kong timestamp (Unix milliseconds) to UTC datetime
+    """
+    hk_timezone = timezone(timedelta(hours=8))
+    hk_ts = datetime.fromtimestamp(int(unix_timestamp_ms) / 1000, tz=hk_timezone)
+    return hk_ts.astimezone(timezone.utc)
 
 # Configure logging
 logging.basicConfig(level=config['LOG_LEVEL'].upper(), format='%(asctime)s - %(levelname)s - %(message)s')
@@ -71,9 +78,12 @@ async def insert_candles(pair, candles, known_ts):
     rows = []
     for c in candles:
         try:
-            utc_ts = datetime.fromtimestamp(int(c[0]) / 1000, tz=timezone.utc) - timedelta(hours=8)
+            # Use the helper function for consistent conversion
+            utc_ts = convert_hk_timestamp_to_utc(c[0])
+            
             if utc_ts in known_ts:
                 continue  # skip already-known
+            
             row = (
                 pair, utc_ts, float(c[1]), float(c[2]), float(c[3]), float(c[4]),
                 float(c[5]), float(c[6])
@@ -81,10 +91,10 @@ async def insert_candles(pair, candles, known_ts):
             rows.append(row)
         except Exception as e:
             logging.warning(f"Skipping malformed row: {e} | Raw: {c}")
-
+    
     if not rows:
         return None, 0
-
+        
     conn = get_connection()
     cursor = conn.cursor()
     try:
@@ -98,7 +108,7 @@ async def insert_candles(pair, candles, known_ts):
     finally:
         cursor.close()
         conn.close()
-
+    
     return None, 0
 
 async def enforce_rate_limit(request_count, start_time):
@@ -121,7 +131,7 @@ async def process_pair(pair, session, request_count, start_time, semaphore):
         logging.warning(f"No candles returned for {pair}")
         return
 
-    after_ts = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+    after_ts = convert_hk_timestamp_to_utc(candles[-1][0])
     inserted_ts, inserted = await insert_candles(pair, candles, known_ts)
 
     total_inserted = inserted
@@ -135,7 +145,7 @@ async def process_pair(pair, session, request_count, start_time, semaphore):
         if not candles:
             break
 
-        after_ts = datetime.fromtimestamp(int(candles[-1][0]) / 1000, tz=timezone.utc)
+        after_ts = convert_hk_timestamp_to_utc(candles[-1][0])
         inserted_ts, inserted = await insert_candles(pair, candles, known_ts)
         total_inserted += inserted
 

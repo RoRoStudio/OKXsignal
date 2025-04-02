@@ -98,26 +98,27 @@ def generate_comprehensive_report(all_results, args):
         pair_has_issues = False
         
         for validator, results in pair_results.items():
-            if results.get('status') == 'error':
+            # Check if results is a dictionary before using .get()
+            if isinstance(results, dict):
+                if results.get('status') == 'error':
+                    pair_has_issues = True
+                    
+                    if validator not in validators_with_issues:
+                        validators_with_issues[validator] = {'error_count': 0, 'issue_count': 0}
+                    validators_with_issues[validator]['error_count'] += 1
+                    
+                elif results.get('issues_count', 0) > 0:
+                    pair_has_issues = True
+                    
+                    if validator not in validators_with_issues:
+                        validators_with_issues[validator] = {'error_count': 0, 'issue_count': 0}
+                    validators_with_issues[validator]['issue_count'] += results['issues_count']
+            else:
+                # Handle case where results is not a dictionary
                 pair_has_issues = True
-                
                 if validator not in validators_with_issues:
                     validators_with_issues[validator] = {'error_count': 0, 'issue_count': 0}
                 validators_with_issues[validator]['error_count'] += 1
-                
-            elif results.get('issues_count', 0) > 0:
-                pair_has_issues = True
-                
-                if validator not in validators_with_issues:
-                    validators_with_issues[validator] = {'error_count': 0, 'issue_count': 0}
-                validators_with_issues[validator]['issue_count'] += results['issues_count']
-        
-        if pair_has_issues:
-            pairs_with_issues[pair] = sum(
-                results.get('issues_count', 0) 
-                for results in pair_results.values() 
-                if results.get('status') != 'error'
-            )
     
     # Generate text report
     with open(report_filename, 'w', encoding='utf-8') as f:

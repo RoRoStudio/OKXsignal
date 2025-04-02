@@ -119,7 +119,7 @@ def fetch_data(conn, pair, limit=None):
         
         # Convert timestamp to datetime if the column exists
         if 'timestamp_utc' in df.columns:
-            df['timestamp_utc'] = pd.to_datetime(df['timestamp_utc'])
+            df['timestamp_utc'] = pd.to_datetime(df['timestamp_utc'], utc=True)  # Add utc=True here
         else:
             # If timestamp_utc doesn't exist, log a warning and return empty DataFrame
             logging.warning(f"timestamp_utc column not found for {pair}")

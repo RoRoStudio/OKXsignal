@@ -10,23 +10,27 @@ import numpy as np
 from database.validation.validation_utils import main_validator
 
 def calculate_obv(close, volume):
-    """Calculate On-Balance Volume (OBV) independently"""
-    obv = np.zeros(len(close))
+    """Calculate OBV to match feature_processor implementation"""
+    n = len(close)
+    obv = np.zeros(n)
     
-    # First value is same as first volume
-    obv[0] = volume.iloc[0]
+    # First OBV is first volume
+    if n > 0:
+        obv[0] = volume.iloc[0]
+        
+        # Calculate rest of OBV
+        for i in range(1, n):
+            if close.iloc[i] > close.iloc[i-1]:
+                obv[i] = obv[i-1] + volume.iloc[i]
+            elif close.iloc[i] < close.iloc[i-1]:
+                obv[i] = obv[i-1] - volume.iloc[i]
+            else:
+                obv[i] = obv[i-1]
     
-    # Calculate subsequent OBV values
-    for i in range(1, len(close)):
-        if close.iloc[i] > close.iloc[i-1]:
-            obv[i] = obv[i-1] + volume.iloc[i]
-        elif close.iloc[i] < close.iloc[i-1]:
-            obv[i] = obv[i-1] - volume.iloc[i]
-        else:
-            obv[i] = obv[i-1]
-    
-    # Calculate OBV slope (change over 3 periods)
+    # Convert to Series for compatibility with validation code
     obv_series = pd.Series(obv, index=close.index)
+    
+    # Calculate OBV slope
     obv_slope = obv_series.diff(3) / 3
     
     return {
@@ -35,114 +39,102 @@ def calculate_obv(close, volume):
     }
 
 def calculate_money_flow_index(high, low, close, volume, length=14):
-    """Calculate Money Flow Index (MFI) independently"""
+    """Calculate MFI to match feature_processor implementation"""
     # Calculate typical price
     typical_price = (high + low + close) / 3
     
     # Calculate money flow
     money_flow = typical_price * volume
     
-    # Calculate directional money flow (using typical price changes)
-    positive_flow = np.zeros(len(typical_price))
-    negative_flow = np.zeros(len(typical_price))
+    # Calculate positive and negative money flow
+    pos_flow = np.zeros(len(typical_price))
+    neg_flow = np.zeros(len(typical_price))
     
     for i in range(1, len(typical_price)):
         if typical_price.iloc[i] > typical_price.iloc[i-1]:
-            positive_flow[i] = money_flow.iloc[i]
-        elif typical_price.iloc[i] < typical_price.iloc[i-1]:
-            negative_flow[i] = money_flow.iloc[i]
+            pos_flow[i] = money_flow.iloc[i]
         else:
-            # If prices are the same, split the flow proportionally
-            positive_flow[i] = money_flow.iloc[i] / 2
-            negative_flow[i] = money_flow.iloc[i] / 2
+            neg_flow[i] = money_flow.iloc[i]
     
     # Convert to Series
-    positive_flow = pd.Series(positive_flow, index=typical_price.index)
-    negative_flow = pd.Series(negative_flow, index=typical_price.index)
+    pos_flow = pd.Series(pos_flow, index=typical_price.index)
+    neg_flow = pd.Series(neg_flow, index=typical_price.index)
     
-    # Calculate positive and negative flow for the period
-    positive_sum = positive_flow.rolling(window=length, min_periods=1).sum()
-    negative_sum = negative_flow.rolling(window=length, min_periods=1).sum()
+    # Calculate positive and negative flow sums over the period
+    pos_sum = pos_flow.rolling(window=length, min_periods=1).sum()
+    neg_sum = neg_flow.rolling(window=length, min_periods=1).sum()
     
-    # Calculate money ratio
-    money_ratio = pd.Series(0, index=typical_price.index)
-    valid_denom = negative_sum > 0
-    money_ratio[valid_denom] = positive_sum[valid_denom] / negative_sum[valid_denom]
+    # Calculate money ratio and handle division by zero
+    money_ratio = np.zeros(len(pos_sum))
+    for i in range(len(pos_sum)):
+        if neg_sum.iloc[i] != 0:
+            money_ratio[i] = pos_sum.iloc[i] / neg_sum.iloc[i]
+        else:
+            money_ratio[i] = 100  # Handle division by zero
     
     # Calculate MFI
     mfi = 100 - (100 / (1 + money_ratio))
     
-    return mfi.fillna(50)  # Default to neutral 50 for NaN values
+    return pd.Series(mfi, index=high.index).fillna(50)
 
 def calculate_vwma(close, volume, length=20):
-    """Calculate Volume Weighted Moving Average (VWMA) independently"""
-    weighted_price = close * volume
+    """Calculate VWMA to match feature_processor implementation"""
+    weighted_sum = (close * volume).rolling(window=length, min_periods=1).sum()
+    vol_sum = volume.rolling(window=length, min_periods=1).sum()
     
-    # Calculate sum of the weights for the window
-    volume_sum = volume.rolling(window=length, min_periods=1).sum()
-    
-    # Protect against division by zero
-    vwma = pd.Series(0.0, index=close.index)
-    valid_denom = volume_sum > 0
-    
-    # Calculate VWMA as sum(price * volume) / sum(volume)
-    weighted_sum = weighted_price.rolling(window=length, min_periods=1).sum()
-    vwma[valid_denom] = weighted_sum[valid_denom] / volume_sum[valid_denom]
-    
-    # Default to close price for invalid values
-    vwma[~valid_denom] = close[~valid_denom]
+    # Avoid division by zero
+    vwma = close.copy()
+    mask = vol_sum > 0
+    vwma[mask] = weighted_sum[mask] / vol_sum[mask]
     
     return vwma
 
 def calculate_chaikin_money_flow(high, low, close, volume, length=20):
-    """Calculate Chaikin Money Flow (CMF) independently"""
-    # Money Flow Multiplier: ((Close - Low) - (High - Close)) / (High - Low)
+    """Calculate CMF to match feature_processor implementation"""
+    # Money Flow Multiplier = ((Close - Low) - (High - Close)) / (High - Low)
     high_low_range = high - low
     
     # Avoid division by zero
-    mfm = pd.Series(0.0, index=high.index)
-    valid_range = high_low_range > 0
+    money_flow_multiplier = pd.Series(0.0, index=high.index)
+    mask = high_low_range > 0
+    money_flow_multiplier[mask] = ((close[mask] - low[mask]) - (high[mask] - close[mask])) / high_low_range[mask]
     
-    # Only calculate for valid ranges
-    mfm[valid_range] = ((close[valid_range] - low[valid_range]) - 
-                         (high[valid_range] - close[valid_range])) / high_low_range[valid_range]
+    # Money Flow Volume = Money Flow Multiplier * Volume
+    money_flow_volume = money_flow_multiplier * volume
     
-    # Money Flow Volume
-    mfv = mfm * volume
+    # Chaikin Money Flow = Sum(Money Flow Volume) / Sum(Volume) over period
+    cmf = pd.Series(0.0, index=high.index)
     
-    # Chaikin Money Flow: Sum(MFV) / Sum(Volume) over period
-    mfv_sum = mfv.rolling(window=length, min_periods=1).sum()
+    # Calculate sums
+    mfv_sum = money_flow_volume.rolling(window=length, min_periods=1).sum()
     vol_sum = volume.rolling(window=length, min_periods=1).sum()
     
-    # Calculate CMF, handling division by zero
-    cmf = pd.Series(0.0, index=high.index)
-    valid_vol = vol_sum > 0
-    cmf[valid_vol] = mfv_sum[valid_vol] / vol_sum[valid_vol]
+    # Avoid division by zero
+    mask = vol_sum > 0
+    cmf[mask] = mfv_sum[mask] / vol_sum[mask]
     
     return cmf
 
-def calculate_klinger_volume_oscillator(high, low, close, volume, fast=34, slow=55, signal=13):
-    """Calculate Klinger Volume Oscillator (KVO) independently"""
-    # Calculate typical price
-    tp = (high + low + close) / 3
-    
+def calculate_klinger_oscillator(high, low, close, volume, fast=34, slow=55, signal=13):
+    """Calculate KVO to match feature_processor implementation"""
     # Calculate trend direction (1 for up, -1 for down)
+    tp = (high + low + close) / 3
     trend = pd.Series(0, index=tp.index)
+    
     for i in range(1, len(tp)):
         trend.iloc[i] = 1 if tp.iloc[i] > tp.iloc[i-1] else -1
     
     # Calculate volume force
-    vf = pd.Series(0.0, index=tp.index)
+    vf = pd.Series(0.0, index=volume.index)
     
-    for i in range(1, len(tp)):
-        # High and low range
+    for i in range(1, len(volume)):
+        # High-low range
         hl_range = high.iloc[i] - low.iloc[i]
         
-        # Only calculate if range is positive
+        # Avoid division by zero
         if hl_range > 0:
-            # CM = ((C - L) - (H - C)) / (H - L)
             cm = ((close.iloc[i] - low.iloc[i]) - (high.iloc[i] - close.iloc[i])) / hl_range
-            vf.iloc[i] = volume.iloc[i] * trend.iloc[i] * abs(cm) * 100
+            vf.iloc[i] = volume.iloc[i] * trend.iloc[i] * abs(cm) * 2
     
     # Calculate EMAs
     ema_fast = vf.ewm(span=fast, adjust=False).mean()
@@ -164,22 +156,20 @@ def calculate_klinger_volume_oscillator(high, low, close, volume, fast=34, slow=
     }
 
 def calculate_volume_oscillator(volume, fast=14, slow=28):
-    """Calculate Volume Oscillator independently"""
-    # Calculate EMAs of volume
+    """Calculate Volume Oscillator to match feature_processor implementation"""
+    # Calculate EMAs
     ema_fast = volume.ewm(span=fast, adjust=False).mean()
     ema_slow = volume.ewm(span=slow, adjust=False).mean()
     
-    # Calculate Volume Oscillator
-    vo = ema_fast - ema_slow
-    
-    return vo
+    # Return oscillator
+    return ema_fast - ema_slow
 
 def calculate_volume_zone_oscillator(close, volume, length=14):
-    """Calculate Volume Zone Oscillator (VZO) independently"""
+    """Calculate VZO to match feature_processor implementation"""
     # Calculate volume EMAs
     ema_vol = volume.ewm(span=length, adjust=False).mean()
     
-    # Separate volume by price direction
+    # Separate volumes by price direction
     vol_up = volume.copy()
     vol_down = volume.copy()
     
@@ -193,57 +183,44 @@ def calculate_volume_zone_oscillator(close, volume, length=14):
     ema_vol_up = vol_up.ewm(span=length, adjust=False).mean()
     ema_vol_down = vol_down.ewm(span=length, adjust=False).mean()
     
-    # Calculate VZO: ((Up Vol EMA - Down Vol EMA) / Vol EMA) * 100
+    # Calculate VZO
     vzo = pd.Series(0.0, index=close.index)
-    valid_denom = ema_vol > 0
-    vzo[valid_denom] = 100 * (ema_vol_up[valid_denom] - ema_vol_down[valid_denom]) / ema_vol[valid_denom]
+    mask = ema_vol > 0
+    vzo[mask] = 100 * (ema_vol_up[mask] - ema_vol_down[mask]) / ema_vol[mask]
     
     return vzo
 
 def calculate_volume_price_trend(close, volume):
-    """Calculate Volume Price Trend (VPT) independently"""
-    # Calculate price percent change
-    pct_change = close.pct_change().fillna(0)
-    
-    # Calculate VPT
+    """Calculate VPT to match feature_processor implementation"""
     vpt = pd.Series(0.0, index=close.index)
     
-    # Initial value doesn't use pct_change
+    # First value is first volume
     vpt.iloc[0] = volume.iloc[0]
     
-    # Calculate the rest of VPT values
+    # Calculate price change and VPT
     for i in range(1, len(close)):
-        vpt.iloc[i] = vpt.iloc[i-1] + volume.iloc[i] * pct_change.iloc[i]
+        if close.iloc[i-1] > 0:  # Avoid division by zero
+            pct_change = (close.iloc[i] - close.iloc[i-1]) / close.iloc[i-1]
+            vpt.iloc[i] = vpt.iloc[i-1] + volume.iloc[i] * pct_change
     
     return vpt
 
 def calculate_volume_price_confirmation(close, volume):
-    """Calculate Volume Price Confirmation indicator"""
-    # Calculate price and volume direction
-    price_dir = pd.Series(0, index=close.index)
-    vol_dir = pd.Series(0, index=volume.index)
+    """Calculate Volume Price Confirmation to match feature_processor"""
+    vpc = pd.Series(0, index=close.index)
     
+    # First value is always 0
+    vpc.iloc[0] = 0
+    
+    # Calculate direction match
     for i in range(1, len(close)):
-        # Price direction
-        if close.iloc[i] > close.iloc[i-1]:
-            price_dir.iloc[i] = 1
-        elif close.iloc[i] < close.iloc[i-1]:
-            price_dir.iloc[i] = -1
-            
-        # Volume direction
-        if volume.iloc[i] > volume.iloc[i-1]:
-            vol_dir.iloc[i] = 1
-        elif volume.iloc[i] < volume.iloc[i-1]:
-            vol_dir.iloc[i] = -1
+        close_dir = np.sign(close.iloc[i] - close.iloc[i-1])
+        vol_dir = np.sign(volume.iloc[i] - volume.iloc[i-1])
+        
+        # 1 if directions match, 0 otherwise
+        vpc.iloc[i] = 1 if close_dir == vol_dir and close_dir != 0 and vol_dir != 0 else 0
     
-    # Calculate confirmation (1 if direction matches, 0 otherwise)
-    confirmation = pd.Series(0, index=close.index)
-    
-    for i in range(len(close)):
-        if price_dir.iloc[i] != 0 and vol_dir.iloc[i] != 0:
-            confirmation.iloc[i] = 1 if price_dir.iloc[i] == vol_dir.iloc[i] else 0
-    
-    return confirmation
+    return vpc
 
 def validate_volume_indicators(df, pair):
     """
@@ -279,18 +256,8 @@ def validate_volume_indicators(df, pair):
             'missing_columns': missing_base_columns
         }
     
-    # Threshold for considering values as different (allowing for minor floating-point differences)
-    # Increased thresholds for complex calculations
-    obv_threshold = 10.0  # Increase from previous
-    vwma_threshold = 2.0
-    mfi_threshold = 2.0
-    cmf_threshold = 0.05
-    kvo_threshold = 10.0
-    vo_threshold = 10.0
-    vzo_threshold = 10.0
-    vpt_threshold = 10.0
-    vpc_threshold = 0.01  # Should be very close, it's binary
-    vol_change_threshold = 0.01
+    # Threshold for considering values as different
+    threshold = 1e-6
     
     # Validate OBV Slope
     if 'obv_slope_1h' in df.columns:
@@ -300,7 +267,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         obv_slope_diff = np.abs(df['obv_slope_1h'] - expected_obv_slope)
-        obv_slope_issues = df[obv_slope_diff > obv_threshold]
+        obv_slope_issues = df[obv_slope_diff > threshold]
         
         issue_count = len(obv_slope_issues)
         if issue_count > 0:
@@ -326,7 +293,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         mfi_diff = np.abs(df['money_flow_index_1h'] - expected_mfi)
-        mfi_issues = df[mfi_diff > mfi_threshold]
+        mfi_issues = df[mfi_diff > threshold]
         
         issue_count = len(mfi_issues)
         if issue_count > 0:
@@ -350,7 +317,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         vwma_diff = np.abs(df['vwma_20'] - expected_vwma)
-        vwma_issues = df[vwma_diff > vwma_threshold]
+        vwma_issues = df[vwma_diff > threshold]
         
         issue_count = len(vwma_issues)
         if issue_count > 0:
@@ -376,7 +343,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         cmf_diff = np.abs(df['chaikin_money_flow'] - expected_cmf)
-        cmf_issues = df[cmf_diff > cmf_threshold]
+        cmf_issues = df[cmf_diff > threshold]
         
         issue_count = len(cmf_issues)
         if issue_count > 0:
@@ -396,14 +363,14 @@ def validate_volume_indicators(df, pair):
     # Validate Klinger Oscillator
     if 'klinger_oscillator' in df.columns:
         # Calculate expected KVO
-        kvo_results = calculate_klinger_volume_oscillator(
+        kvo_results = calculate_klinger_oscillator(
             df['high_1h'], df['low_1h'], df['close_1h'], df['volume_1h']
         )
         expected_kvo = kvo_results['kvo']
         
         # Calculate absolute differences
         kvo_diff = np.abs(df['klinger_oscillator'] - expected_kvo)
-        kvo_issues = df[kvo_diff > kvo_threshold]
+        kvo_issues = df[kvo_diff > threshold]
         
         issue_count = len(kvo_issues)
         if issue_count > 0:
@@ -427,7 +394,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         vo_diff = np.abs(df['volume_oscillator'] - expected_vo)
-        vo_issues = df[vo_diff > vo_threshold]
+        vo_issues = df[vo_diff > threshold]
         
         issue_count = len(vo_issues)
         if issue_count > 0:
@@ -451,7 +418,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         vzo_diff = np.abs(df['volume_zone_oscillator'] - expected_vzo)
-        vzo_issues = df[vzo_diff > vzo_threshold]
+        vzo_issues = df[vzo_diff > threshold]
         
         issue_count = len(vzo_issues)
         if issue_count > 0:
@@ -475,7 +442,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         vpt_diff = np.abs(df['volume_price_trend'] - expected_vpt)
-        vpt_issues = df[vpt_diff > vpt_threshold]
+        vpt_issues = df[vpt_diff > threshold]
         
         issue_count = len(vpt_issues)
         if issue_count > 0:
@@ -499,7 +466,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         vpc_diff = np.abs(df['volume_price_confirmation'] - expected_vpc)
-        vpc_issues = df[vpc_diff > vpc_threshold]
+        vpc_issues = df[vpc_diff > threshold]
         
         issue_count = len(vpc_issues)
         if issue_count > 0:
@@ -523,7 +490,7 @@ def validate_volume_indicators(df, pair):
         
         # Calculate absolute differences
         vol_change_diff = np.abs(df['volume_change_pct_1h'] - expected_vol_change)
-        vol_change_issues = df[vol_change_diff > vol_change_threshold]
+        vol_change_issues = df[vol_change_diff > threshold]
         
         issue_count = len(vol_change_issues)
         if issue_count > 0:
@@ -539,46 +506,6 @@ def validate_volume_indicators(df, pair):
                     'diff': float(vol_change_diff.loc[idx]),
                     'details': f"Volume Change Percentage calculation discrepancy"
                 })
-    
-    # Check for directional consistency (only for significant price movements)
-    directional_mismatch = {'count': 0}
-    
-    # Check if OBV Slope matches price direction for significant price movements
-    if 'obv_slope_1h' in df.columns:
-        # Calculate price change
-        price_change = df['close_1h'].pct_change()
-        
-        # Find significant price movements (more than 1%)
-        significant_moves = df[abs(price_change) > 0.01]
-        
-        # Track significant mismatches
-        mismatch_count = 0
-        
-        # Check if OBV slope direction matches price direction
-        for idx, row in significant_moves.iterrows():
-            price_dir = np.sign(price_change.loc[idx])
-            obv_slope_dir = np.sign(row['obv_slope_1h'])
-            
-            # Mismatch in direction (should generally move in same direction)
-            if price_dir * obv_slope_dir < 0:
-                mismatch_count += 1
-                
-                # Only record first few mismatches for reporting
-                if mismatch_count <= 5:
-                    issues.append({
-                        'issue_type': 'directional_mismatch',
-                        'timestamp': row['timestamp_utc'],
-                        'price_change': float(price_change.loc[idx]),
-                        'obv_slope': float(row['obv_slope_1h']),
-                        'details': f"OBV Slope direction doesn't match significant price movement direction"
-                    })
-        
-        if mismatch_count > 0:
-            directional_mismatch['count'] = mismatch_count
-    
-    # Add directional mismatch to the issue summary if there are any
-    if directional_mismatch['count'] > 0:
-        issue_summary['directional_mismatch'] = directional_mismatch
     
     # Calculate total issues
     total_issues = sum(category['count'] for category in issue_summary.values())

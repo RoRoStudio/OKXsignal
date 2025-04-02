@@ -1,0 +1,20 @@
+[2025-04-01 20:25:16] fetch_new_1h_candles.py        63.17 seconds | 30600 candles fetched | 1 errors
+[2025-04-01 20:27:47] compute_features.py            151.23 seconds | 318 candles fetched | 1 errors
+[2025-04-01 20:27:47] total_hourly_pipeline          214.40 seconds | 30600 candles fetched
+[2025-04-01 20:49:53] fetch_new_1h_candles.py        43.76 seconds | 0 candles fetched | 1 errors
+[2025-04-01 20:52:28] compute_features.py            154.88 seconds | 318 candles fetched | 1 errors
+[2025-04-01 20:52:28] total_hourly_pipeline          198.64 seconds | 0 candles fetched
+[2025-04-01 20:58:17] fetch_new_1h_candles.py        43.63 seconds | 0 candles fetched | 1 errors
+[2025-04-01 20:58:17] total_hourly_pipeline          43.63 seconds | 0 candles fetched
+[2025-04-01 20:59:43] fetch_new_1h_candles.py        43.18 seconds | 0 candles fetched | 1 errors
+[2025-04-01 20:59:43] total_hourly_pipeline          43.18 seconds | 0 candles fetched
+[2025-04-01 21:00:56] fetch_new_1h_candles.py        58.43 seconds | 242 candles fetched | First candle at 2025-04-01 11:00:00 | 1 errors
+[2025-04-01 21:03:24] compute_features.py            147.87 seconds | 318 candles fetched | 1 errors
+[2025-04-01 21:03:24] total_hourly_pipeline          206.30 seconds | 242 candles fetched | First candle at 2025-04-01 11:00:00
+[2025-04-01 21:41:25] total_hourly_pipeline          1599.06 seconds | 0 candles fetched
+[2025-04-01 22:24:50] total_hourly_pipeline          1537.76 seconds | 0 candles fetched
+[2025-04-01 23:26:07] total_hourly_pipeline          1584.53 seconds | 0 candles fetched
+[2025-04-02 09:35:01] fetch_new_1h_candles.py        66.71 seconds | 3060 candles fetched | First candle at 2025-04-01 14:00:00 | 1 errors
+[2025-04-02 09:37:32] compute_features.py            150.68 seconds | 318 candles fetched | 1 errors
+[2025-04-02 09:37:32] total_hourly_pipeline          217.39 seconds | 3060 candles fetched | First candle at 2025-04-01 14:00:00
+[2025-04-02 10:19:14] total_hourly_pipeline          1186.78 seconds | 0 candles fetched

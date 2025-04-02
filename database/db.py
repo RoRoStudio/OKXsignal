@@ -57,7 +57,8 @@ def initialize_connection_pool(min_conn=3, max_conn=10):
             keepalives=1,
             keepalives_idle=30,
             keepalives_interval=10,
-            keepalives_count=5
+            keepalives_count=5,
+            options="-c timezone=UTC"  # Force UTC timezone
         )
         
         # Test the connection pool
@@ -91,7 +92,8 @@ def get_connection():
         user=DB_USER,
         password=DB_PASSWORD,
         host=DB_HOST,
-        port=DB_PORT
+        port=DB_PORT,
+        options="-c timezone=UTC"  # Force UTC timezone
     )
 
 def return_connection(conn):

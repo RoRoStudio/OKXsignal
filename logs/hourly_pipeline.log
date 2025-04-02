@@ -1,0 +1,556 @@
+[2025-04-01 20:59:00] 🚀 Starting hourly data pipeline...
+[2025-04-01 20:59:00] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-01 20:59:00] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 20:59:43] Fetch stdout: ...
+[2025-04-01 20:59:43] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 20:59:00,123 - DEBUG - Using selector: EpollSelector
+2025-04-01 20:59:00,123 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 20:59:00,399 - INFO - 306 pairs found
+2025-04-01 20:59:00,400 - INFO - Processing BTC-USDT
+2025-04-01 20:59:00,600 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 20:59:43] Fetch completed successfully but no new candles were found
+[2025-04-01 20:59:43] Fetch attempt 1: 0 candles fetched, 1 errors
+[2025-04-01 20:59:43] Errors during fetch_new_1h_candles.py:
+  - Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+[2025-04-01 20:59:43] Skipping compute features: No new candles were fetched
+[2025-04-01 20:59:43] Hourly pipeline ✅ completed successfully in 43.18 seconds
+[2025-04-01 20:59:43] No new candles for hour 21 yet. Retrying in 15 seconds...
+[2025-04-01 20:59:58] Waiting until 2025-04-01 20:59:00 for next execution window...
+[2025-04-01 20:59:58] 🚀 Starting hourly data pipeline...
+[2025-04-01 20:59:58] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-01 20:59:58] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:00:56] Fetch stdout: ...
+[2025-04-01 21:00:56] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 20:59:58,309 - DEBUG - Using selector: EpollSelector
+2025-04-01 20:59:58,309 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 20:59:58,586 - INFO - 306 pairs found
+2025-04-01 20:59:58,587 - INFO - Processing BTC-USDT
+2025-04-01 20:59:58,789 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 21:00:56] First candle timestamp detected: 2025-04-01 11:00:00
+[2025-04-01 21:00:56] Fetch attempt 1: 242 candles fetched, 1 errors
+[2025-04-01 21:00:56] Errors during fetch_new_1h_candles.py:
+  - Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+[2025-04-01 21:00:56] New candles fetched, proceeding to compute features
+[2025-04-01 21:00:56] Starting compute_features.py
+[2025-04-01 21:00:56] Running: /root/OKXsignal/database/processing/compute_features.py
+[2025-04-01 21:03:24] Compute stdout: ...
+[2025-04-01 21:03:24] Compute stderr: [INFO] 2025-04-01 21:00:59,585 | GPU monitoring initialized for 1 GPUs: Unknown GPU
+[INFO] 2025-04-01 21:00:59,586 | Resource monitor initialized: CPU cores: 8 physical / 16 logical, RAM: 23.43 GB
+[INFO] 2025-04-01 21:00:59,823 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-04-01 21:00:59,823 | System memory: 20.17 GB available / 23.43 GB total
+[INFO] 2025-04-01 21:00:59,828 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-04-01 21:00:59,831 | Loaded config ...
+[2025-04-01 21:03:24] Compute complete: 318 pairs processed, 1 errors
+[2025-04-01 21:03:24] Errors during compute_features.py:
+  - Error: local variable 'duration' referenced before assignment
+[2025-04-01 21:03:24] Hourly pipeline ❌ completed with errors in 206.30 seconds
+[2025-04-01 21:11:55] Pipeline interrupted by user. Exiting...
+[2025-04-01 21:11:56] Starting continuous hourly pipeline scheduler
+[2025-04-01 21:11:56] Pipeline will execute during the first 10 minutes of each hour
+[2025-04-01 21:11:56] Performing initial fetch attempt on startup...
+[2025-04-01 21:11:56] 🚀 Starting hourly data pipeline...
+[2025-04-01 21:11:56] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-01 21:11:56] Checking sentinel pair (BTC-USDT) for new candle availability...
+[2025-04-01 21:11:56] Running: /root/OKXsignal/database/fetching/check_sentinel.py
+[2025-04-01 21:11:56] ✅ Sentinel check passed: BTC-USDT new candle is available
+[2025-04-01 21:11:56] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:14:46] Starting continuous hourly pipeline scheduler
+[2025-04-01 21:14:46] Pipeline will execute during the first 10 minutes of each hour
+[2025-04-01 21:14:46] Performing initial fetch attempt on startup...
+[2025-04-01 21:14:46] 🚀 Starting hourly data pipeline...
+[2025-04-01 21:14:46] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-01 21:14:46] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:15:30] Fetch stdout: ...
+[2025-04-01 21:15:30] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 21:14:47,161 - DEBUG - Using selector: EpollSelector
+2025-04-01 21:14:47,161 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 21:14:47,443 - INFO - 306 pairs found
+2025-04-01 21:14:47,443 - INFO - Processing BTC-USDT
+2025-04-01 21:14:47,651 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 21:15:30] Fetch completed successfully but no new candles were found
+[2025-04-01 21:15:30] Fetch attempt 1: 0 candles fetched, 1 errors
+[2025-04-01 21:15:30] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:15:45] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:16:28] Fetch stdout: ...
+[2025-04-01 21:16:28] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 21:15:45,297 - DEBUG - Using selector: EpollSelector
+2025-04-01 21:15:45,297 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 21:15:45,564 - INFO - 306 pairs found
+2025-04-01 21:15:45,565 - INFO - Processing BTC-USDT
+2025-04-01 21:15:45,767 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 21:16:28] Fetch completed successfully but no new candles were found
+[2025-04-01 21:16:28] Fetch attempt 2: 0 candles fetched, 1 errors
+[2025-04-01 21:16:28] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:16:43] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:17:35] Fetch stdout: ...
+[2025-04-01 21:17:35] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 21:16:44,024 - DEBUG - Using selector: EpollSelector
+2025-04-01 21:16:44,024 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 21:16:44,406 - INFO - 306 pairs found
+2025-04-01 21:16:44,406 - INFO - Processing BTC-USDT
+2025-04-01 21:16:44,608 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 21:17:35] Fetch completed successfully but no new candles were found
+[2025-04-01 21:17:35] Fetch attempt 3: 0 candles fetched, 1 errors
+[2025-04-01 21:17:35] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:17:50] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:18:48] Fetch completed successfully but no new candles were found
+[2025-04-01 21:18:48] Fetch attempt 4: 0 candles fetched, 1 errors
+[2025-04-01 21:18:48] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:19:03] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:19:50] Fetch completed successfully but no new candles were found
+[2025-04-01 21:19:50] Fetch attempt 5: 0 candles fetched, 1 errors
+[2025-04-01 21:19:50] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:20:05] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:20:53] Fetch completed successfully but no new candles were found
+[2025-04-01 21:20:53] Fetch attempt 6: 0 candles fetched, 1 errors
+[2025-04-01 21:20:53] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:21:08] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:21:54] Fetch completed successfully but no new candles were found
+[2025-04-01 21:21:54] Fetch attempt 7: 0 candles fetched, 1 errors
+[2025-04-01 21:21:54] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:22:09] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:22:55] Fetch completed successfully but no new candles were found
+[2025-04-01 21:22:55] Fetch attempt 8: 0 candles fetched, 1 errors
+[2025-04-01 21:22:55] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:23:10] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:24:02] Fetch completed successfully but no new candles were found
+[2025-04-01 21:24:02] Fetch attempt 9: 0 candles fetched, 1 errors
+[2025-04-01 21:24:02] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:24:17] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:25:20] Fetch completed successfully but no new candles were found
+[2025-04-01 21:25:20] Fetch attempt 10: 0 candles fetched, 1 errors
+[2025-04-01 21:25:20] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:25:35] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:26:39] Fetch completed successfully but no new candles were found
+[2025-04-01 21:26:39] Fetch attempt 11: 0 candles fetched, 1 errors
+[2025-04-01 21:26:39] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:26:54] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:27:58] Fetch completed successfully but no new candles were found
+[2025-04-01 21:27:58] Fetch attempt 12: 0 candles fetched, 1 errors
+[2025-04-01 21:27:58] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:28:13] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:33:28] Fetch completed successfully but no new candles were found
+[2025-04-01 21:33:28] Fetch attempt 13: 0 candles fetched, 5 errors
+[2025-04-01 21:33:28] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:33:43] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:34:34] Fetch completed successfully but no new candles were found
+[2025-04-01 21:34:34] Fetch attempt 14: 0 candles fetched, 1 errors
+[2025-04-01 21:34:34] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:34:50] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:35:41] Fetch completed successfully but no new candles were found
+[2025-04-01 21:35:41] Fetch attempt 15: 0 candles fetched, 1 errors
+[2025-04-01 21:35:41] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:35:56] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:36:48] Fetch completed successfully but no new candles were found
+[2025-04-01 21:36:48] Fetch attempt 16: 0 candles fetched, 1 errors
+[2025-04-01 21:36:48] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:37:03] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:37:55] Fetch completed successfully but no new candles were found
+[2025-04-01 21:37:55] Fetch attempt 17: 0 candles fetched, 1 errors
+[2025-04-01 21:37:55] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:38:10] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:39:02] Fetch completed successfully but no new candles were found
+[2025-04-01 21:39:02] Fetch attempt 18: 0 candles fetched, 1 errors
+[2025-04-01 21:39:02] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:39:17] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:40:13] Fetch completed successfully but no new candles were found
+[2025-04-01 21:40:13] Fetch attempt 19: 0 candles fetched, 1 errors
+[2025-04-01 21:40:13] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:40:28] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 21:41:25] Fetch completed successfully but no new candles were found
+[2025-04-01 21:41:25] Fetch attempt 20: 0 candles fetched, 1 errors
+[2025-04-01 21:41:25] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 21:41:25] Maximum retries reached. Giving up on fetching all candles.
+[2025-04-01 21:41:25] Skipping compute features: Fetch failed
+[2025-04-01 21:41:25] Hourly pipeline ❌ completed with errors in 1599.06 seconds
+[2025-04-01 21:41:25] Initial run: No candles fetched, will wait for next execution window
+[2025-04-01 21:41:25] Waiting until 2025-04-01 21:59:00 for next execution window...
+[2025-04-01 21:59:12] 🚀 Starting hourly data pipeline...
+[2025-04-01 21:59:12] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-01 21:59:12] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:00:17] Fetch stdout: ...
+[2025-04-01 22:00:17] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 21:59:12,852 - DEBUG - Using selector: EpollSelector
+2025-04-01 21:59:12,852 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 21:59:13,138 - INFO - 306 pairs found
+2025-04-01 21:59:13,138 - INFO - Processing BTC-USDT
+2025-04-01 21:59:13,420 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 22:00:17] First candle timestamp detected: 2025-04-01 12:00:00
+[2025-04-01 22:00:17] Fetch attempt 1: 43 candles fetched, 1 errors
+[2025-04-01 22:00:17] ⚠️ Incomplete fetch: Only 43 of ~306 candles. Retrying in 15 seconds...
+[2025-04-01 22:00:32] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:01:55] Fetch stdout: ...
+[2025-04-01 22:01:55] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 22:00:33,017 - DEBUG - Using selector: EpollSelector
+2025-04-01 22:00:33,017 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 22:00:33,297 - INFO - 306 pairs found
+2025-04-01 22:00:33,298 - INFO - Processing BTC-USDT
+2025-04-01 22:00:33,563 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 22:01:55] First candle timestamp detected: 2025-04-01 12:00:00
+[2025-04-01 22:01:55] Fetch attempt 2: 261 candles fetched, 1 errors
+[2025-04-01 22:01:55] ⚠️ Incomplete fetch: Only 261 of ~306 candles. Retrying in 15 seconds...
+[2025-04-01 22:02:10] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:03:11] Fetch stdout: ...
+[2025-04-01 22:03:11] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 22:02:11,056 - DEBUG - Using selector: EpollSelector
+2025-04-01 22:02:11,056 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 22:02:11,342 - INFO - 306 pairs found
+2025-04-01 22:02:11,342 - INFO - Processing BTC-USDT
+2025-04-01 22:02:11,595 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 22:03:11] First candle timestamp detected: 2025-04-01 12:00:00
+[2025-04-01 22:03:11] Fetch attempt 3: 2 candles fetched, 1 errors
+[2025-04-01 22:03:11] ⚠️ Incomplete fetch: Only 2 of ~306 candles. Retrying in 15 seconds...
+[2025-04-01 22:03:27] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:04:21] Fetch completed successfully but no new candles were found
+[2025-04-01 22:04:21] Fetch attempt 4: 0 candles fetched, 1 errors
+[2025-04-01 22:04:21] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:04:36] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:05:30] Fetch completed successfully but no new candles were found
+[2025-04-01 22:05:30] Fetch attempt 5: 0 candles fetched, 1 errors
+[2025-04-01 22:05:30] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:05:46] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:06:40] Fetch completed successfully but no new candles were found
+[2025-04-01 22:06:40] Fetch attempt 6: 0 candles fetched, 1 errors
+[2025-04-01 22:06:40] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:06:55] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:07:50] Fetch completed successfully but no new candles were found
+[2025-04-01 22:07:50] Fetch attempt 7: 0 candles fetched, 1 errors
+[2025-04-01 22:07:50] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:08:05] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:09:00] Fetch completed successfully but no new candles were found
+[2025-04-01 22:09:00] Fetch attempt 8: 0 candles fetched, 1 errors
+[2025-04-01 22:09:00] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:09:15] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:10:17] Fetch completed successfully but no new candles were found
+[2025-04-01 22:10:17] Fetch attempt 9: 0 candles fetched, 1 errors
+[2025-04-01 22:10:17] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:10:32] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:11:31] Fetch completed successfully but no new candles were found
+[2025-04-01 22:11:31] Fetch attempt 10: 0 candles fetched, 1 errors
+[2025-04-01 22:11:31] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:11:47] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:12:43] Fetch completed successfully but no new candles were found
+[2025-04-01 22:12:43] Fetch attempt 11: 0 candles fetched, 1 errors
+[2025-04-01 22:12:43] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:12:58] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:14:03] Fetch completed successfully but no new candles were found
+[2025-04-01 22:14:03] Fetch attempt 12: 0 candles fetched, 1 errors
+[2025-04-01 22:14:03] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:14:18] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:15:25] Fetch completed successfully but no new candles were found
+[2025-04-01 22:15:25] Fetch attempt 13: 0 candles fetched, 1 errors
+[2025-04-01 22:15:25] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:15:40] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:16:47] Fetch completed successfully but no new candles were found
+[2025-04-01 22:16:47] Fetch attempt 14: 0 candles fetched, 1 errors
+[2025-04-01 22:16:47] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:17:03] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:18:09] Fetch completed successfully but no new candles were found
+[2025-04-01 22:18:09] Fetch attempt 15: 0 candles fetched, 1 errors
+[2025-04-01 22:18:09] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:18:24] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:19:29] Fetch completed successfully but no new candles were found
+[2025-04-01 22:19:29] Fetch attempt 16: 0 candles fetched, 1 errors
+[2025-04-01 22:19:29] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:19:44] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:20:50] Fetch completed successfully but no new candles were found
+[2025-04-01 22:20:50] Fetch attempt 17: 0 candles fetched, 1 errors
+[2025-04-01 22:20:50] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:21:05] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:22:08] Fetch completed successfully but no new candles were found
+[2025-04-01 22:22:08] Fetch attempt 18: 0 candles fetched, 1 errors
+[2025-04-01 22:22:08] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:22:23] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:23:30] Fetch completed successfully but no new candles were found
+[2025-04-01 22:23:30] Fetch attempt 19: 0 candles fetched, 1 errors
+[2025-04-01 22:23:30] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:23:45] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 22:24:50] Fetch completed successfully but no new candles were found
+[2025-04-01 22:24:50] Fetch attempt 20: 0 candles fetched, 1 errors
+[2025-04-01 22:24:50] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 22:24:50] Maximum retries reached. Giving up on fetching all candles.
+[2025-04-01 22:24:50] Skipping compute features: Fetch failed
+[2025-04-01 22:24:50] Hourly pipeline ❌ completed with errors in 1537.76 seconds
+[2025-04-01 22:24:50] No new candles for hour 22 yet. Retrying in 15 seconds...
+[2025-04-01 22:25:05] Waiting until 2025-04-01 22:59:00 for next execution window...
+[2025-04-01 22:59:43] 🚀 Starting hourly data pipeline...
+[2025-04-01 22:59:43] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-01 22:59:43] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:01:06] Fetch stdout: ...
+[2025-04-01 23:01:06] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 22:59:43,503 - DEBUG - Using selector: EpollSelector
+2025-04-01 22:59:43,503 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 22:59:43,790 - INFO - 306 pairs found
+2025-04-01 22:59:43,790 - INFO - Processing BTC-USDT
+2025-04-01 22:59:44,116 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 23:01:06] First candle timestamp detected: 2025-04-01 13:00:00
+[2025-04-01 23:01:06] Fetch attempt 1: 207 candles fetched, 1 errors
+[2025-04-01 23:01:06] ⚠️ Incomplete fetch: Only 207 of ~306 candles. Retrying in 15 seconds...
+[2025-04-01 23:01:21] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:02:31] Fetch stdout: ...
+[2025-04-01 23:02:31] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 23:01:21,243 - DEBUG - Using selector: EpollSelector
+2025-04-01 23:01:21,243 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 23:01:21,508 - INFO - 306 pairs found
+2025-04-01 23:01:21,509 - INFO - Processing BTC-USDT
+2025-04-01 23:01:21,799 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 23:02:31] First candle timestamp detected: 2025-04-01 13:00:00
+[2025-04-01 23:02:31] Fetch attempt 2: 99 candles fetched, 1 errors
+[2025-04-01 23:02:31] ⚠️ Incomplete fetch: Only 99 of ~306 candles. Retrying in 15 seconds...
+[2025-04-01 23:02:47] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:03:51] Fetch stdout: ...
+[2025-04-01 23:03:51] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-01 23:02:47,295 - DEBUG - Using selector: EpollSelector
+2025-04-01 23:02:47,296 - INFO - Fetching latest 1H candles from OKX...
+2025-04-01 23:02:47,563 - INFO - 306 pairs found
+2025-04-01 23:02:47,563 - INFO - Processing BTC-USDT
+2025-04-01 23:02:47,806 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-01 23:03:51] Fetch completed successfully but no new candles were found
+[2025-04-01 23:03:51] Fetch attempt 3: 0 candles fetched, 1 errors
+[2025-04-01 23:03:51] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:04:06] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:05:11] Fetch completed successfully but no new candles were found
+[2025-04-01 23:05:11] Fetch attempt 4: 0 candles fetched, 1 errors
+[2025-04-01 23:05:11] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:05:27] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:06:29] Fetch completed successfully but no new candles were found
+[2025-04-01 23:06:29] Fetch attempt 5: 0 candles fetched, 1 errors
+[2025-04-01 23:06:29] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:06:44] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:07:48] Fetch completed successfully but no new candles were found
+[2025-04-01 23:07:48] Fetch attempt 6: 0 candles fetched, 1 errors
+[2025-04-01 23:07:48] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:08:03] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:09:04] Fetch completed successfully but no new candles were found
+[2025-04-01 23:09:04] Fetch attempt 7: 0 candles fetched, 1 errors
+[2025-04-01 23:09:04] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:09:20] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:10:23] Fetch completed successfully but no new candles were found
+[2025-04-01 23:10:23] Fetch attempt 8: 0 candles fetched, 1 errors
+[2025-04-01 23:10:23] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:10:38] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:11:34] Fetch completed successfully but no new candles were found
+[2025-04-01 23:11:34] Fetch attempt 9: 0 candles fetched, 1 errors
+[2025-04-01 23:11:34] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:11:49] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:12:53] Fetch completed successfully but no new candles were found
+[2025-04-01 23:12:53] Fetch attempt 10: 0 candles fetched, 1 errors
+[2025-04-01 23:12:53] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:13:09] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:14:13] Fetch completed successfully but no new candles were found
+[2025-04-01 23:14:13] Fetch attempt 11: 0 candles fetched, 1 errors
+[2025-04-01 23:14:13] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:14:28] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:15:31] Fetch completed successfully but no new candles were found
+[2025-04-01 23:15:31] Fetch attempt 12: 0 candles fetched, 1 errors
+[2025-04-01 23:15:31] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:15:46] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:16:46] Fetch completed successfully but no new candles were found
+[2025-04-01 23:16:46] Fetch attempt 13: 0 candles fetched, 1 errors
+[2025-04-01 23:16:46] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:17:02] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:18:07] Fetch completed successfully but no new candles were found
+[2025-04-01 23:18:07] Fetch attempt 14: 0 candles fetched, 1 errors
+[2025-04-01 23:18:07] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:18:22] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:19:26] Fetch completed successfully but no new candles were found
+[2025-04-01 23:19:26] Fetch attempt 15: 0 candles fetched, 1 errors
+[2025-04-01 23:19:26] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:19:42] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:20:47] Fetch completed successfully but no new candles were found
+[2025-04-01 23:20:47] Fetch attempt 16: 0 candles fetched, 1 errors
+[2025-04-01 23:20:47] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:21:02] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:22:06] Fetch completed successfully but no new candles were found
+[2025-04-01 23:22:06] Fetch attempt 17: 0 candles fetched, 1 errors
+[2025-04-01 23:22:06] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:22:21] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:23:26] Fetch completed successfully but no new candles were found
+[2025-04-01 23:23:26] Fetch attempt 18: 0 candles fetched, 1 errors
+[2025-04-01 23:23:26] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:23:42] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:24:47] Fetch completed successfully but no new candles were found
+[2025-04-01 23:24:47] Fetch attempt 19: 0 candles fetched, 1 errors
+[2025-04-01 23:24:47] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:25:02] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-01 23:26:07] Fetch completed successfully but no new candles were found
+[2025-04-01 23:26:07] Fetch attempt 20: 0 candles fetched, 1 errors
+[2025-04-01 23:26:07] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-01 23:26:07] Maximum retries reached. Giving up on fetching all candles.
+[2025-04-01 23:26:07] Skipping compute features: Fetch failed
+[2025-04-01 23:26:07] Hourly pipeline ❌ completed with errors in 1584.53 seconds
+[2025-04-01 23:26:07] No new candles for hour 23 yet. Retrying in 15 seconds...
+[2025-04-01 23:26:23] Waiting until 2025-04-01 23:59:00 for next execution window...
+[2025-04-02 09:33:54] Starting continuous hourly pipeline scheduler
+[2025-04-02 09:33:54] Pipeline will execute during the first 10 minutes of each hour
+[2025-04-02 09:33:54] Performing initial fetch attempt on startup...
+[2025-04-02 09:33:54] 🚀 Starting hourly data pipeline...
+[2025-04-02 09:33:54] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-02 09:33:54] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 09:35:01] Fetch stdout: ...
+[2025-04-02 09:35:01] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-02 09:33:55,170 - DEBUG - Using selector: EpollSelector
+2025-04-02 09:33:55,170 - INFO - Fetching latest 1H candles from OKX...
+2025-04-02 09:33:55,443 - INFO - 306 pairs found
+2025-04-02 09:33:55,443 - INFO - Processing BTC-USDT
+2025-04-02 09:33:55,752 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-02 09:35:01] First candle timestamp detected: 2025-04-01 14:00:00
+[2025-04-02 09:35:01] Fetch attempt 1: 3060 candles fetched, 1 errors
+[2025-04-02 09:35:01] ✅ Success: Fetched 3060 candles (expected ~306)
+[2025-04-02 09:35:01] Errors during fetch_new_1h_candles.py:
+  - Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+[2025-04-02 09:35:01] New candles fetched, proceeding to compute features
+[2025-04-02 09:35:01] Starting compute_features.py
+[2025-04-02 09:35:01] Running: /root/OKXsignal/database/processing/compute_features.py
+[2025-04-02 09:37:32] Compute stdout: ...
+[2025-04-02 09:37:32] Compute stderr: [INFO] 2025-04-02 09:35:06,045 | GPU monitoring initialized for 1 GPUs: Unknown GPU
+[INFO] 2025-04-02 09:35:06,046 | Resource monitor initialized: CPU cores: 8 physical / 16 logical, RAM: 23.43 GB
+[INFO] 2025-04-02 09:35:06,361 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-04-02 09:35:06,361 | System memory: 21.70 GB available / 23.43 GB total
+[INFO] 2025-04-02 09:35:06,366 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-04-02 09:35:06,370 | Loaded config ...
+[2025-04-02 09:37:32] Compute complete: 318 pairs processed, 1 errors
+[2025-04-02 09:37:32] Errors during compute_features.py:
+  - Error: local variable 'duration' referenced before assignment
+[2025-04-02 09:37:32] Hourly pipeline ❌ completed with errors in 217.39 seconds
+[2025-04-02 09:37:32] Initial run: Successfully fetched candles for hour 9
+[2025-04-02 09:37:32] Waiting until 2025-04-02 09:59:00 for next execution window...
+[2025-04-02 09:59:27] 🚀 Starting hourly data pipeline...
+[2025-04-02 09:59:27] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-02 09:59:27] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:00:14] Fetch stdout: ...
+[2025-04-02 10:00:14] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-02 09:59:27,875 - DEBUG - Using selector: EpollSelector
+2025-04-02 09:59:27,876 - INFO - Fetching latest 1H candles from OKX...
+2025-04-02 09:59:28,149 - INFO - 306 pairs found
+2025-04-02 09:59:28,149 - INFO - Processing BTC-USDT
+2025-04-02 09:59:28,519 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-02 10:00:14] First candle timestamp detected: 2025-04-02 00:00:00
+[2025-04-02 10:00:14] Fetch attempt 1: 49 candles fetched, 1 errors
+[2025-04-02 10:00:14] ⚠️ Incomplete fetch: Only 49 of ~306 candles. Retrying in 15 seconds...
+[2025-04-02 10:00:29] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:01:28] Fetch stdout: ...
+[2025-04-02 10:01:28] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-02 10:00:30,070 - DEBUG - Using selector: EpollSelector
+2025-04-02 10:00:30,070 - INFO - Fetching latest 1H candles from OKX...
+2025-04-02 10:00:30,446 - INFO - 306 pairs found
+2025-04-02 10:00:30,446 - INFO - Processing BTC-USDT
+2025-04-02 10:00:30,639 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-02 10:01:28] First candle timestamp detected: 2025-04-02 00:00:00
+[2025-04-02 10:01:28] Fetch attempt 2: 256 candles fetched, 1 errors
+[2025-04-02 10:01:28] ⚠️ Incomplete fetch: Only 256 of ~306 candles. Retrying in 15 seconds...
+[2025-04-02 10:01:44] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:02:27] Fetch stdout: ...
+[2025-04-02 10:02:27] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-02 10:01:44,126 - DEBUG - Using selector: EpollSelector
+2025-04-02 10:01:44,126 - INFO - Fetching latest 1H candles from OKX...
+2025-04-02 10:01:44,391 - INFO - 306 pairs found
+2025-04-02 10:01:44,392 - INFO - Processing BTC-USDT
+2025-04-02 10:01:44,591 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-02 10:02:27] First candle timestamp detected: 2025-04-02 00:00:00
+[2025-04-02 10:02:27] Fetch attempt 3: 1 candles fetched, 1 errors
+[2025-04-02 10:02:27] ⚠️ Incomplete fetch: Only 1 of ~306 candles. Retrying in 15 seconds...
+[2025-04-02 10:02:42] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:03:25] Fetch completed successfully but no new candles were found
+[2025-04-02 10:03:25] Fetch attempt 4: 0 candles fetched, 1 errors
+[2025-04-02 10:03:25] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:03:40] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:04:24] Fetch completed successfully but no new candles were found
+[2025-04-02 10:04:24] Fetch attempt 5: 0 candles fetched, 1 errors
+[2025-04-02 10:04:24] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:04:39] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:05:24] Fetch completed successfully but no new candles were found
+[2025-04-02 10:05:24] Fetch attempt 6: 0 candles fetched, 1 errors
+[2025-04-02 10:05:24] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:05:39] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:06:22] Fetch completed successfully but no new candles were found
+[2025-04-02 10:06:22] Fetch attempt 7: 0 candles fetched, 1 errors
+[2025-04-02 10:06:22] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:06:38] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:07:23] Fetch completed successfully but no new candles were found
+[2025-04-02 10:07:23] Fetch attempt 8: 0 candles fetched, 1 errors
+[2025-04-02 10:07:23] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:07:38] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:08:22] Fetch completed successfully but no new candles were found
+[2025-04-02 10:08:22] Fetch attempt 9: 0 candles fetched, 1 errors
+[2025-04-02 10:08:22] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:08:37] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:09:21] Fetch completed successfully but no new candles were found
+[2025-04-02 10:09:21] Fetch attempt 10: 0 candles fetched, 1 errors
+[2025-04-02 10:09:21] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:09:36] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:10:19] Fetch completed successfully but no new candles were found
+[2025-04-02 10:10:19] Fetch attempt 11: 0 candles fetched, 1 errors
+[2025-04-02 10:10:19] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:10:35] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:11:18] Fetch completed successfully but no new candles were found
+[2025-04-02 10:11:18] Fetch attempt 12: 0 candles fetched, 1 errors
+[2025-04-02 10:11:18] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:11:34] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:12:17] Fetch completed successfully but no new candles were found
+[2025-04-02 10:12:17] Fetch attempt 13: 0 candles fetched, 1 errors
+[2025-04-02 10:12:17] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:12:32] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:13:16] Fetch completed successfully but no new candles were found
+[2025-04-02 10:13:16] Fetch attempt 14: 0 candles fetched, 1 errors
+[2025-04-02 10:13:16] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:13:31] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:14:15] Fetch completed successfully but no new candles were found
+[2025-04-02 10:14:15] Fetch attempt 15: 0 candles fetched, 1 errors
+[2025-04-02 10:14:15] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:14:30] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:15:13] Fetch completed successfully but no new candles were found
+[2025-04-02 10:15:13] Fetch attempt 16: 0 candles fetched, 1 errors
+[2025-04-02 10:15:13] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:15:29] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:16:12] Fetch completed successfully but no new candles were found
+[2025-04-02 10:16:12] Fetch attempt 17: 0 candles fetched, 1 errors
+[2025-04-02 10:16:12] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:16:28] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:17:12] Fetch completed successfully but no new candles were found
+[2025-04-02 10:17:12] Fetch attempt 18: 0 candles fetched, 1 errors
+[2025-04-02 10:17:12] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:17:27] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:18:12] Fetch completed successfully but no new candles were found
+[2025-04-02 10:18:12] Fetch attempt 19: 0 candles fetched, 1 errors
+[2025-04-02 10:18:12] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:18:27] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-02 10:19:14] Fetch completed successfully but no new candles were found
+[2025-04-02 10:19:14] Fetch attempt 20: 0 candles fetched, 1 errors
+[2025-04-02 10:19:14] ⏳ No new candles available yet. Retrying in 15 seconds...
+[2025-04-02 10:19:14] Maximum retries reached. Giving up on fetching all candles.
+[2025-04-02 10:19:14] Skipping compute features: Fetch failed
+[2025-04-02 10:19:14] Hourly pipeline ❌ completed with errors in 1186.78 seconds
+[2025-04-02 10:19:14] No new candles for hour 10 yet. Retrying in 15 seconds...
+[2025-04-02 10:19:29] Waiting until 2025-04-02 10:59:00 for next execution window...
+[2025-04-02 10:51:46] Pipeline interrupted by user. Exiting...
