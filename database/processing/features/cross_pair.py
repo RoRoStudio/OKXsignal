@@ -54,8 +54,17 @@ class CrossPairFeatures(BaseFeatureComputer):
             self._debug_log("Computing volume rank", debug_mode)
             try:
                 # Group by timestamp to calculate rank within each timeframe
+                # FIX: Use method='first' to avoid ties, and pct=True for percentile ranking
+                # This distributes ranks more evenly from 0-100
                 df = df.sort_values(['timestamp_utc', 'volume_1h'], ascending=[True, False])
-                df['volume_rank_1h'] = df.groupby('timestamp_utc')['volume_1h'].rank(pct=True) * 100
+                
+                # Group by timestamp and calculate rank
+                df['volume_rank_1h'] = df.groupby('timestamp_utc')['volume_1h'].transform(
+                    lambda x: (x.rank(method='first') - 1) / (len(x) - 1) * 100 if len(x) > 1 else 50
+                )
+                
+                # Ensure integer ranks
+                df['volume_rank_1h'] = df['volume_rank_1h'].round().astype(int)
                 
                 # Previous volume rank
                 df['prev_volume_rank'] = df.groupby('pair')['volume_rank_1h'].shift(1).fillna(0)
@@ -67,8 +76,16 @@ class CrossPairFeatures(BaseFeatureComputer):
             self._debug_log("Computing volatility rank", debug_mode)
             try:
                 # Group by timestamp to calculate rank within each timeframe
+                # FIX: Use method='first' to avoid ties, and pct=True for percentile ranking
                 df = df.sort_values(['timestamp_utc', 'atr_1h'], ascending=[True, False])
-                df['volatility_rank_1h'] = df.groupby('timestamp_utc')['atr_1h'].rank(pct=True) * 100
+                
+                # Group by timestamp and calculate rank
+                df['volatility_rank_1h'] = df.groupby('timestamp_utc')['atr_1h'].transform(
+                    lambda x: (x.rank(method='first') - 1) / (len(x) - 1) * 100 if len(x) > 1 else 50
+                )
+                
+                # Ensure integer ranks
+                df['volatility_rank_1h'] = df['volatility_rank_1h'].round().astype(int)
             except Exception as e:
                 logging.warning(f"Error computing volatility rank: {e}")
 
@@ -122,6 +139,8 @@ class CrossPairFeatures(BaseFeatureComputer):
                                                     ] = corr
                                                 except Exception as e:
                                                     logging.warning(f"Error calculating correlation: {e}")
+                        # Make sure BTC has a correlation of 1.0 with itself
+                        df.loc[df['pair'] == 'BTC-USDT', 'btc_corr_24h'] = 1.0
         except Exception as e:
             logging.warning(f"Error computing BTC correlation: {e}")
 
@@ -140,11 +159,11 @@ class CrossPairFeatures(BaseFeatureComputer):
                         # Calculate relative performance
                         rel_perf = (timestamp_df['future_return_1h_pct'] - btc_return) / abs(btc_return)
                         
-                        # Rank the relative performance
-                        perf_rank = rel_perf.rank(pct=True) * 100
+                        # FIX: Rank the relative performance using method='first' to avoid ties
+                        perf_rank = rel_perf.rank(method='first', pct=True) * 100
                         
                         # Update the original dataframe
-                        df.loc[df['timestamp_utc'] == timestamp, 'performance_rank_btc_1h'] = perf_rank.values
+                        df.loc[df['timestamp_utc'] == timestamp, 'performance_rank_btc_1h'] = perf_rank.values.round().astype(int)
         except Exception as e:
             logging.warning(f"Error computing BTC performance rank: {e}")
 
@@ -163,22 +182,22 @@ class CrossPairFeatures(BaseFeatureComputer):
                         # Calculate relative performance
                         rel_perf = (timestamp_df['future_return_1h_pct'] - eth_return) / abs(eth_return)
                         
-                        # Rank the relative performance
-                        perf_rank = rel_perf.rank(pct=True) * 100
+                        # FIX: Rank the relative performance using method='first' to avoid ties
+                        perf_rank = rel_perf.rank(method='first', pct=True) * 100
                         
                         # Update the original dataframe
-                        df.loc[df['timestamp_utc'] == timestamp, 'performance_rank_eth_1h'] = perf_rank.values
+                        df.loc[df['timestamp_utc'] == timestamp, 'performance_rank_eth_1h'] = perf_rank.values.round().astype(int)
         except Exception as e:
             logging.warning(f"Error computing ETH performance rank: {e}")
 
         # Fill NaN values with 0
         for col in ['volume_rank_1h', 'volatility_rank_1h', 'performance_rank_btc_1h', 
-                   'performance_rank_eth_1h', 'btc_corr_24h', 'prev_volume_rank']:
+                'performance_rank_eth_1h', 'btc_corr_24h', 'prev_volume_rank']:
             df[col] = df[col].fillna(0)
             
         # Convert rank columns to integers (smallint in DB)
         for col in ['volume_rank_1h', 'volatility_rank_1h', 'performance_rank_btc_1h', 
-                   'performance_rank_eth_1h']:
+                'performance_rank_eth_1h']:
             df[col] = df[col].astype(int)
 
         self._log_performance("cross_pair_features", time.time() - start_time, perf_monitor)

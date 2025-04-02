@@ -229,15 +229,15 @@ def hurst_exponent_gpu(prices, max_lag):
         if n < min_window:
             return cp.asnumpy(hurst_values)
         
-        # Log returns
-        # Handle zeros and negative values
-        safe_prices = cp.maximum(prices_gpu, 1e-8)
-        log_prices = cp.log(safe_prices)
-        
         for end_idx in range(min_window, n):
             # Take a window of data
             window_size = min(min_window, end_idx)
-            log_window = log_prices[end_idx-window_size:end_idx]
+            price_window = prices_gpu[end_idx-window_size:end_idx]
+            
+            # Calculate log returns
+            # Handle zeros and negative values
+            safe_prices = cp.maximum(price_window, 1e-8)
+            log_prices = cp.log(safe_prices)
             returns = cp.diff(log_window)
             
             if len(returns) < max_lag:
@@ -271,14 +271,17 @@ def hurst_exponent_gpu(prices, max_lag):
                 else:
                     try:
                         coeffs = cp.polyfit(log_lag, log_lagmat, 1)
-                        hurst_values[end_idx] = coeffs[0] / 2
+                        # FIX: Clamp Hurst exponent to valid range [0, 1]
+                        hurst = coeffs[0] / 2
+                        hurst_values[end_idx] = cp.clip(hurst, 0.0, 1.0)
                     except:
                         hurst_values[end_idx] = 0.5
             else:
                 hurst_values[end_idx] = 0.5
         
-        # Return as numpy array
-        return cp.asnumpy(hurst_values)
+        # Return as numpy array with values clamped to valid range [0, 1]
+        result = cp.asnumpy(hurst_values)
+        return np.clip(result, 0.0, 1.0)
     except Exception as e:
         logging.error(f"GPU Hurst calculation failed: {e}")
         raise

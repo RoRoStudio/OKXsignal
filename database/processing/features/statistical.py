@@ -99,20 +99,26 @@ class StatisticalFeatures(BaseFeatureComputer):
                 
                 if self.use_gpu:
                     try:
-                        df['hurst_exponent'] = hurst_exponent_gpu(
+                        hurst_values = hurst_exponent_gpu(
                             safe_close.values, 
                             params['hurst_max_lag']
                         )
+                        # FIX: Clamp Hurst exponent values to valid range [0, 1]
+                        hurst_values = np.clip(hurst_values, 0.0, 1.0)
+                        df['hurst_exponent'] = hurst_values
                     except Exception as e:
                         logging.warning(f"GPU Hurst calculation failed: {e}")
                         self.use_gpu = False
                         
                 if not self.use_gpu and self.use_numba:
                     try:
-                        df['hurst_exponent'] = hurst_exponent_numba(
+                        hurst_values = hurst_exponent_numba(
                             safe_close.values, 
                             params['hurst_max_lag']
                         )
+                        # FIX: Clamp Hurst exponent values to valid range [0, 1]
+                        hurst_values = np.clip(hurst_values, 0.0, 1.0)
+                        df['hurst_exponent'] = hurst_values
                     except Exception as e:
                         logging.warning(f"Numba Hurst calculation failed: {e}")
                         self.use_numba = False
@@ -125,7 +131,10 @@ class StatisticalFeatures(BaseFeatureComputer):
                     # so we'll set a default value and only compute for specific cases
                     if debug_mode:
                         logging.debug("Skipping manual Hurst computation for performance reasons")
-                    
+                        
+                # FIX: Final validation to ensure no invalid values
+                df['hurst_exponent'] = df['hurst_exponent'].clip(0.0, 1.0)
+                
             except Exception as e:
                 self._handle_exceptions(df, 'hurst_exponent', 0.5, "Hurst Exponent", e)
         else:
@@ -165,7 +174,10 @@ class StatisticalFeatures(BaseFeatureComputer):
                     # so we'll set a default value and only compute for specific cases
                     if debug_mode:
                         logging.debug("Skipping manual Entropy computation for performance reasons")
-                    
+                        
+                # Ensure shannon_entropy is non-negative
+                df['shannon_entropy'] = df['shannon_entropy'].clip(lower=0)
+                        
             except Exception as e:
                 self._handle_exceptions(df, 'shannon_entropy', 0, "Shannon Entropy", e)
         else:

@@ -173,6 +173,8 @@ class OptimizedFeatureProcessor:
             if not isinstance(results[key], np.ndarray):
                 results[key] = np.array(results[key])
                       
+        from database.processing.features.utils import validate_future_features
+        results = validate_future_features(results)
         return results
     
     def process_all_features(self, price_data, perf_monitor=None):
@@ -221,10 +223,20 @@ class OptimizedFeatureProcessor:
                 
             if perf_monitor:
                 perf_monitor.log_operation("multi_timeframe_features", time.time() - start_time)
+
+            if 'future_max_return_24h_pct' in results:
+                max_return_window = LABEL_PARAMS['max_return_window']
+                results['future_max_return_24h_pct'][-max_return_window:] = 0
+                
+            if 'future_max_drawdown_12h_pct' in results:
+                max_drawdown_window = LABEL_PARAMS['max_drawdown_window']
+                results['future_max_drawdown_12h_pct'][-max_drawdown_window:] = 0
                 
         except Exception as e:
             logging.error(f"Error computing multi-timeframe features: {e}")
             
+        from database.processing.features.utils import validate_future_features
+        results = validate_future_features(results)
         return results
         
     def _compute_price_action(self, opens, highs, lows, closes, results, perf_monitor=None):
@@ -1661,24 +1673,28 @@ class OptimizedFeatureProcessor:
                     
                     results[col_name] = future_return
             
-            # Max future return calculation
+            # For max future return calculation
             max_return_window = LABEL_PARAMS['max_return_window']
-            
+
             if self.use_gpu:
                 try:
                     results['future_max_return_24h_pct'] = compute_max_future_return_gpu(
                         closes, highs, max_return_window
                     )
+                    # Add this line to zero out values for recent candles
+                    results['future_max_return_24h_pct'][-max_return_window:] = 0
                     logging.debug("Used GPU for max future return")
                 except Exception as e:
                     logging.warning(f"GPU calculation failed for max future return: {e}")
                     self.use_gpu = False
-            
+
             if 'future_max_return_24h_pct' not in results and self.use_numba:
                 try:
                     results['future_max_return_24h_pct'] = compute_max_future_return_numba(
                         closes, highs, max_return_window
                     )
+                    # Add this line to zero out values for recent candles
+                    results['future_max_return_24h_pct'][-max_return_window:] = 0
                     logging.debug("Used Numba for max future return")
                 except Exception as e:
                     logging.warning(f"Numba calculation failed for max future return: {e}")
@@ -1694,26 +1710,30 @@ class OptimizedFeatureProcessor:
                         if closes[i] > 0:
                             max_future_return[i] = (max_high - closes[i]) / closes[i]
                 
-                results['future_max_return_24h_pct'] = max_future_return
+                results['future_max_return_24h_pct'][-max_return_window:] = 0
             
-            # Max future drawdown calculation
+            # Max future drawdown calculation 
             max_drawdown_window = LABEL_PARAMS['max_drawdown_window']
-            
+
             if self.use_gpu:
                 try:
                     results['future_max_drawdown_12h_pct'] = compute_max_future_drawdown_gpu(
                         closes, lows, max_drawdown_window
                     )
+                    # Add this line to zero out values for recent candles
+                    results['future_max_drawdown_12h_pct'][-max_drawdown_window:] = 0
                     logging.debug("Used GPU for max future drawdown")
                 except Exception as e:
                     logging.warning(f"GPU calculation failed for max future drawdown: {e}")
                     self.use_gpu = False
-            
+
             if 'future_max_drawdown_12h_pct' not in results and self.use_numba:
                 try:
                     results['future_max_drawdown_12h_pct'] = compute_max_future_drawdown_numba(
                         closes, lows, max_drawdown_window
                     )
+                    # Add this line to zero out values for recent candles
+                    results['future_max_drawdown_12h_pct'][-max_drawdown_window:] = 0
                     logging.debug("Used Numba for max future drawdown")
                 except Exception as e:
                     logging.warning(f"Numba calculation failed for max future drawdown: {e}")
@@ -1729,7 +1749,7 @@ class OptimizedFeatureProcessor:
                         if closes[i] > 0:
                             max_future_drawdown[i] = (min_low - closes[i]) / closes[i]
                 
-                results['future_max_drawdown_12h_pct'] = max_future_drawdown
+                results['future_max_drawdown_12h_pct'][-max_drawdown_window:] = 0
             
             # Was profitable (12h)
             was_profitable = np.zeros(n, dtype=np.int32)

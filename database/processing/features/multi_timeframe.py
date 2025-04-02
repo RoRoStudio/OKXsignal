@@ -265,7 +265,16 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
             }).max(axis=1)
             
             # Calculate ATR as the rolling average of True Range
-            atr = tr.rolling(window=14, min_periods=1).mean().fillna(tr)
+            # FIX: Ensure we have a minimum value for ATR in 1d timeframe
+            atr_length = 14
+            atr = tr.rolling(window=atr_length, min_periods=1).mean().fillna(tr)
+            
+            # FIX: Check for zero or near-zero ATR values and apply a sensible minimum
+            # For 1d timeframe, ensure ATR is at least 0.1% of the closing price
+            if tf_label == '1d':
+                min_atr = close_series * 0.001  # 0.1% of price
+                atr = np.maximum(atr, min_atr)
+            
             resampled[f'atr_{tf_label}'] = atr
             
             # Bollinger Bands

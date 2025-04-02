@@ -418,7 +418,10 @@ def hurst_exponent_numba(prices, max_lag):
             
             if denominator > 0:
                 # Hurst exponent = slope / 2
-                hurst_values[end_idx] = numerator / denominator / 2
+                slope = numerator / denominator
+                # FIX: Clamp Hurst exponent to valid range [0, 1]
+                hurst = slope / 2
+                hurst_values[end_idx] = max(0.0, min(1.0, hurst))
             else:
                 hurst_values[end_idx] = 0.5
         else:

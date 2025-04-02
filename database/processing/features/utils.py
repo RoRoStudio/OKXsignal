@@ -151,6 +151,52 @@ def safe_indicator_assign(df, column_name, indicator_result):
     df[column_name] = df[column_name].fillna(0)
     return df
 
+def validate_future_features(results, config=None):
+    """
+    Validate that future-dependent features are properly zeroed out
+    for recent candles where complete future data isn't available.
+    
+    Args:
+        results: Dictionary with computed features
+        config: Configuration parameters
+        
+    Returns:
+        Dictionary with validated features
+    """
+    from database.processing.features.config import LABEL_PARAMS
+    
+    # Get parameters
+    max_return_window = LABEL_PARAMS['max_return_window']
+    max_drawdown_window = LABEL_PARAMS['max_drawdown_window']
+    
+    # Validate future returns
+    for horizon_name, shift in LABEL_PARAMS['horizons'].items():
+        key = f'future_return_{horizon_name}_pct'
+        if key in results:
+            results[key][-shift:] = 0
+    
+    # Validate max return/drawdown
+    if 'future_max_return_24h_pct' in results:
+        results['future_max_return_24h_pct'][-max_return_window:] = 0
+        
+    if 'future_max_drawdown_12h_pct' in results:
+        results['future_max_drawdown_12h_pct'][-max_drawdown_window:] = 0
+    
+    # Validate dependent features
+    if 'was_profitable_12h' in results:
+        results['was_profitable_12h'][-LABEL_PARAMS['horizons']['12h']:] = 0
+        
+    if 'future_risk_adj_return_12h' in results:
+        results['future_risk_adj_return_12h'][-LABEL_PARAMS['horizons']['12h']:] = 0
+        
+    if 'profit_target_1pct' in results:
+        results['profit_target_1pct'][-max_return_window:] = 0
+        
+    if 'profit_target_2pct' in results:
+        results['profit_target_2pct'][-max_return_window:] = 0
+    
+    return results
+
 def check_gpu_available():
     """Check if CuPy is available and GPU can be used"""
     try:
