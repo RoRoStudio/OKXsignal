@@ -1,0 +1,47 @@
+PERFORMANCE SUMMARY REPORT
+=========================
+
+Pairs Processed: 308
+Total Processing Time: 1787.07 seconds
+Average Time Per Pair: 5.80 seconds
+
+OPERATION BREAKDOWN (Sorted by Total Time)
+----------------------------------------
+Operation                      Total Time (s)  Avg Time (s)    Calls      % of Total
+--------------------------------------------------------------------------------
+compute_features_total         640.42          2.092883        306        35.84     
+multi_timeframe_features       243.10          0.794440        306        13.60     
+multi_timeframe_features_total 231.73          0.757287        306        12.97     
+compute_1d_features            103.38          0.341188        303        5.78      
+compute_4h_features            99.45           0.325013        306        5.57      
+database_update                78.66           0.257050        306        4.40      
+volatility_features            35.50           0.116011        306        1.99      
+statistical_features           32.57           0.106436        306        1.82      
+momentum_features              28.33           0.092576        306        1.59      
+fetch_data                     25.75           0.084139        306        1.44      
+volume_features                16.39           0.053546        306        0.92      
+cross_pair_features            9.67            9.668350        1          0.54      
+db_get_columns                 7.78            0.025428        306        0.44      
+time_features                  6.49            0.021205        306        0.36      
+pattern_features               5.02            0.016403        306        0.28      
+label_features                 2.57            0.008397        306        0.14      
+price_action_features          0.05            0.000153        306        0.00      
+
+
+RESOURCE UTILIZATION
+===================
+
+CPU monitoring data not available.
+
+RAM monitoring data not available.
+
+No GPU utilization data available.
+
+RESOURCE UTILIZATION ANALYSIS
+----------------------------
+Resource samples taken: 0
+
+
+RECOMMENDATIONS
+---------------
+1. Review the slowest operations (top of the table) for potential optimization

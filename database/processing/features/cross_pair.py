@@ -54,20 +54,37 @@ class CrossPairFeatures(BaseFeatureComputer):
             self._debug_log("Computing volume rank", debug_mode)
             try:
                 # Group by timestamp to calculate rank within each timeframe
-                # FIX: Use method='first' to avoid ties, and pct=True for percentile ranking
-                # This distributes ranks more evenly from 0-100
-                df = df.sort_values(['timestamp_utc', 'volume_1h'], ascending=[True, False])
+                for timestamp in df['timestamp_utc'].unique():
+                    mask = df['timestamp_utc'] == timestamp
+                    timestamp_df = df.loc[mask]
+                    pairs = timestamp_df.index.tolist()
+                    
+                    if len(pairs) > 1:
+                        # Get volume values for this timestamp
+                        volumes = timestamp_df['volume_1h'].values
+                        
+                        # Sort indices in ascending order (lowest volume → highest volume)
+                        sorted_indices = np.argsort(volumes)
+                        
+                        # Create evenly spaced ranks from 0 to 100
+                        evenly_spaced_ranks = np.linspace(0, 100, len(sorted_indices))
+                        
+                        # Initialize ranks array
+                        vol_ranks = np.zeros(len(sorted_indices))
+                        
+                        # Assign ranks to the sorted indices (higher volumes get higher ranks)
+                        for i, rank in enumerate(evenly_spaced_ranks):
+                            vol_ranks[sorted_indices[i]] = rank
+                        
+                        # Set ranks in the dataframe
+                        df.loc[mask, 'volume_rank_1h'] = vol_ranks.round().astype(int)
+                    else:
+                        # Default value for a single pair
+                        df.loc[mask, 'volume_rank_1h'] = 50
+                    
+                    # Previous volume rank
+                    df['prev_volume_rank'] = df.groupby('pair')['volume_rank_1h'].shift(1).fillna(0)
                 
-                # Group by timestamp and calculate rank
-                df['volume_rank_1h'] = df.groupby('timestamp_utc')['volume_1h'].transform(
-                    lambda x: (x.rank(method='first') - 1) / (len(x) - 1) * 100 if len(x) > 1 else 50
-                )
-                
-                # Ensure integer ranks
-                df['volume_rank_1h'] = df['volume_rank_1h'].round().astype(int)
-                
-                # Previous volume rank
-                df['prev_volume_rank'] = df.groupby('pair')['volume_rank_1h'].shift(1).fillna(0)
             except Exception as e:
                 logging.warning(f"Error computing volume rank: {e}")
             
@@ -76,16 +93,33 @@ class CrossPairFeatures(BaseFeatureComputer):
             self._debug_log("Computing volatility rank", debug_mode)
             try:
                 # Group by timestamp to calculate rank within each timeframe
-                # FIX: Use method='first' to avoid ties, and pct=True for percentile ranking
-                df = df.sort_values(['timestamp_utc', 'atr_1h'], ascending=[True, False])
-                
-                # Group by timestamp and calculate rank
-                df['volatility_rank_1h'] = df.groupby('timestamp_utc')['atr_1h'].transform(
-                    lambda x: (x.rank(method='first') - 1) / (len(x) - 1) * 100 if len(x) > 1 else 50
-                )
-                
-                # Ensure integer ranks
-                df['volatility_rank_1h'] = df['volatility_rank_1h'].round().astype(int)
+                for timestamp in df['timestamp_utc'].unique():
+                    mask = df['timestamp_utc'] == timestamp
+                    timestamp_df = df.loc[mask]
+                    
+                    if len(timestamp_df) > 1:
+                        # Get ATR values for this timestamp
+                        atr_values = timestamp_df['atr_1h'].values
+                        
+                        # Sort indices in ascending order (lowest ATR → highest ATR)
+                        sorted_indices = np.argsort(atr_values)
+                        
+                        # Create evenly spaced ranks from 0 to 100
+                        evenly_spaced_ranks = np.linspace(0, 100, len(sorted_indices))
+                        
+                        # Initialize ranks array
+                        atr_ranks = np.zeros(len(sorted_indices))
+                        
+                        # Assign ranks to the sorted indices (higher ATR = higher rank)
+                        for i, rank in enumerate(evenly_spaced_ranks):
+                            atr_ranks[sorted_indices[i]] = rank
+                        
+                        # Set ranks in the dataframe
+                        df.loc[mask, 'volatility_rank_1h'] = atr_ranks.round().astype(int)
+                    else:
+                        # Default value for a single pair
+                        df.loc[mask, 'volatility_rank_1h'] = 50
+                        
             except Exception as e:
                 logging.warning(f"Error computing volatility rank: {e}")
 
@@ -149,7 +183,8 @@ class CrossPairFeatures(BaseFeatureComputer):
         try:
             # Group by timestamp
             for timestamp in df['timestamp_utc'].unique():
-                timestamp_df = df[df['timestamp_utc'] == timestamp]
+                mask = df['timestamp_utc'] == timestamp
+                timestamp_df = df.loc[mask]
                 
                 btc_row = timestamp_df[timestamp_df['pair'] == 'BTC-USDT']
                 if not btc_row.empty and 'future_return_1h_pct' in df.columns:
@@ -157,13 +192,26 @@ class CrossPairFeatures(BaseFeatureComputer):
                     
                     if not pd.isna(btc_return) and abs(btc_return) > 1e-9:
                         # Calculate relative performance
-                        rel_perf = (timestamp_df['future_return_1h_pct'] - btc_return) / abs(btc_return)
-                        
-                        # FIX: Rank the relative performance using method='first' to avoid ties
-                        perf_rank = rel_perf.rank(method='first', pct=True) * 100
-                        
-                        # Update the original dataframe
-                        df.loc[df['timestamp_utc'] == timestamp, 'performance_rank_btc_1h'] = perf_rank.values.round().astype(int)
+                        pairs_count = len(timestamp_df)
+                        if pairs_count > 1:
+                            # Get relative performance values
+                            rel_perf = (timestamp_df['future_return_1h_pct'] - btc_return) / abs(btc_return)
+                            
+                            # Sort indices by relative performance
+                            sorted_indices = np.argsort(rel_perf.values)
+                            
+                            # Create evenly spaced ranks
+                            evenly_spaced_ranks = np.linspace(0, 100, pairs_count)
+                            
+                            # Initialize ranks array
+                            perf_ranks = np.zeros(pairs_count)
+                            
+                            # Assign ranks to each position
+                            for i, idx in enumerate(sorted_indices):
+                                perf_ranks[idx] = evenly_spaced_ranks[i]
+                            
+                            # Update the original dataframe with calculated ranks
+                            df.loc[mask, 'performance_rank_btc_1h'] = perf_ranks.round().astype(int)
         except Exception as e:
             logging.warning(f"Error computing BTC performance rank: {e}")
 
@@ -172,7 +220,8 @@ class CrossPairFeatures(BaseFeatureComputer):
         try:
             # Group by timestamp
             for timestamp in df['timestamp_utc'].unique():
-                timestamp_df = df[df['timestamp_utc'] == timestamp]
+                mask = df['timestamp_utc'] == timestamp
+                timestamp_df = df.loc[mask]
                 
                 eth_row = timestamp_df[timestamp_df['pair'] == 'ETH-USDT']
                 if not eth_row.empty and 'future_return_1h_pct' in df.columns:
@@ -180,13 +229,26 @@ class CrossPairFeatures(BaseFeatureComputer):
                     
                     if not pd.isna(eth_return) and abs(eth_return) > 1e-9:
                         # Calculate relative performance
-                        rel_perf = (timestamp_df['future_return_1h_pct'] - eth_return) / abs(eth_return)
-                        
-                        # FIX: Rank the relative performance using method='first' to avoid ties
-                        perf_rank = rel_perf.rank(method='first', pct=True) * 100
-                        
-                        # Update the original dataframe
-                        df.loc[df['timestamp_utc'] == timestamp, 'performance_rank_eth_1h'] = perf_rank.values.round().astype(int)
+                        pairs_count = len(timestamp_df)
+                        if pairs_count > 1:
+                            # Get relative performance values
+                            rel_perf = (timestamp_df['future_return_1h_pct'] - eth_return) / abs(eth_return)
+                            
+                            # Sort indices by relative performance
+                            sorted_indices = np.argsort(rel_perf.values)
+                            
+                            # Create evenly spaced ranks
+                            evenly_spaced_ranks = np.linspace(0, 100, pairs_count)
+                            
+                            # Initialize ranks array
+                            perf_ranks = np.zeros(pairs_count)
+                            
+                            # Assign ranks to each position
+                            for i, idx in enumerate(sorted_indices):
+                                perf_ranks[idx] = evenly_spaced_ranks[i]
+                            
+                            # Update the original dataframe with calculated ranks
+                            df.loc[mask, 'performance_rank_eth_1h'] = perf_ranks.round().astype(int)
         except Exception as e:
             logging.warning(f"Error computing ETH performance rank: {e}")
 

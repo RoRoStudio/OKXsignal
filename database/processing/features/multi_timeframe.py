@@ -247,34 +247,71 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
             resampled[f'macd_hist_{tf_label}'] = macd_hist.fillna(0)
             resampled[f'macd_hist_slope_{tf_label}'] = macd_hist.diff().fillna(0)
             
-            # ATR
+            # ATR calculation
             high_series = resampled[f'high_{tf_label}']
             low_series = resampled[f'low_{tf_label}']
             close_series = resampled[f'close_{tf_label}']
-            
+
             # Calculate True Range
             tr1 = high_series - low_series
             tr2 = np.abs(high_series - close_series.shift(1).fillna(high_series))
             tr3 = np.abs(low_series - close_series.shift(1).fillna(low_series))
-            
+
             # True Range is the max of the three
             tr = pd.DataFrame({
                 'tr1': tr1, 
                 'tr2': tr2, 
                 'tr3': tr3
             }).max(axis=1)
-            
+
             # Calculate ATR as the rolling average of True Range
-            # FIX: Ensure we have a minimum value for ATR in 1d timeframe
             atr_length = 14
-            atr = tr.rolling(window=atr_length, min_periods=1).mean().fillna(tr)
-            
-            # FIX: Check for zero or near-zero ATR values and apply a sensible minimum
-            # For 1d timeframe, ensure ATR is at least 0.1% of the closing price
+
+            # Special handling for daily ATR to ensure we never get zero values
             if tf_label == '1d':
-                min_atr = close_series * 0.001  # 0.1% of price
-                atr = np.maximum(atr, min_atr)
-            
+                # First, try standard ATR calculation
+                atr = np.zeros(len(resampled))
+                
+                if len(tr) >= atr_length:
+                    # Standard calculation with sufficient data
+                    atr_initial = tr.iloc[:atr_length].mean()
+                    atr[atr_length-1] = atr_initial
+                    
+                    # Apply proper smoothing formula
+                    for i in range(atr_length, len(tr)):
+                        atr[i] = (atr[i-1] * (atr_length-1) + tr.iloc[i]) / atr_length
+                else:
+                    # Not enough data for standard ATR, use what we have
+                    actual_length = max(1, len(tr))
+                    
+                    if len(tr) > 0:
+                        # Use available data to calculate initial ATR
+                        atr[0] = tr.iloc[:actual_length].mean()
+                        
+                        # Apply smoothing for remaining points
+                        for i in range(1, len(tr)):
+                            atr[i] = (atr[i-1] * (actual_length-1) + tr.iloc[i]) / actual_length
+                
+                # Convert to Series for consistency
+                atr = pd.Series(atr, index=tr.index)
+                
+                # Fix any remaining zero values by using true range directly
+                for i in range(len(atr)):
+                    if atr.iloc[i] <= 0:
+                        if i < len(tr) and tr.iloc[i] > 0:
+                            # Use true range if ATR is zero/negative
+                            atr.iloc[i] = tr.iloc[i]
+                        elif i > 0 and atr.iloc[:i].max() > 0:
+                            # Use previous non-zero ATR
+                            atr.iloc[i] = atr.iloc[:i].max()
+                        else:
+                            # Last resort - use a small value based on price
+                            price_ref = close_series.iloc[i] if i < len(close_series) else 1.0
+                            atr.iloc[i] = max(0.0001, price_ref * 0.001)
+            else:
+                # Normal ATR calculation for other timeframes
+                atr = tr.rolling(window=atr_length, min_periods=1).mean().fillna(tr)
+
             resampled[f'atr_{tf_label}'] = atr
             
             # Bollinger Bands

@@ -374,7 +374,7 @@ def hurst_exponent_numba(prices, max_lag):
         window_size = min(min_window, end_idx)
         price_window = prices[end_idx-window_size:end_idx]
         
-        # Calculate log returns
+        # Calculate log returns, handling zeros and negatives
         log_prices = np.log(np.maximum(price_window, 1e-8))
         returns = np.diff(log_prices)
         
@@ -385,6 +385,7 @@ def hurst_exponent_numba(prices, max_lag):
         tau = np.arange(1, max_lag+1)
         lagmat = np.zeros(max_lag)
         
+        # Calculate variance for each lag
         for lag in range(1, max_lag+1):
             # Skip if lag is too large
             if lag >= len(returns):
@@ -417,11 +418,18 @@ def hurst_exponent_numba(prices, max_lag):
                 denominator += x_diff * x_diff
             
             if denominator > 0:
-                # Hurst exponent = slope / 2
+                # Calculate slope with theoretical constraints
+                # The slope should be between -1 and 2 for valid Hurst exponent
                 slope = numerator / denominator
-                # FIX: Clamp Hurst exponent to valid range [0, 1]
+                
+                # Constrain slope according to theoretical model
+                slope = max(-1.0, min(2.0, slope))
+                
+                # Hurst exponent = slope / 2
                 hurst = slope / 2
-                hurst_values[end_idx] = max(0.0, min(1.0, hurst))
+                
+                # This ensures Hurst is always between 0 and 1
+                hurst_values[end_idx] = hurst
             else:
                 hurst_values[end_idx] = 0.5
         else:
