@@ -703,3 +703,40 @@ Could not initialize connection pool at startup: module 'psycopg2' has no attrib
 [2025-04-02 19:47:24] Initial run: Successfully fetched candles for hour 19
 [2025-04-02 19:47:24] Waiting until 2025-04-02 19:59:00 for next execution window...
 [2025-04-02 19:48:31] Pipeline interrupted by user. Exiting...
+[2025-04-03 09:29:45] Starting continuous hourly pipeline scheduler
+[2025-04-03 09:29:45] Pipeline will execute during the first 10 minutes of each hour
+[2025-04-03 09:29:45] Performing initial fetch attempt on startup...
+[2025-04-03 09:29:45] 🚀 Starting hourly data pipeline...
+[2025-04-03 09:29:45] Starting fetch_new_1h_candles.py with retry logic
+[2025-04-03 09:29:45] Running: /root/OKXsignal/database/fetching/fetch_new_1h_candles.py
+[2025-04-03 09:30:56] Fetch stdout: ...
+[2025-04-03 09:30:56] Fetch stderr: Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+Could not initialize connection pool at startup: module 'psycopg2' has no attribute 'pool'
+2025-04-03 09:29:46,014 - DEBUG - Using selector: EpollSelector
+2025-04-03 09:29:46,014 - INFO - Fetching latest 1H candles from OKX...
+2025-04-03 09:29:46,290 - INFO - 306 pairs found
+2025-04-03 09:29:46,291 - INFO - Processing BTC-USDT
+2025-04-03 09:29:46,698 - INFO - Fetching latest candles using BEFORE for BTC-USDT
+2025-04-...
+[2025-04-03 09:30:56] First candle timestamp detected: 2025-04-02 18:00:00
+[2025-04-03 09:30:56] Fetch attempt 1: 4284 candles fetched, 1 errors
+[2025-04-03 09:30:56] ✅ Success: Fetched 4284 candles (expected ~306)
+[2025-04-03 09:30:56] Errors during fetch_new_1h_candles.py:
+  - Failed to initialize connection pool: module 'psycopg2' has no attribute 'pool'
+[2025-04-03 09:30:56] New candles fetched, proceeding to compute features
+[2025-04-03 09:30:56] Starting compute_features.py
+[2025-04-03 09:30:56] Running: /root/OKXsignal/database/processing/compute_features.py
+[2025-04-03 09:33:45] Compute stdout: ...
+[2025-04-03 09:33:45] Compute stderr: [INFO] 2025-04-03 09:31:01,024 | GPU monitoring initialized for 1 GPUs: Unknown GPU
+[INFO] 2025-04-03 09:31:01,025 | Resource monitor initialized: CPU cores: 8 physical / 16 logical, RAM: 23.43 GB
+[INFO] 2025-04-03 09:31:01,400 | GPU memory: 10.98 GB free / 12.00 GB total
+[INFO] 2025-04-03 09:31:01,400 | System memory: 21.74 GB available / 23.43 GB total
+[INFO] 2025-04-03 09:31:01,405 | Loaded credentials from /root/OKXsignal/config/credentials.env
+[INFO] 2025-04-03 09:31:01,408 | Loaded config ...
+[2025-04-03 09:33:45] Compute complete: 318 pairs processed, 1 errors
+[2025-04-03 09:33:45] Errors during compute_features.py:
+  - Error: local variable 'duration' referenced before assignment
+[2025-04-03 09:33:45] Hourly pipeline ❌ completed with errors in 240.24 seconds
+[2025-04-03 09:33:45] Initial run: Successfully fetched candles for hour 9
+[2025-04-03 09:33:45] Waiting until 2025-04-03 09:59:00 for next execution window...
+[2025-04-03 09:34:07] Pipeline interrupted by user. Exiting...

@@ -421,220 +421,85 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
             logging.info("Cross-pair features disabled, skipping")
             return 0
             
-        # Get most recent candles
-        cursor = db_conn.cursor()
+        # Get compute mode from configuration
+        compute_mode = config_manager.get_compute_mode()
         
-        query = """
-        SELECT pair, timestamp_utc, close_1h, volume_1h, atr_1h, future_return_1h_pct, log_return
-        FROM candles_1h 
-        WHERE timestamp_utc >= (SELECT MAX(timestamp_utc) FROM candles_1h) - INTERVAL '24 hours'
-        ORDER BY timestamp_utc, pair
-        """
-        cursor.execute(query)
-        
-        rows = cursor.fetchall()
-        cursor.close()
-        
-        if not rows:
-            logging.warning("No recent data found for cross-pair features")
-            return 0
-            
-        # Group by timestamp
-        timestamps = {}
-        for row in rows:
-            pair, ts, close, volume, atr, future_return, log_return = row
-            
-            if ts not in timestamps:
-                timestamps[ts] = {
-                    'pairs': [],
-                    'volumes': [],
-                    'atrs': [],
-                    'future_returns': [],
-                    'log_returns': {},
-                    'btc_returns': []
-                }
-                
-            timestamps[ts]['pairs'].append(pair)
-            timestamps[ts]['volumes'].append(volume if volume is not None else 0)
-            timestamps[ts]['atrs'].append(atr if atr is not None else 0)
-            timestamps[ts]['future_returns'].append(future_return if future_return is not None else 0)
-            
-            # Store log returns by pair for correlation
-            timestamps[ts]['log_returns'][pair] = log_return if log_return is not None else 0
-            
-            # Save BTC returns separately for correlation
-            if pair == 'BTC-USDT':
-                timestamps[ts]['btc_returns'].append(log_return if log_return is not None else 0)
-        
-        # Prepare update data
-        updates = []
-        
-        # Process each timestamp
-        for ts, data in timestamps.items():
-            pairs = data['pairs']
-            volumes = data['volumes']
-            atrs = data['atrs']
-            future_returns = data['future_returns']
-            log_returns = data['log_returns']
-            
-            # Skip if no data or missing BTC
-            if not pairs or 'BTC-USDT' not in log_returns:
-                continue
-                
-            # Compute volume ranks
-            vol_ranks = np.zeros(len(volumes))
-            
-            if volumes and any(v > 0 for v in volumes):
-                # Convert to numpy array for ranking
-                vol_array = np.array(volumes)
-                # Sort indices (ascending)
-                sorted_indices = np.argsort(vol_array)
-                # Assign ranks (higher volume = higher rank)
-                for i, idx in enumerate(sorted_indices):
-                    vol_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-            
-            # Compute volatility ranks
-            atr_ranks = np.zeros(len(atrs))
-            
-            if atrs and any(a > 0 for a in atrs):
-                # Convert to numpy array for ranking
-                atr_array = np.array(atrs)
-                # Sort indices (ascending)
-                sorted_indices = np.argsort(atr_array)
-                # Assign ranks (higher ATR = higher rank)
-                for i, idx in enumerate(sorted_indices):
-                    atr_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-            
-            # Compute performance ranks relative to BTC
-            btc_return = log_returns.get('BTC-USDT', 0)
-            perf_ranks_btc = np.zeros(len(future_returns))
-            
-            if btc_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
-                # Compute relative performance
-                rel_perf = np.array([(fr - btc_return) / abs(btc_return) if btc_return != 0 else 0 
-                                   for fr in future_returns])
-                # Compute percentile rank
-                perf_ranks_btc = np.zeros_like(rel_perf)
-                # Sort indices (ascending)
-                sorted_indices = np.argsort(rel_perf)
-                # Assign ranks (higher relative perf = higher rank)
-                for i, idx in enumerate(sorted_indices):
-                    perf_ranks_btc[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-            
-            # Compute performance ranks relative to ETH
-            eth_return = log_returns.get('ETH-USDT', 0)
-            perf_ranks_eth = np.zeros(len(future_returns))
-            
-            if eth_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
-                # Compute relative performance
-                rel_perf = np.array([(fr - eth_return) / abs(eth_return) if eth_return != 0 else 0 
-                                   for fr in future_returns])
-                # Compute percentile rank
-                perf_ranks_eth = np.zeros_like(rel_perf)
-                # Sort indices (ascending)
-                sorted_indices = np.argsort(rel_perf)
-                # Assign ranks (higher relative perf = higher rank)
-                for i, idx in enumerate(sorted_indices):
-                    perf_ranks_eth[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
-            
-            # Compute BTC correlation
-            btc_corr = np.zeros(len(pairs))
-            
-            # Get correlation window data
-            correlation_window = 24  # 24 hours
-            
+        # Determine time window based on mode
+        if compute_mode == "full_backfill":
+            # For full backfill, process in monthly chunks
             cursor = db_conn.cursor()
             
-            # Get historical data for correlation
-            window_query = """
-            SELECT pair, timestamp_utc, log_return
+            # Get the full date range
+            cursor.execute("""
+                SELECT MIN(timestamp_utc), MAX(timestamp_utc)
+                FROM candles_1h
+            """)
+            min_date, max_date = cursor.fetchone()
+            cursor.close()
+            
+            if not min_date or not max_date:
+                logging.warning("No data found for cross-pair features")
+                return 0
+            
+            # Convert to datetime objects
+            min_date = pd.to_datetime(min_date)
+            max_date = pd.to_datetime(max_date)
+            
+            # Process in monthly chunks
+            current_start = min_date
+            chunk_size = pd.Timedelta(days=30)  # Process one month at a time
+            
+            total_updated = 0
+            chunk_num = 1
+            
+            # Loop through the entire range in chunks
+            while current_start <= max_date:
+                current_end = min(current_start + chunk_size, max_date)
+                logging.info(f"Processing cross-pair features for chunk {chunk_num}: {current_start} to {current_end}")
+                
+                # Process this chunk
+                updated = process_cross_pair_chunk(db_conn, current_start, current_end, debug_mode)
+                total_updated += updated
+                
+                # Move to next chunk
+                current_start = current_end + pd.Timedelta(seconds=1)
+                chunk_num += 1
+                
+                # Commit after each chunk to avoid transaction buildup
+                db_conn.commit()
+                
+            updated_rows = total_updated
+        else:
+            # For rolling update, use the rolling window from config
+            rolling_window = config_manager.get_rolling_window()
+            
+            # Convert rolling window (in candles) to days for querying
+            # Assuming 1 candle = 1 hour, so divide by 24 to get days
+            days_to_process = max(30, rolling_window // 24)  # At least 30 days
+            
+            # Get data for the specified window
+            cursor = db_conn.cursor()
+            
+            query = f"""
+            SELECT pair, timestamp_utc, close_1h, volume_1h, atr_1h, future_return_1h_pct, log_return
             FROM candles_1h 
-            WHERE timestamp_utc >= %s - INTERVAL '24 hours'
-              AND timestamp_utc <= %s
-              AND pair IN ('BTC-USDT', %s)
-            ORDER BY pair, timestamp_utc
+            WHERE timestamp_utc >= (SELECT MAX(timestamp_utc) FROM candles_1h) - INTERVAL '{days_to_process} days'
+            ORDER BY timestamp_utc, pair
             """
             
-            for i, pair in enumerate(pairs):
-                if pair == 'BTC-USDT':
-                    btc_corr[i] = 1.0  # BTC correlation with itself is 1
-                    continue
-                    
-                cursor.execute(window_query, (ts, ts, pair))
-                corr_rows = cursor.fetchall()
-                
-                # Group by pair
-                pair_returns = {}
-                for row in corr_rows:
-                    p, t, ret = row
-                    if p not in pair_returns:
-                        pair_returns[p] = {}
-                    pair_returns[p][t] = ret if ret is not None else 0
-                
-                # Get common timestamps
-                if 'BTC-USDT' in pair_returns and pair in pair_returns:
-                    btc_times = set(pair_returns['BTC-USDT'].keys())
-                    pair_times = set(pair_returns[pair].keys())
-                    common_times = sorted(btc_times.intersection(pair_times))
-                    
-                    if len(common_times) >= 12:  # Need at least 12 points for correlation
-                        # Create arrays for correlation
-                        btc_vals = np.array([pair_returns['BTC-USDT'][t] for t in common_times])
-                        pair_vals = np.array([pair_returns[pair][t] for t in common_times])
-                        
-                        # Compute correlation
-                        if np.std(btc_vals) > 0 and np.std(pair_vals) > 0:
-                            corr = np.corrcoef(btc_vals, pair_vals)[0, 1]
-                            btc_corr[i] = corr
-            
+            cursor.execute(query)
+            rows = cursor.fetchall()
             cursor.close()
             
-            # Prepare update parameters
-            for i, pair in enumerate(pairs):
-                updates.append((
-                    int(round(perf_ranks_btc[i])),
-                    int(round(perf_ranks_eth[i])),
-                    int(round(vol_ranks[i])),
-                    int(round(atr_ranks[i] if i < len(atr_ranks) else 0)),
-                    float(btc_corr[i]),
-                    float(vol_ranks[i - 1]) if i > 0 else 0.0,  # Previous volume rank
-                    pair,
-                    ts
-                ))
-        
-        # Execute updates
-        if updates:
-            cursor = db_conn.cursor()
+            if not rows:
+                logging.warning(f"No data found within {days_to_process} days for cross-pair features")
+                return 0
             
-            update_query = """
-            UPDATE candles_1h
-            SET 
-                performance_rank_btc_1h = %s,
-                performance_rank_eth_1h = %s,
-                volume_rank_1h = %s,
-                volatility_rank_1h = %s,
-                btc_corr_24h = %s,
-                prev_volume_rank = %s
-            WHERE pair = %s AND timestamp_utc = %s
-            """
-            
-            psycopg2.extras.execute_batch(
-                cursor, 
-                update_query, 
-                updates,
-                page_size=1000
-            )
-            
-            updated_rows = cursor.rowcount
-            db_conn.commit()
-            cursor.close()
-            
-            logging.info(f"Updated {updated_rows} rows with cross-pair features")
-        
+            # Process the data for the rolling update mode
+            updated_rows = process_cross_pair_data(db_conn, rows, debug_mode)
+    
     except Exception as e:
         logging.error(f"Error computing cross-pair features: {e}", exc_info=True)
-        if 'cursor' in locals() and not cursor.closed:
-            cursor.close()
         # Rollback on error
         try:
             db_conn.rollback()
@@ -647,6 +512,250 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
                 perf_monitor.end_pair(time.time() - start_time)
             except Exception as e:
                 logging.debug(f"Error ending CROSS_PAIR performance monitoring: {e}")
+    
+    return updated_rows
+
+def process_cross_pair_chunk(db_conn, start_date, end_date, debug_mode=False):
+    """
+    Process cross-pair features for a specific date range chunk
+    
+    Args:
+        db_conn: Database connection
+        start_date: Start date for the chunk
+        end_date: End date for the chunk
+        debug_mode: Whether to log debug info
+        
+    Returns:
+        Number of rows updated
+    """
+    cursor = db_conn.cursor()
+    
+    # Get data for this chunk
+    query = """
+    SELECT pair, timestamp_utc, close_1h, volume_1h, atr_1h, future_return_1h_pct, log_return
+    FROM candles_1h 
+    WHERE timestamp_utc >= %s AND timestamp_utc <= %s
+    ORDER BY timestamp_utc, pair
+    """
+    
+    cursor.execute(query, (start_date, end_date))
+    rows = cursor.fetchall()
+    cursor.close()
+    
+    if not rows:
+        logging.warning(f"No data found for date range {start_date} to {end_date}")
+        return 0
+    
+    # Process the data
+    return process_cross_pair_data(db_conn, rows, debug_mode)
+
+def process_cross_pair_data(db_conn, rows, debug_mode=False):
+    """
+    Process cross-pair features for the provided data rows
+    
+    Args:
+        db_conn: Database connection
+        rows: Data rows from the database query
+        debug_mode: Whether to log debug info
+        
+    Returns:
+        Number of rows updated
+    """
+    if not rows:
+        return 0
+        
+    # Group by timestamp
+    timestamps = {}
+    for row in rows:
+        pair, ts, close, volume, atr, future_return, log_return = row
+        
+        if ts not in timestamps:
+            timestamps[ts] = {
+                'pairs': [],
+                'volumes': [],
+                'atrs': [],
+                'future_returns': [],
+                'log_returns': {},
+                'btc_returns': []
+            }
+            
+        timestamps[ts]['pairs'].append(pair)
+        timestamps[ts]['volumes'].append(volume if volume is not None else 0)
+        timestamps[ts]['atrs'].append(atr if atr is not None else 0)
+        timestamps[ts]['future_returns'].append(future_return if future_return is not None else 0)
+        
+        # Store log returns by pair for correlation
+        timestamps[ts]['log_returns'][pair] = log_return if log_return is not None else 0
+        
+        # Save BTC returns separately for correlation
+        if pair == 'BTC-USDT':
+            timestamps[ts]['btc_returns'].append(log_return if log_return is not None else 0)
+    
+    # Prepare update data
+    updates = []
+    
+    # Process each timestamp
+    for ts, data in timestamps.items():
+        pairs = data['pairs']
+        volumes = data['volumes']
+        atrs = data['atrs']
+        future_returns = data['future_returns']
+        log_returns = data['log_returns']
+        
+        # Skip if no data or missing BTC
+        if not pairs or 'BTC-USDT' not in log_returns:
+            continue
+            
+        # Compute volume ranks
+        vol_ranks = np.zeros(len(volumes))
+        
+        if volumes and any(v > 0 for v in volumes):
+            # Convert to numpy array for ranking
+            vol_array = np.array(volumes)
+            # Sort indices (ascending)
+            sorted_indices = np.argsort(vol_array)
+            # Assign ranks (higher volume = higher rank)
+            for i, idx in enumerate(sorted_indices):
+                vol_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
+        
+        # Compute volatility ranks
+        atr_ranks = np.zeros(len(atrs))
+        
+        if atrs and any(a > 0 for a in atrs):
+            # Convert to numpy array for ranking
+            atr_array = np.array(atrs)
+            # Sort indices (ascending)
+            sorted_indices = np.argsort(atr_array)
+            # Assign ranks (higher ATR = higher rank)
+            for i, idx in enumerate(sorted_indices):
+                atr_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
+        
+        # Compute performance ranks relative to BTC
+        btc_return = log_returns.get('BTC-USDT', 0)
+        perf_ranks_btc = np.zeros(len(future_returns))
+        
+        if btc_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
+            # Compute relative performance
+            rel_perf = np.array([(fr - btc_return) / abs(btc_return) if btc_return != 0 else 0 
+                               for fr in future_returns])
+            # Compute percentile rank
+            perf_ranks_btc = np.zeros_like(rel_perf)
+            # Sort indices (ascending)
+            sorted_indices = np.argsort(rel_perf)
+            # Assign ranks (higher relative perf = higher rank)
+            for i, idx in enumerate(sorted_indices):
+                perf_ranks_btc[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
+        
+        # Compute performance ranks relative to ETH
+        eth_return = log_returns.get('ETH-USDT', 0)
+        perf_ranks_eth = np.zeros(len(future_returns))
+        
+        if eth_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
+            # Compute relative performance
+            rel_perf = np.array([(fr - eth_return) / abs(eth_return) if eth_return != 0 else 0 
+                               for fr in future_returns])
+            # Compute percentile rank
+            perf_ranks_eth = np.zeros_like(rel_perf)
+            # Sort indices (ascending)
+            sorted_indices = np.argsort(rel_perf)
+            # Assign ranks (higher relative perf = higher rank)
+            for i, idx in enumerate(sorted_indices):
+                perf_ranks_eth[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
+        
+        # Compute BTC correlation (for pairs that aren't BTC)
+        btc_corr = np.zeros(len(pairs))
+        
+        # Get correlation window data
+        correlation_window = 24  # 24 hours
+        
+        cursor = db_conn.cursor()
+        
+        # Get historical data for correlation
+        window_query = """
+        SELECT pair, timestamp_utc, log_return
+        FROM candles_1h 
+        WHERE timestamp_utc >= %s - INTERVAL '24 hours'
+          AND timestamp_utc <= %s
+          AND pair IN ('BTC-USDT', %s)
+        ORDER BY pair, timestamp_utc
+        """
+        
+        for i, pair in enumerate(pairs):
+            if pair == 'BTC-USDT':
+                btc_corr[i] = 1.0  # BTC correlation with itself is 1
+                continue
+                
+            cursor.execute(window_query, (ts, ts, pair))
+            corr_rows = cursor.fetchall()
+            
+            # Group by pair
+            pair_returns = {}
+            for row in corr_rows:
+                p, t, ret = row
+                if p not in pair_returns:
+                    pair_returns[p] = {}
+                pair_returns[p][t] = ret if ret is not None else 0
+            
+            # Get common timestamps
+            if 'BTC-USDT' in pair_returns and pair in pair_returns:
+                btc_times = set(pair_returns['BTC-USDT'].keys())
+                pair_times = set(pair_returns[pair].keys())
+                common_times = sorted(btc_times.intersection(pair_times))
+                
+                if len(common_times) >= 12:  # Need at least 12 points for correlation
+                    # Create arrays for correlation
+                    btc_vals = np.array([pair_returns['BTC-USDT'][t] for t in common_times])
+                    pair_vals = np.array([pair_returns[pair][t] for t in common_times])
+                    
+                    # Compute correlation
+                    if np.std(btc_vals) > 0 and np.std(pair_vals) > 0:
+                        corr = np.corrcoef(btc_vals, pair_vals)[0, 1]
+                        btc_corr[i] = corr
+        
+        cursor.close()
+        
+        # Prepare update parameters
+        for i, pair in enumerate(pairs):
+            updates.append((
+                int(round(perf_ranks_btc[i])),
+                int(round(perf_ranks_eth[i])),
+                int(round(vol_ranks[i])),
+                int(round(atr_ranks[i] if i < len(atr_ranks) else 0)),
+                float(btc_corr[i]),
+                float(vol_ranks[i - 1]) if i > 0 else 0.0,  # Previous volume rank
+                pair,
+                ts
+            ))
+    
+    # Execute updates
+    if updates:
+        cursor = db_conn.cursor()
+        
+        update_query = """
+        UPDATE candles_1h
+        SET 
+            performance_rank_btc_1h = %s,
+            performance_rank_eth_1h = %s,
+            volume_rank_1h = %s,
+            volatility_rank_1h = %s,
+            btc_corr_24h = %s,
+            prev_volume_rank = %s
+        WHERE pair = %s AND timestamp_utc = %s
+        """
+        
+        import psycopg2.extras
+        psycopg2.extras.execute_batch(
+            cursor, 
+            update_query, 
+            updates,
+            page_size=1000
+        )
+        
+        updated_rows = cursor.rowcount
+        db_conn.commit()
+        cursor.close()
+        
+        logging.info(f"Updated {updated_rows} rows with cross-pair features")
     
     return updated_rows
 
@@ -1079,7 +1188,7 @@ def main():
         
         # Final cross-pair computation after all individual pairs are done
         if config_manager.is_feature_enabled('cross_pair'):
-            logger.info("Computing final cross-pair features")
+            logger.info("Computing cross-pair features for full historical data")
             with get_db_connection() as conn:
                 compute_cross_pair_features(conn, config_manager, args.debug, perf_monitor)
         

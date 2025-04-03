@@ -30,3 +30,6 @@
 [2025-04-02 19:44:50] fetch_new_1h_candles.py        70.85 seconds | 918 candles fetched | First candle at 2025-04-02 15:00:00 | 1 errors
 [2025-04-02 19:47:24] compute_features.py            153.75 seconds | 318 candles fetched | 1 errors
 [2025-04-02 19:47:24] total_hourly_pipeline          224.60 seconds | 918 candles fetched | First candle at 2025-04-02 15:00:00
+[2025-04-03 09:30:56] fetch_new_1h_candles.py        70.66 seconds | 4284 candles fetched | First candle at 2025-04-02 18:00:00 | 1 errors
+[2025-04-03 09:33:45] compute_features.py            169.57 seconds | 318 candles fetched | 1 errors
+[2025-04-03 09:33:45] total_hourly_pipeline          240.24 seconds | 4284 candles fetched | First candle at 2025-04-02 18:00:00
