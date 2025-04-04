@@ -33,9 +33,23 @@ def initialize_gpu():
         
         # Get device info
         device = cp.cuda.Device()
-        logging.info(f"Initialized GPU: {device.name}, "
-                    f"Memory: {device.mem_info[1]/1024**3:.2f} GB")
-                    
+        device_id = device.id
+        
+        # Get memory info
+        mem_info = device.mem_info
+        total_memory = mem_info[1]/1024**3
+        
+        # Try to get device name if possible
+        device_name = f"Device #{device_id}"
+        try:
+            device_props = cp.cuda.runtime.getDeviceProperties(device_id)
+            if hasattr(device_props, 'name'):
+                device_name = device_props.name
+        except:
+            pass
+        
+        logging.info(f"Initialized GPU: {device_name}, Memory: {total_memory:.2f} GB")
+        
         # Test basic operations to ensure GPU is working
         test_array = cp.array([1, 2, 3])
         test_result = cp.sum(test_array)
@@ -63,41 +77,7 @@ def is_gpu_available():
         free_memory = mem_info[0] / (1024**3)  # in GB
         total_memory = mem_info[1] / (1024**3)  # in GB
         
-        # Get device info safely - some CuPy versions don't have the 'name' attribute
-        device_info = f"Device {device.id}"
-        try:
-            # Try to get more detailed information if available
-            props = cp.cuda.runtime.getDeviceProperties(device.id)
-            if hasattr(props, 'name'):
-                device_info = props.name
-        except:
-            pass
-            
-        logging.info(f"GPU is available: {device_info}, "
-                    f"Free: {free_memory:.2f} GB / {total_memory:.2f} GB")
-        return True
-    except Exception as e:
-        logging.warning(f"GPU test failed: {e}")
-        return False
-
-def is_gpu_available():
-    """Check if GPU is available"""
-    if not CUPY_AVAILABLE:
-        return False
-        
-    try:
-        # Test GPU with a small array
-        a = cp.array([1, 2, 3])
-        b = a * 2
-        cp.cuda.Stream.null.synchronize()
-        
-        # Log device info
-        device = cp.cuda.Device()
-        mem_info = device.mem_info
-        free_memory = mem_info[0] / (1024**3)  # in GB
-        total_memory = mem_info[1] / (1024**3)  # in GB
-        
-        # Get device properties in a safer way
+        # Get device ID
         device_id = device.id
         
         logging.info(f"GPU is available: Device #{device_id}, "
@@ -127,12 +107,19 @@ def compute_candle_body_features_gpu(open_prices, high_prices, low_prices, close
     if not CUPY_AVAILABLE:
         raise ImportError("CuPy is required for GPU acceleration")
         
+    # Initialize GPU if not already done
+    initialize_gpu()
+        
     # Convert to CuPy arrays if they're not already
     try:
-        open_prices_gpu = cp.asarray(open_prices)
-        high_prices_gpu = cp.asarray(high_prices)
-        low_prices_gpu = cp.asarray(low_prices)
-        close_prices_gpu = cp.asarray(close_prices)
+        # Use asarray with explicit types
+        open_prices_gpu = cp.asarray(open_prices, dtype=cp.float64)
+        high_prices_gpu = cp.asarray(high_prices, dtype=cp.float64)
+        low_prices_gpu = cp.asarray(low_prices, dtype=cp.float64)
+        close_prices_gpu = cp.asarray(close_prices, dtype=cp.float64)
+        
+        # Synchronize to ensure data is moved to GPU
+        cp.cuda.Stream.null.synchronize()
         
         n = len(open_prices_gpu)
         results = cp.zeros(4 * n, dtype=cp.float64).reshape(4, n)
@@ -155,12 +142,170 @@ def compute_candle_body_features_gpu(open_prices, high_prices, low_prices, close
             0.5  # Default to middle if no range
         )
         
+        # Make sure computation is complete before returning
+        cp.cuda.Stream.null.synchronize()
+        
         # Return as numpy array
         return cp.asnumpy(results.flatten())
     except Exception as e:
         logging.error(f"GPU calculation failed: {e}")
         # Fall back to CPU implementation
         raise
+
+# -------------------------------
+# Batch Feature Computation
+# -------------------------------
+
+def compute_batch_features_gpu(price_data):
+    """
+    Batch compute multiple features using GPU
+    
+    Args:
+        price_data: Dictionary with price arrays
+        
+    Returns:
+        Dictionary with computed features
+    """
+    if not CUPY_AVAILABLE:
+        raise ImportError("CuPy is required for GPU acceleration")
+        
+    try:
+        # Make sure GPU is initialized
+        if not initialize_gpu():
+            logging.warning("Failed to initialize GPU for batch computation")
+            return {}
+        
+        # Extract arrays
+        opens = price_data['opens']
+        highs = price_data['highs']
+        lows = price_data['lows']
+        closes = price_data['closes']
+        volumes = price_data.get('volumes', np.zeros_like(closes))
+        
+        # Safety check for array sizes before moving to GPU
+        if any(arr is None or len(arr) == 0 for arr in [opens, highs, lows, closes]):
+            return {}
+            
+        # Check if arrays are compatible sizes
+        array_len = len(closes)
+        if any(len(arr) != array_len for arr in [opens, highs, lows]):
+            return {}
+            
+        # Move data to GPU with explicit copy to ensure data is properly transferred
+        cp_opens = cp.asarray(opens, dtype=cp.float64)
+        cp_highs = cp.asarray(highs, dtype=cp.float64)
+        cp_lows = cp.asarray(lows, dtype=cp.float64)
+        cp_closes = cp.asarray(closes, dtype=cp.float64)
+        cp_volumes = cp.asarray(volumes, dtype=cp.float64)
+        
+        # Synchronize to ensure data is moved to GPU before operations
+        cp.cuda.Stream.null.synchronize()
+        
+        # Results dictionary
+        results = {}
+        
+        # Compute more features in one GPU batch
+        n = len(cp_closes)
+        
+        # 1. Price action features
+        # Body size
+        body_size = cp.abs(cp_closes - cp_opens)
+        results['body_size'] = cp.asnumpy(body_size)
+        results['candle_body_size'] = cp.asnumpy(body_size)
+        
+        # Shadows
+        upper_shadow = cp_highs - cp.maximum(cp_opens, cp_closes)
+        lower_shadow = cp.minimum(cp_opens, cp_closes) - cp_lows
+        results['upper_shadow'] = cp.asnumpy(upper_shadow)
+        results['lower_shadow'] = cp.asnumpy(lower_shadow)
+        
+        # Relative close position
+        hl_range = cp_highs - cp_lows
+        mask = hl_range > 0
+        rel_pos = cp.where(
+            mask,
+            (cp_closes - cp_lows) / hl_range,
+            0.5  # Default to middle if no range
+        )
+        results['relative_close_position'] = cp.asnumpy(rel_pos)
+        
+        # 2. Log returns
+        log_returns = cp.zeros_like(cp_closes)
+        if n > 1:
+            # Make sure we don't have zeros or negatives
+            safe_closes = cp.maximum(cp_closes, 1e-8)
+            # Avoid division by zero
+            divisor = cp.maximum(cp.roll(safe_closes, 1), 1e-8)
+            # Skip first element which would divide by undefined "previous" 
+            log_returns[1:] = cp.log(safe_closes[1:] / divisor[1:])
+        
+        results['log_return'] = cp.asnumpy(log_returns)
+        
+        # 3. Price change percentage
+        price_change = cp.zeros_like(cp_closes)
+        if n > 1:
+            safe_closes = cp.maximum(cp_closes, 1e-8)
+            divisor = cp.maximum(cp.roll(safe_closes, 1), 1e-8)
+            price_change[1:] = (safe_closes[1:] / divisor[1:]) - 1.0
+            
+        results['prev_close_change_pct'] = cp.asnumpy(price_change)
+        
+        # 4. Gap open (versus previous close)
+        gap_open = cp.zeros_like(cp_closes)
+        if n > 1:
+            safe_closes = cp.maximum(cp_closes, 1e-8)
+            divisor = cp.maximum(cp.roll(safe_closes, 1), 1e-8)
+            gap_open[1:] = (cp_opens[1:] / divisor[1:]) - 1.0
+            
+        results['gap_open'] = cp.asnumpy(gap_open)
+        
+        # 5. Price velocity and acceleration
+        price_velocity = cp.zeros_like(cp_closes)
+        price_accel = cp.zeros_like(cp_closes)
+        
+        if n > 3:
+            safe_closes = cp.maximum(cp_closes, 1e-8)
+            rolled_closes = cp.roll(safe_closes, 3)
+            
+            # Skip first 3 elements
+            valid_idx = cp.arange(3, n)
+            
+            # Compute velocity for valid indices
+            divisor = cp.maximum(rolled_closes[valid_idx], 1e-8)
+            price_velocity[valid_idx] = (safe_closes[valid_idx] / divisor) - 1.0
+            
+        if n > 6:
+            # Compute acceleration (velocity change)
+            rolled_velocity = cp.roll(price_velocity, 3)
+            
+            # Skip first 6 elements
+            valid_idx = cp.arange(6, n)
+            
+            # Compute acceleration for valid indices
+            price_accel[valid_idx] = price_velocity[valid_idx] - rolled_velocity[valid_idx]
+            
+        results['price_velocity'] = cp.asnumpy(price_velocity)
+        results['price_acceleration'] = cp.asnumpy(price_accel)
+        
+        # Synchronize before returning to ensure all computations complete
+        cp.cuda.Stream.null.synchronize()
+        
+        # Clean up GPU memory explicitly
+        del cp_opens, cp_highs, cp_lows, cp_closes, cp_volumes
+        del body_size, upper_shadow, lower_shadow, hl_range, mask, rel_pos
+        del log_returns, price_change, gap_open, price_velocity, price_accel
+        cp.get_default_memory_pool().free_all_blocks()
+        
+        return results
+    except Exception as e:
+        logging.error(f"GPU batch calculation failed: {e}")
+        # Clean up GPU memory on error
+        try:
+            cp.get_default_memory_pool().free_all_blocks()
+        except:
+            pass
+        # Return empty dictionary on failure
+        return {}
 
 # -------------------------------
 # Statistical Features
@@ -202,154 +347,8 @@ def compute_z_score_gpu(values, ma_values, lookback):
         logging.error(f"GPU z-score calculation failed: {e}")
         raise
 
-def hurst_exponent_gpu(prices, max_lag):
-    """
-    Compute Hurst exponent using GPU
-    
-    Args:
-        prices: Array of prices
-        max_lag: Maximum lag for calculation
-        
-    Returns:
-        Array of Hurst exponents
-    """
-    if not CUPY_AVAILABLE:
-        raise ImportError("CuPy is required for GPU acceleration")
-        
-    try:
-        # Convert to CuPy array
-        prices_gpu = cp.asarray(prices)
-        
-        n = len(prices_gpu)
-        hurst_values = cp.zeros(n, dtype=cp.float64)
-        
-        # Need at least 100 points for reliable Hurst calculation
-        min_window = 100
-        
-        if n < min_window:
-            return cp.asnumpy(hurst_values)
-        
-        for end_idx in range(min_window, n):
-            # Take a window of data
-            window_size = min(min_window, end_idx)
-            price_window = prices_gpu[end_idx-window_size:end_idx]
-            
-            # Calculate log returns
-            # Handle zeros and negative values
-            safe_prices = cp.maximum(price_window, 1e-8)
-            log_prices = cp.log(safe_prices)
-            returns = cp.diff(log_prices)
-            
-            if len(returns) < max_lag:
-                hurst_values[end_idx] = 0.5  # Default value
-                continue
-                
-            tau = cp.arange(1, max_lag+1)
-            lagmat = cp.zeros(max_lag)
-            
-            # Calculate variance for each lag
-            for lag in range(1, max_lag+1):
-                if lag < len(returns):
-                    lag_returns = returns[lag:] - returns[:-lag]
-                    lagmat[lag-1] = cp.sqrt(cp.mean(lag_returns**2))
-                else:
-                    lagmat[lag-1] = 0
-            
-            # Filter valid values (avoid log(0))
-            valid_mask = lagmat > 0
-            if cp.sum(valid_mask) > 1:
-                valid_lags = tau[valid_mask]
-                valid_lagmat = lagmat[valid_mask]
-                
-                # Linear regression on log-log scale
-                log_lag = cp.log(valid_lags)
-                log_lagmat = cp.log(valid_lagmat)
-                
-                # Calculate regression using polyfit
-                if cp.isnan(log_lag).any() or cp.isnan(log_lagmat).any():
-                    hurst_values[end_idx] = 0.5
-                else:
-                    try:
-                        coeffs = cp.polyfit(log_lag, log_lagmat, 1)
-                        
-                        # Apply theoretical constraints to slope
-                        # The Hurst exponent must be between 0 and 1
-                        # So slope must be between -1 and 2
-                        slope = coeffs[0]
-                        slope = max(-1.0, min(2.0, slope))
-                        
-                        # Calculate Hurst exponent (slope/2)
-                        hurst = slope / 2
-                        
-                        # EXPLICITLY CLAMP HURST EXPONENT to [0,1] range
-                        hurst = max(0.0, min(1.0, hurst))
-                        
-                        hurst_values[end_idx] = hurst
-                    except:
-                        hurst_values[end_idx] = 0.5
-            else:
-                hurst_values[end_idx] = 0.5
-        
-        # Return as numpy array
-        return cp.asnumpy(hurst_values)
-    except Exception as e:
-        logging.error(f"GPU Hurst calculation failed: {e}")
-        raise
-
-def shannon_entropy_gpu(prices, window_size=20):
-    """
-    Compute Shannon Entropy using GPU
-    
-    Args:
-        prices: Array of prices
-        window_size: Window size for entropy calculation
-        
-    Returns:
-        Array of entropy values
-    """
-    if not CUPY_AVAILABLE:
-        raise ImportError("CuPy is required for GPU acceleration")
-        
-    try:
-        # Convert to CuPy array
-        prices_gpu = cp.asarray(prices)
-        
-        n = len(prices_gpu)
-        entropy_values = cp.zeros(n, dtype=cp.float64)
-        
-        # Need at least window_size points
-        if n < window_size:
-            return cp.asnumpy(entropy_values)
-        
-        # Handle zeros and negative values
-        safe_prices = cp.maximum(prices_gpu, 1e-8)
-        
-        for end_idx in range(window_size, n):
-            price_window = safe_prices[end_idx-window_size:end_idx]
-            # Calculate log returns
-            log_price = cp.log(price_window)
-            returns = cp.diff(log_price)
-            
-            # Use histogramming for probability estimation
-            # We'll use 10 bins for the histogram
-            hist, _ = cp.histogram(returns, bins=10)
-            total = cp.sum(hist)
-            
-            if total > 0:
-                probs = hist / total
-                # Calculate entropy, avoiding log(0)
-                valid_probs = probs[probs > 0]
-                entropy = -cp.sum(valid_probs * cp.log(valid_probs))
-                entropy_values[end_idx] = entropy
-        
-        # Return as numpy array
-        return cp.asnumpy(entropy_values)
-    except Exception as e:
-        logging.error(f"GPU Entropy calculation failed: {e}")
-        raise
-
 # -------------------------------
-# Future Returns
+# Future Return Calculations
 # -------------------------------
 
 def compute_future_return_gpu(close, shift):

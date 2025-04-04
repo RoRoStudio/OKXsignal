@@ -50,26 +50,318 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
             self._debug_log(f"Not enough data points ({len(df)}) for multi-timeframe features, need at least 24", debug_mode)
             return df
             
-        # Calculate 4h timeframe features
+        # Process 4h and 1d timeframes in parallel
+        result_df = df.copy()
+        
+        # Prepare DataFrame with timestamp as index for resampling
+        df_with_ts = df.copy()
+        if not pd.api.types.is_datetime64_any_dtype(df_with_ts['timestamp_utc']):
+            df_with_ts['timestamp_utc'] = pd.to_datetime(df_with_ts['timestamp_utc'])
+        
+        # Sort for consistency
+        df_with_ts = df_with_ts.sort_values('timestamp_utc')
+        
+        # Set timestamp as index
+        df_with_ts = df_with_ts.set_index('timestamp_utc')
+        
+        # Define mapping for OHLCV aggregation
+        ohlcv_columns = {
+            'open_1h': 'first',
+            'high_1h': 'max',
+            'low_1h': 'min',
+            'close_1h': 'last',
+            'volume_1h': 'sum'
+        }
+        
+        # Start with 4h timeframe computation
+        start_4h = time.time()
         try:
-            df = self.resample_and_compute('4h', df, params, debug_mode, perf_monitor)
+            # Resample to 4h
+            resampled_4h = df_with_ts[list(ohlcv_columns.keys())].resample('4H').agg(ohlcv_columns)
+            
+            # Rename columns for clarity
+            resampled_4h.columns = [col.replace('1h', '4h') for col in resampled_4h.columns]
+            
+            # Compute all indicators on resampled data
+            if len(resampled_4h) >= 10:  # Need at least 10 points for indicators
+                # 1. RSI
+                close = resampled_4h['close_4h']
+                delta = close.diff()
+                gain = delta.clip(lower=0)
+                loss = -delta.clip(upper=0)
+                
+                avg_gain = gain.rolling(window=14).mean()
+                avg_loss = loss.rolling(window=14).mean()
+                
+                # For values beyond the initial window
+                for i in range(14, len(delta)):
+                    avg_gain.iloc[i] = (avg_gain.iloc[i-1] * 13 + gain.iloc[i]) / 14
+                    avg_loss.iloc[i] = (avg_loss.iloc[i-1] * 13 + loss.iloc[i]) / 14
+                
+                rs = np.zeros(len(avg_gain))
+                rs_mask = avg_loss > 0
+                rs[rs_mask] = avg_gain[rs_mask] / avg_loss[rs_mask]
+                rs[~rs_mask] = 100
+                
+                rsi = 100 - (100 / (1 + rs))
+                resampled_4h['rsi_4h'] = pd.Series(rsi, index=resampled_4h.index).fillna(50)
+                
+                # RSI slope
+                resampled_4h['rsi_slope_4h'] = resampled_4h['rsi_4h'].diff(2) / 2
+                
+                # 2. MACD
+                ema_fast = close.ewm(span=12, adjust=False).mean()
+                ema_slow = close.ewm(span=26, adjust=False).mean()
+                macd_line = ema_fast - ema_slow
+                signal_line = macd_line.ewm(span=9, adjust=False).mean()
+                macd_hist = macd_line - signal_line
+                
+                resampled_4h['macd_slope_4h'] = macd_line.diff().fillna(0)
+                resampled_4h['macd_hist_slope_4h'] = macd_hist.diff().fillna(0)
+                
+                # 3. ATR
+                high = resampled_4h['high_4h']
+                low = resampled_4h['low_4h']
+                
+                tr1 = high - low
+                tr2 = np.abs(high - close.shift(1))
+                tr3 = np.abs(low - close.shift(1))
+                
+                tr = pd.DataFrame({'tr1': tr1, 'tr2': tr2, 'tr3': tr3}).max(axis=1)
+                
+                # Use exponential moving average for smoother ATR
+                resampled_4h['atr_4h'] = tr.ewm(span=14, adjust=False).mean().fillna(tr)
+                
+                # 4. Bollinger Bands
+                rolling_mean = close.rolling(window=20).mean()
+                rolling_std = close.rolling(window=20).std()
+                
+                upper_band = rolling_mean + (rolling_std * 2)
+                lower_band = rolling_mean - (rolling_std * 2)
+                
+                resampled_4h['bollinger_width_4h'] = (upper_band - lower_band).fillna(0)
+                
+                # 5. Donchian Channel
+                resampled_4h['donchian_channel_width_4h'] = (
+                    high.rolling(window=20).max() - low.rolling(window=20).min()
+                ).fillna(0)
+                
+                # 6. MFI
+                typical_price = (high + low + close) / 3
+                
+                money_flow = typical_price * resampled_4h['volume_4h']
+                
+                # Get positive and negative money flow
+                pos_flow = np.where(typical_price > typical_price.shift(1), money_flow, 0)
+                neg_flow = np.where(typical_price < typical_price.shift(1), money_flow, 0)
+                
+                # Calculate money flow ratio
+                pos_sum = pd.Series(pos_flow).rolling(window=14).sum()
+                neg_sum = pd.Series(neg_flow).rolling(window=14).sum()
+                
+                # Avoid division by zero
+                mfr = np.zeros(len(pos_sum))
+                mask = neg_sum > 0
+                mfr[mask] = pos_sum[mask] / neg_sum[mask]
+                mfr[~mask] = 100
+                
+                # Calculate Money Flow Index
+                mfi = 100 - (100 / (1 + mfr))
+                resampled_4h['money_flow_index_4h'] = pd.Series(mfi, index=resampled_4h.index).fillna(50)
+                
+                # 7. OBV and slope
+                obv = np.zeros(len(resampled_4h))
+                
+                for i in range(1, len(resampled_4h)):
+                    if close.iloc[i] > close.iloc[i-1]:
+                        obv[i] = obv[i-1] + resampled_4h['volume_4h'].iloc[i]
+                    elif close.iloc[i] < close.iloc[i-1]:
+                        obv[i] = obv[i-1] - resampled_4h['volume_4h'].iloc[i]
+                    else:
+                        obv[i] = obv[i-1]
+                
+                resampled_4h['obv_slope_4h'] = pd.Series(obv).diff(2) / 2
+                
+                # 8. Volume change
+                resampled_4h['volume_change_pct_4h'] = resampled_4h['volume_4h'].pct_change().fillna(0)
+                
+                # Ensure all columns are proper floats
+                for col in resampled_4h.columns:
+                    if col not in ohlcv_columns and col != 'timestamp_utc':
+                        resampled_4h[col] = resampled_4h[col].astype(float)
+                
+                # Map back to original timeframe
+                for col in resampled_4h.columns:
+                    if col not in ohlcv_columns and col != 'timestamp_utc':
+                        # Forward fill resampled values to 1h data
+                        series_4h = resampled_4h[col]
+                        result_df[col] = series_4h.reindex(
+                            df_with_ts.index, method='ffill'
+                        ).fillna(0).values
+            
+            if perf_monitor:
+                perf_monitor.log_operation("compute_4h_features", time.time() - start_4h)
+                
         except Exception as e:
             logging.error(f"Error computing 4h features: {e}")
             if debug_mode:
                 logging.error(traceback.format_exc())
-        
-        # Calculate 1d timeframe features
+                
+        # Similar pattern for 1d features
+        start_1d = time.time()
         try:
-            df = self.resample_and_compute('1d', df, params, debug_mode, perf_monitor)
+            # Resample to 1d
+            resampled_1d = df_with_ts[list(ohlcv_columns.keys())].resample('1D').agg(ohlcv_columns)
+            
+            # Rename columns for clarity
+            resampled_1d.columns = [col.replace('1h', '1d') for col in resampled_1d.columns]
+            
+            # Compute indicators
+            if len(resampled_1d) >= 7:  # Need at least 7 points for daily indicators
+                # 1. RSI
+                close = resampled_1d['close_1d']
+                delta = close.diff()
+                gain = delta.clip(lower=0)
+                loss = -delta.clip(upper=0)
+                
+                avg_gain = gain.rolling(window=14).mean()
+                avg_loss = loss.rolling(window=14).mean()
+                
+                # For values beyond the initial window
+                for i in range(14, len(delta)):
+                    avg_gain.iloc[i] = (avg_gain.iloc[i-1] * 13 + gain.iloc[i]) / 14
+                    avg_loss.iloc[i] = (avg_loss.iloc[i-1] * 13 + loss.iloc[i]) / 14
+                
+                rs = np.zeros(len(avg_gain))
+                rs_mask = avg_loss > 0
+                rs[rs_mask] = avg_gain[rs_mask] / avg_loss[rs_mask]
+                rs[~rs_mask] = 100
+                
+                rsi = 100 - (100 / (1 + rs))
+                resampled_1d['rsi_1d'] = pd.Series(rsi, index=resampled_1d.index).fillna(50)
+                
+                # RSI slope
+                resampled_1d['rsi_slope_1d'] = resampled_1d['rsi_1d'].diff(1).fillna(0)
+                
+                # 2. MACD
+                ema_fast = close.ewm(span=12, adjust=False).mean()
+                ema_slow = close.ewm(span=26, adjust=False).mean()
+                macd_line = ema_fast - ema_slow
+                signal_line = macd_line.ewm(span=9, adjust=False).mean()
+                macd_hist = macd_line - signal_line
+                
+                resampled_1d['macd_slope_1d'] = macd_line.diff().fillna(0)
+                resampled_1d['macd_hist_slope_1d'] = macd_hist.diff().fillna(0)
+                
+                # 3. ATR
+                high = resampled_1d['high_1d']
+                low = resampled_1d['low_1d']
+                
+                tr1 = high - low
+                tr2 = np.abs(high - close.shift(1))
+                tr3 = np.abs(low - close.shift(1))
+                
+                tr = pd.DataFrame({'tr1': tr1, 'tr2': tr2, 'tr3': tr3}).max(axis=1)
+                
+                # Use exponential moving average for smoother ATR
+                resampled_1d['atr_1d'] = tr.ewm(span=14, adjust=False).mean().fillna(tr)
+                
+                # 4. Bollinger Bands
+                rolling_mean = close.rolling(window=20, min_periods=1).mean()
+                rolling_std = close.rolling(window=20, min_periods=1).std()
+                
+                upper_band = rolling_mean + (rolling_std * 2)
+                lower_band = rolling_mean - (rolling_std * 2)
+                
+                resampled_1d['bollinger_width_1d'] = (upper_band - lower_band).fillna(0)
+                
+                # 5. Donchian Channel
+                resampled_1d['donchian_channel_width_1d'] = (
+                    high.rolling(window=20, min_periods=1).max() - 
+                    low.rolling(window=20, min_periods=1).min()
+                ).fillna(0)
+                
+                # 6. MFI
+                typical_price = (high + low + close) / 3
+                
+                money_flow = typical_price * resampled_1d['volume_1d']
+                
+                # Get positive and negative money flow
+                money_flow_direction = np.sign(typical_price.diff().fillna(0))
+                pos_flow = money_flow * (money_flow_direction > 0)
+                neg_flow = money_flow * (money_flow_direction < 0)
+                
+                # Calculate money flow ratio
+                pos_sum = pos_flow.rolling(window=14, min_periods=1).sum()
+                neg_sum = neg_flow.rolling(window=14, min_periods=1).sum()
+                
+                # Avoid division by zero
+                mfi = np.where(
+                    neg_sum > 0,
+                    100 - (100 / (1 + (pos_sum / neg_sum))),
+                    100
+                )
+                
+                resampled_1d['money_flow_index_1d'] = pd.Series(mfi, index=resampled_1d.index).fillna(50)
+                
+                # 7. OBV slope
+                obv = np.zeros(len(resampled_1d))
+                
+                # First OBV is just the volume
+                if len(resampled_1d) > 0:
+                    obv[0] = resampled_1d['volume_1d'].iloc[0]
+                    
+                    # Calculate rest of OBV
+                    for i in range(1, len(resampled_1d)):
+                        if close.iloc[i] > close.iloc[i-1]:
+                            obv[i] = obv[i-1] + resampled_1d['volume_1d'].iloc[i]
+                        elif close.iloc[i] < close.iloc[i-1]:
+                            obv[i] = obv[i-1] - resampled_1d['volume_1d'].iloc[i]
+                        else:
+                            obv[i] = obv[i-1]
+                
+                # Calculate OBV slope
+                obv_series = pd.Series(obv, index=resampled_1d.index)
+                resampled_1d['obv_slope_1d'] = obv_series.diff().fillna(0)
+                
+                # 8. Volume change
+                resampled_1d['volume_change_pct_1d'] = resampled_1d['volume_1d'].pct_change().fillna(0)
+                
+                # Ensure all columns are proper floats
+                for col in resampled_1d.columns:
+                    if col not in ohlcv_columns and col != 'timestamp_utc':
+                        resampled_1d[col] = resampled_1d[col].astype(float)
+                
+                # Map back to original timeframe
+                for col in resampled_1d.columns:
+                    if col not in ohlcv_columns and col != 'timestamp_utc':
+                        # Forward fill resampled values to 1h data
+                        series_1d = resampled_1d[col]
+                        result_df[col] = series_1d.reindex(
+                            df_with_ts.index, method='ffill'
+                        ).fillna(0).values
+                        
+            if perf_monitor:
+                perf_monitor.log_operation("compute_1d_features", time.time() - start_1d)
+                
         except Exception as e:
             logging.error(f"Error computing 1d features: {e}")
             if debug_mode:
                 logging.error(traceback.format_exc())
         
         # Ensure all multi-timeframe columns are properly typed as floats
-        self._ensure_feature_types(df)
+        multi_tf_columns = [col for col in result_df.columns if ('_4h' in col or '_1d' in col)]
         
-        # FIX: Use a reasonable duration for performance monitoring
+        for col in multi_tf_columns:
+            # Convert to float
+            try:
+                result_df[col] = result_df[col].astype(float)
+            except Exception:
+                # If conversion fails, replace with 0.0
+                logging.warning(f"Failed to convert {col} to float, replacing with 0.0")
+                result_df[col] = 0.0
+                
+        # Log total duration
         duration = time.time() - start_time
         if perf_monitor:
             # Add sanity check for timing
@@ -78,379 +370,4 @@ class MultiTimeframeFeatures(BaseFeatureComputer):
                 duration = 1000.0
             perf_monitor.log_operation("multi_timeframe_features_total", duration)
             
-        return df
-    
-    def _ensure_feature_types(self, df):
-        """Ensure all multi-timeframe feature columns are properly typed as floats"""
-        multi_tf_columns = [col for col in df.columns if ('_4h' in col or '_1d' in col)]
-        
-        for col in multi_tf_columns:
-            # Convert to float
-            try:
-                df[col] = df[col].astype(float)
-            except Exception:
-                # If conversion fails, replace with 0.0
-                logging.warning(f"Failed to convert {col} to float, replacing with 0.0")
-                df[col] = 0.0
-                
-        return df
-                
-    def resample_and_compute(self, timeframe, df, params, debug_mode=False, perf_monitor=None):
-        """
-        Resample to the given timeframe and compute features
-        
-        Args:
-            timeframe: Timeframe to resample to ('4h' or '1d')
-            df: DataFrame with price/volume data
-            params: Parameters for resampling
-            debug_mode: Whether to log debug info
-            perf_monitor: Performance monitor
-            
-        Returns:
-            DataFrame with features for the specified timeframe
-        """
-        resample_start = time.time()
-        
-        tf_label = timeframe  # '4h' or '1d'
-        resample_rule = params['resample_rules'].get(timeframe, timeframe)
-        min_points = params['min_points'].get(timeframe, 20)
-        
-        # Create a copy of the dataframe to avoid modifying the original
-        result_df = df.copy()
-        
-        # Define all timeframe-specific column names we need to compute
-        expected_columns = [
-            f'rsi_{tf_label}', f'rsi_slope_{tf_label}', f'macd_slope_{tf_label}',
-            f'macd_hist_slope_{tf_label}', f'atr_{tf_label}', f'bollinger_width_{tf_label}',
-            f'donchian_channel_width_{tf_label}', f'money_flow_index_{tf_label}', 
-            f'obv_slope_{tf_label}', f'volume_change_pct_{tf_label}'
-        ]
-        
-        # Initialize all expected columns with default value 0.0
-        for col_name in expected_columns:
-            result_df[col_name] = 0.0
-        
-        # Check if we have enough data based on requested timeframe
-        if len(df) < min_points:
-            self._debug_log(f"Not enough data for {tf_label} features (need >= {min_points})", debug_mode)
-            return result_df
-            
-        try:
-            # FIX: Add improved error handling and diagnostics
-            self._debug_log(f"Starting computation for {tf_label} features with {len(df)} rows", debug_mode)
-            
-            # Make a temporary copy with the timestamp as index for resampling
-            df_with_ts = df.copy()
-            
-            # Convert timestamp to datetime if it's not already
-            if not pd.api.types.is_datetime64_any_dtype(df_with_ts['timestamp_utc']):
-                df_with_ts['timestamp_utc'] = pd.to_datetime(df_with_ts['timestamp_utc'])
-            
-            # Verify timestamps are valid and handle any issues
-            invalid_timestamps = df_with_ts['timestamp_utc'].isnull().sum()
-            if invalid_timestamps > 0:
-                self._debug_log(f"Found {invalid_timestamps} invalid timestamps for {tf_label}", debug_mode)
-                # Filter out invalid timestamps
-                df_with_ts = df_with_ts[df_with_ts['timestamp_utc'].notnull()]
-                
-            # Sort by timestamp to ensure correct order for resampling
-            df_with_ts = df_with_ts.sort_values('timestamp_utc')
-                
-            # Set timestamp as index for resampling
-            df_with_ts = df_with_ts.set_index('timestamp_utc')
-            
-            # Verify data quality before resampling
-            for col in ['open_1h', 'high_1h', 'low_1h', 'close_1h', 'volume_1h']:
-                if col not in df_with_ts.columns:
-                    raise ValueError(f"Required column {col} missing for {tf_label} resampling")
-                if df_with_ts[col].isnull().any():
-                    # Log warning and fill NaN values
-                    null_count = df_with_ts[col].isnull().sum()
-                    self._debug_log(f"Found {null_count} null values in {col} for {tf_label}", debug_mode)
-                    # Fill NaN values appropriately
-                    if col == 'volume_1h':
-                        df_with_ts[col] = df_with_ts[col].fillna(0)
-                    else:
-                        df_with_ts[col] = df_with_ts[col].fillna(method='ffill').fillna(method='bfill')
-            
-            # Log info about input data
-            self._debug_log(f"Resampling {len(df_with_ts)} rows from 1h to {tf_label}", debug_mode)
-            self._debug_log(f"Timestamp range: {df_with_ts.index.min()} to {df_with_ts.index.max()}", debug_mode)
-            
-            # Perform resampling
-            resampled = pd.DataFrame()
-            resampled[f'open_{tf_label}'] = df_with_ts['open_1h'].resample(resample_rule).first()
-            resampled[f'high_{tf_label}'] = df_with_ts['high_1h'].resample(resample_rule).max()
-            resampled[f'low_{tf_label}'] = df_with_ts['low_1h'].resample(resample_rule).min()
-            resampled[f'close_{tf_label}'] = df_with_ts['close_1h'].resample(resample_rule).last()
-            resampled[f'volume_{tf_label}'] = df_with_ts['volume_1h'].resample(resample_rule).sum()
-            
-            # Fill forward any missing values (incomplete periods)
-            resampled = resampled.fillna(method='ffill')
-            
-            # Check for NaN values after resampling
-            null_counts = resampled.isnull().sum()
-            if null_counts.sum() > 0:
-                self._debug_log(f"Null values after {tf_label} resampling: {null_counts.to_dict()}", debug_mode)
-                # Fill remaining NaN values
-                resampled = resampled.fillna(method='bfill').fillna(0)
-            
-            # Make sure we have enough data after resampling
-            if len(resampled) < 20:  # Need at least 20 points for most indicators
-                self._debug_log(f"Not enough resampled data ({len(resampled)} rows) for {tf_label} features", debug_mode)
-                return result_df
-                
-            self._debug_log(f"{tf_label} resampling completed with {len(resampled)} rows", debug_mode)
-            
-            # Compute indicators on resampled data
-            # RSI
-            delta = resampled[f'close_{tf_label}'].diff()
-            gain = delta.clip(lower=0)
-            loss = -delta.clip(upper=0)
-            
-            avg_gain = gain.rolling(window=14).mean()
-            avg_loss = loss.rolling(window=14).mean()
-            
-            # For values beyond the initial window
-            for i in range(14, len(delta)):
-                avg_gain.iloc[i] = (avg_gain.iloc[i-1] * 13 + gain.iloc[i]) / 14
-                avg_loss.iloc[i] = (avg_loss.iloc[i-1] * 13 + loss.iloc[i]) / 14
-            
-            # Calculate RS with proper handling of zero avg_loss
-            rs = np.zeros(len(avg_gain))
-            for i in range(len(avg_gain)):
-                if avg_loss.iloc[i] == 0:
-                    rs[i] = 100  # If avg_loss is zero, RS is max
-                else:
-                    rs[i] = avg_gain.iloc[i] / avg_loss.iloc[i]
-            
-            # Calculate RSI
-            rsi = np.zeros(len(rs))
-            for i in range(len(rs)):
-                rsi[i] = 100 - (100 / (1 + rs[i]))
-            
-            resampled[f'rsi_{tf_label}'] = pd.Series(rsi, index=resampled.index).fillna(50)
-            
-            # RSI slope
-            resampled[f'rsi_slope_{tf_label}'] = resampled[f'rsi_{tf_label}'].diff(2) / 2
-            
-            # MACD
-            ema_fast = resampled[f'close_{tf_label}'].ewm(span=12, adjust=False).mean()
-            ema_slow = resampled[f'close_{tf_label}'].ewm(span=26, adjust=False).mean()
-            macd_line = ema_fast - ema_slow
-            signal_line = macd_line.ewm(span=9, adjust=False).mean()
-            macd_hist = macd_line - signal_line
-            
-            resampled[f'macd_{tf_label}'] = macd_line.fillna(0)
-            resampled[f'macd_signal_{tf_label}'] = signal_line.fillna(0)
-            resampled[f'macd_slope_{tf_label}'] = macd_line.diff().fillna(0)
-            resampled[f'macd_hist_{tf_label}'] = macd_hist.fillna(0)
-            resampled[f'macd_hist_slope_{tf_label}'] = macd_hist.diff().fillna(0)
-            
-            # ATR calculation
-            high_series = resampled[f'high_{tf_label}']
-            low_series = resampled[f'low_{tf_label}']
-            close_series = resampled[f'close_{tf_label}']
-
-            # Calculate True Range
-            tr1 = high_series - low_series
-            tr2 = np.abs(high_series - close_series.shift(1).fillna(high_series))
-            tr3 = np.abs(low_series - close_series.shift(1).fillna(low_series))
-
-            # True Range is the max of the three
-            tr = pd.DataFrame({
-                'tr1': tr1, 
-                'tr2': tr2, 
-                'tr3': tr3
-            }).max(axis=1)
-
-            # Calculate ATR as the rolling average of True Range
-            atr_length = 14
-
-            # Special handling for daily ATR to ensure we never get zero values
-            if tf_label == '1d':
-                # First, try standard ATR calculation
-                atr = np.zeros(len(resampled))
-                
-                if len(tr) >= atr_length:
-                    # Standard calculation with sufficient data
-                    atr_initial = tr.iloc[:atr_length].mean()
-                    atr[atr_length-1] = atr_initial
-                    
-                    # Apply proper smoothing formula
-                    for i in range(atr_length, len(tr)):
-                        atr[i] = (atr[i-1] * (atr_length-1) + tr.iloc[i]) / atr_length
-                else:
-                    # Not enough data for standard ATR, use what we have
-                    actual_length = max(1, len(tr))
-                    
-                    if len(tr) > 0:
-                        # Use available data to calculate initial ATR
-                        atr[0] = tr.iloc[:actual_length].mean()
-                        
-                        # Apply smoothing for remaining points
-                        for i in range(1, len(tr)):
-                            atr[i] = (atr[i-1] * (actual_length-1) + tr.iloc[i]) / actual_length
-                
-                # Convert to Series for consistency
-                atr = pd.Series(atr, index=tr.index)
-                
-                # Fix any remaining zero values by using true range directly
-                for i in range(len(atr)):
-                    if atr.iloc[i] <= 0:
-                        if i < len(tr) and tr.iloc[i] > 0:
-                            # Use true range if ATR is zero/negative
-                            atr.iloc[i] = tr.iloc[i]
-                        elif i > 0 and atr.iloc[:i].max() > 0:
-                            # Use previous non-zero ATR
-                            atr.iloc[i] = atr.iloc[:i].max()
-                        else:
-                            # Last resort - use a small value based on price
-                            price_ref = close_series.iloc[i] if i < len(close_series) else 1.0
-                            atr.iloc[i] = max(0.0001, price_ref * 0.001)
-            else:
-                # Normal ATR calculation for other timeframes
-                atr = tr.rolling(window=atr_length, min_periods=1).mean().fillna(tr)
-
-            resampled[f'atr_{tf_label}'] = atr
-            
-            # Bollinger Bands
-            rolling_mean = resampled[f'close_{tf_label}'].rolling(window=20, min_periods=1).mean()
-            rolling_std = resampled[f'close_{tf_label}'].rolling(window=20, min_periods=1).std()
-            
-            upper_band = rolling_mean + (rolling_std * 2)
-            lower_band = rolling_mean - (rolling_std * 2)
-            
-            width = upper_band - lower_band
-            resampled[f'bollinger_width_{tf_label}'] = width.fillna(0)
-            
-            # Donchian Channels
-            rolling_high = high_series.rolling(window=20, min_periods=1).max()
-            rolling_low = low_series.rolling(window=20, min_periods=1).min()
-            
-            resampled[f'donchian_high_{tf_label}'] = rolling_high.fillna(high_series)
-            resampled[f'donchian_low_{tf_label}'] = rolling_low.fillna(low_series)
-            resampled[f'donchian_channel_width_{tf_label}'] = (
-                resampled[f'donchian_high_{tf_label}'] - resampled[f'donchian_low_{tf_label}']
-            )
-            
-            # MFI (Money Flow Index)
-            typical_price = (high_series + low_series + close_series) / 3
-            money_flow = typical_price * resampled[f'volume_{tf_label}']
-            
-            # Calculate positive and negative money flow
-            pos_flow = np.zeros(len(money_flow))
-            neg_flow = np.zeros(len(money_flow))
-            
-            # First value has no previous value to compare
-            pos_flow[0] = money_flow.iloc[0]
-            
-            for i in range(1, len(money_flow)):
-                if typical_price.iloc[i] > typical_price.iloc[i-1]:
-                    pos_flow[i] = money_flow.iloc[i]
-                else:
-                    neg_flow[i] = money_flow.iloc[i]
-            
-            # Calculate money flow ratio
-            pos_sum = pd.Series(pos_flow).rolling(window=14, min_periods=1).sum()
-            neg_sum = pd.Series(neg_flow).rolling(window=14, min_periods=1).sum()
-            
-            # Calculate MFI
-            mfi = np.zeros(len(pos_sum))
-            
-            for i in range(len(pos_sum)):
-                if neg_sum.iloc[i] == 0:
-                    mfi[i] = 100  # All money flow is positive
-                else:
-                    money_ratio = pos_sum.iloc[i] / neg_sum.iloc[i]
-                    mfi[i] = 100 - (100 / (1 + money_ratio))
-            
-            resampled[f'money_flow_index_{tf_label}'] = pd.Series(mfi, index=resampled.index).fillna(50)
-            
-            # OBV and slope
-            obv = np.zeros(len(resampled))
-            
-            # First OBV is first volume
-            obv[0] = resampled[f'volume_{tf_label}'].iloc[0]
-            
-            for i in range(1, len(resampled)):
-                if close_series.iloc[i] > close_series.iloc[i-1]:
-                    obv[i] = obv[i-1] + resampled[f'volume_{tf_label}'].iloc[i]
-                elif close_series.iloc[i] < close_series.iloc[i-1]:
-                    obv[i] = obv[i-1] - resampled[f'volume_{tf_label}'].iloc[i]
-                else:
-                    obv[i] = obv[i-1]
-                    
-            resampled[f'obv_{tf_label}'] = obv
-            resampled[f'obv_slope_{tf_label}'] = pd.Series(obv).diff(2) / 2
-            
-            # Volume change
-            vol_change = np.zeros(len(resampled))
-            
-            for i in range(1, len(resampled)):
-                if resampled[f'volume_{tf_label}'].iloc[i-1] > 0:
-                    vol_change[i] = (resampled[f'volume_{tf_label}'].iloc[i] / resampled[f'volume_{tf_label}'].iloc[i-1]) - 1
-            
-            resampled[f'volume_change_pct_{tf_label}'] = vol_change
-            
-            # Clean up any NaN/Inf values
-            for col in resampled.columns:
-                resampled[col] = resampled[col].replace([np.inf, -np.inf], 0).fillna(0)
-                
-            # Check for any remaining NaN or inf values
-            null_counts = resampled.isnull().sum()
-            if null_counts.sum() > 0:
-                self._debug_log(f"Null values remain after cleaning {tf_label} features: {null_counts.to_dict()}", debug_mode)
-                # Force all values to be valid
-                resampled = resampled.fillna(0).replace([np.inf, -np.inf], 0)
-            
-            # Map resampled values back to original timeframe using forward fill
-            all_timestamps = df_with_ts.index
-            
-            # Create a mapping dictionary for efficiency
-            resampled_dict = {}
-            for col in expected_columns:
-                if col in resampled.columns:
-                    # Use efficient reindex with forward fill
-                    temp_series = resampled[col].reindex(
-                        all_timestamps, 
-                        method='ffill'
-                    ).fillna(0)  # Fill any remaining NaN values
-                    resampled_dict[col] = temp_series
-            
-            # Update the result dataframe
-            for col, series in resampled_dict.items():
-                result_df[col] = series.values
-                
-            # Log successful computation
-            self._debug_log(f"Successfully computed {len(expected_columns)} features for {tf_label}", debug_mode)
-            
-        except Exception as e:
-            logging.error(f"Error computing {tf_label} features: {e}")
-            if debug_mode:
-                logging.error(traceback.format_exc())
-            # Keep the initialized zero values for all expected columns
-        
-        # FIX: Use a reasonable duration for performance monitoring
-        duration = time.time() - resample_start
-        if perf_monitor:
-            # Add sanity check for timing
-            if duration > 1000:  # If over 1000 seconds, likely a bug
-                logging.warning(f"Unusually long duration for compute_{tf_label}_features: {duration}s, capping at 1000s")
-                duration = 1000.0
-            perf_monitor.log_operation(f"compute_{tf_label}_features", duration)
-        
-        # Validate all expected columns are present and numeric
-        for col in expected_columns:
-            if col not in result_df.columns:
-                logging.warning(f"Expected column {col} missing after {tf_label} feature computation")
-                result_df[col] = 0.0
-            else:
-                # Force column to be numeric
-                try:
-                    result_df[col] = pd.to_numeric(result_df[col], errors='coerce').fillna(0)
-                except Exception as e:
-                    logging.warning(f"Error converting {col} to numeric: {e}")
-                    result_df[col] = 0.0
-        
         return result_df

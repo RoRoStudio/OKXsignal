@@ -1,1 +1,0 @@
-{"timestamp": "2025-04-03 09:33:45", "hour_executed": 9, "total_duration_seconds": 240.24, "fetch": {"success": true, "duration_seconds": 70.66, "candles_fetched": 4284, "error_count": 1, "first_candle_timestamp": "2025-04-02 18:00:00"}, "compute": {"success": false, "duration_seconds": 169.57, "pairs_processed": 318, "error_count": 1, "skipped": false}}

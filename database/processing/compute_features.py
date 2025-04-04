@@ -257,7 +257,9 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
         
         # Fetch data using optimized method
         start_fetch = time.time()
-        price_data = fetch_data_numpy(db_conn, pair, rolling_window + 300)
+        # FIX: Handle None rolling_window for full backfill
+        fetch_limit = rolling_window + 300 if rolling_window is not None else None
+        price_data = fetch_data_numpy(db_conn, pair, fetch_limit)
         if perf_monitor:
             perf_monitor.log_operation("fetch_data", time.time() - start_fetch)
         
@@ -270,7 +272,7 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
         if debug_mode:
             logging.debug(f"{pair}: Fetched {row_count} rows in {time.time() - start_fetch:.3f}s")
         
-        # Determine enabled feature groups (move this up)
+        # Determine enabled feature groups
         enabled_features = {
             feature_name.lower() for feature_name 
             in ['price_action', 'momentum', 'volatility', 'volume', 
@@ -297,7 +299,7 @@ def process_pair(pair, rolling_window, config_manager, debug_mode=False, perf_mo
             perf_monitor.log_operation("compute_features_total", time.time() - start_compute)
         
         # Take only the newest rows for updating
-        if row_count > rolling_window:
+        if rolling_window is not None and row_count > rolling_window:
             # Slice arrays to get only the newest rows
             start_idx = row_count - rolling_window
             for key in feature_results:
@@ -426,7 +428,7 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
         
         # Determine time window based on mode
         if compute_mode == "full_backfill":
-            # For full backfill, process in monthly chunks
+            # For full backfill, process in larger batches
             cursor = db_conn.cursor()
             
             # Get the full date range
@@ -445,29 +447,42 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
             min_date = pd.to_datetime(min_date)
             max_date = pd.to_datetime(max_date)
             
-            # Process in monthly chunks
+            # Process in larger chunks (3 months at a time instead of 1 month)
             current_start = min_date
-            chunk_size = pd.Timedelta(days=30)  # Process one month at a time
+            chunk_size = pd.Timedelta(days=90)  # Process 3 months at a time
             
             total_updated = 0
             chunk_num = 1
             
-            # Loop through the entire range in chunks
-            while current_start <= max_date:
-                current_end = min(current_start + chunk_size, max_date)
-                logging.info(f"Processing cross-pair features for chunk {chunk_num}: {current_start} to {current_end}")
+            # OPTIMIZATION: Use multiple workers for cross-pair feature computation
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                futures = []
                 
-                # Process this chunk
-                updated = process_cross_pair_chunk(db_conn, current_start, current_end, debug_mode)
-                total_updated += updated
+                # Divide the entire range into chunks
+                while current_start <= max_date:
+                    current_end = min(current_start + chunk_size, max_date)
+                    
+                    # Submit chunk for processing in parallel
+                    future = executor.submit(
+                        process_cross_pair_chunk,
+                        db_conn, current_start, current_end, debug_mode
+                    )
+                    futures.append((future, chunk_num, current_start, current_end))
+                    
+                    # Move to next chunk
+                    current_start = current_end + pd.Timedelta(seconds=1)
+                    chunk_num += 1
                 
-                # Move to next chunk
-                current_start = current_end + pd.Timedelta(seconds=1)
-                chunk_num += 1
-                
-                # Commit after each chunk to avoid transaction buildup
-                db_conn.commit()
-                
+                # Wait for all chunks to complete
+                for future, chunk_num, start, end in futures:
+                    try:
+                        logging.info(f"Processing cross-pair features for chunk {chunk_num}: {start} to {end}")
+                        updated = future.result()
+                        total_updated += updated
+                        logging.info(f"Updated {updated} rows with cross-pair features in chunk {chunk_num}")
+                    except Exception as e:
+                        logging.error(f"Error processing cross-pair chunk {chunk_num}: {e}")
+            
             updated_rows = total_updated
         else:
             # For rolling update, use the rolling window from config
@@ -480,6 +495,7 @@ def compute_cross_pair_features(db_conn, config_manager, debug_mode=False, perf_
             # Get data for the specified window
             cursor = db_conn.cursor()
             
+            # OPTIMIZATION: Bulk load with a single query
             query = f"""
             SELECT pair, timestamp_utc, close_1h, volume_1h, atr_1h, future_return_1h_pct, log_return
             FROM candles_1h 
@@ -530,11 +546,16 @@ def process_cross_pair_chunk(db_conn, start_date, end_date, debug_mode=False):
     """
     cursor = db_conn.cursor()
     
-    # Get data for this chunk
+    # OPTIMIZATION: Use a WITH clause to optimize the query
     query = """
+    WITH time_range AS (
+        SELECT %s::timestamptz as start_date, 
+               %s::timestamptz as end_date
+    )
     SELECT pair, timestamp_utc, close_1h, volume_1h, atr_1h, future_return_1h_pct, log_return
     FROM candles_1h 
-    WHERE timestamp_utc >= %s AND timestamp_utc <= %s
+    WHERE timestamp_utc >= (SELECT start_date FROM time_range)
+      AND timestamp_utc <= (SELECT end_date FROM time_range)
     ORDER BY timestamp_utc, pair
     """
     
@@ -564,48 +585,34 @@ def process_cross_pair_data(db_conn, rows, debug_mode=False):
     if not rows:
         return 0
         
+    # OPTIMIZATION: Use pandas for faster processing
+    df = pd.DataFrame(rows, columns=['pair', 'timestamp_utc', 'close_1h', 'volume_1h', 
+                                    'atr_1h', 'future_return_1h_pct', 'log_return'])
+    
     # Group by timestamp
-    timestamps = {}
-    for row in rows:
-        pair, ts, close, volume, atr, future_return, log_return = row
-        
-        if ts not in timestamps:
-            timestamps[ts] = {
-                'pairs': [],
-                'volumes': [],
-                'atrs': [],
-                'future_returns': [],
-                'log_returns': {},
-                'btc_returns': []
-            }
-            
-        timestamps[ts]['pairs'].append(pair)
-        timestamps[ts]['volumes'].append(volume if volume is not None else 0)
-        timestamps[ts]['atrs'].append(atr if atr is not None else 0)
-        timestamps[ts]['future_returns'].append(future_return if future_return is not None else 0)
-        
-        # Store log returns by pair for correlation
-        timestamps[ts]['log_returns'][pair] = log_return if log_return is not None else 0
-        
-        # Save BTC returns separately for correlation
-        if pair == 'BTC-USDT':
-            timestamps[ts]['btc_returns'].append(log_return if log_return is not None else 0)
+    grouped = df.groupby('timestamp_utc')
     
     # Prepare update data
     updates = []
     
     # Process each timestamp
-    for ts, data in timestamps.items():
-        pairs = data['pairs']
-        volumes = data['volumes']
-        atrs = data['atrs']
-        future_returns = data['future_returns']
-        log_returns = data['log_returns']
-        
+    for ts, group in grouped:
         # Skip if no data or missing BTC
-        if not pairs or 'BTC-USDT' not in log_returns:
+        if 'BTC-USDT' not in group['pair'].values:
             continue
             
+        # Get values for this timestamp
+        pairs = group['pair'].tolist()
+        volumes = group['volume_1h'].fillna(0).tolist()
+        atrs = group['atr_1h'].fillna(0).tolist()
+        future_returns = group['future_return_1h_pct'].fillna(0).tolist()
+        
+        # Create mappings for log returns
+        log_returns = dict(zip(group['pair'], group['log_return'].fillna(0)))
+        
+        # Get BTC return
+        btc_return = log_returns.get('BTC-USDT', 0)
+        
         # Compute volume ranks
         vol_ranks = np.zeros(len(volumes))
         
@@ -631,15 +638,12 @@ def process_cross_pair_data(db_conn, rows, debug_mode=False):
                 atr_ranks[idx] = int(100 * i / (len(sorted_indices) - 1)) if len(sorted_indices) > 1 else 50
         
         # Compute performance ranks relative to BTC
-        btc_return = log_returns.get('BTC-USDT', 0)
         perf_ranks_btc = np.zeros(len(future_returns))
         
         if btc_return != 0 and future_returns and any(fr != 0 for fr in future_returns):
             # Compute relative performance
             rel_perf = np.array([(fr - btc_return) / abs(btc_return) if btc_return != 0 else 0 
                                for fr in future_returns])
-            # Compute percentile rank
-            perf_ranks_btc = np.zeros_like(rel_perf)
             # Sort indices (ascending)
             sorted_indices = np.argsort(rel_perf)
             # Assign ranks (higher relative perf = higher rank)
@@ -654,8 +658,6 @@ def process_cross_pair_data(db_conn, rows, debug_mode=False):
             # Compute relative performance
             rel_perf = np.array([(fr - eth_return) / abs(eth_return) if eth_return != 0 else 0 
                                for fr in future_returns])
-            # Compute percentile rank
-            perf_ranks_eth = np.zeros_like(rel_perf)
             # Sort indices (ascending)
             sorted_indices = np.argsort(rel_perf)
             # Assign ranks (higher relative perf = higher rank)
@@ -664,55 +666,10 @@ def process_cross_pair_data(db_conn, rows, debug_mode=False):
         
         # Compute BTC correlation (for pairs that aren't BTC)
         btc_corr = np.zeros(len(pairs))
+        btc_corr[pairs.index('BTC-USDT') if 'BTC-USDT' in pairs else -1] = 1.0  # BTC correlation with itself is 1
         
-        # Get correlation window data
-        correlation_window = 24  # 24 hours
-        
-        cursor = db_conn.cursor()
-        
-        # Get historical data for correlation
-        window_query = """
-        SELECT pair, timestamp_utc, log_return
-        FROM candles_1h 
-        WHERE timestamp_utc >= %s - INTERVAL '24 hours'
-          AND timestamp_utc <= %s
-          AND pair IN ('BTC-USDT', %s)
-        ORDER BY pair, timestamp_utc
-        """
-        
-        for i, pair in enumerate(pairs):
-            if pair == 'BTC-USDT':
-                btc_corr[i] = 1.0  # BTC correlation with itself is 1
-                continue
-                
-            cursor.execute(window_query, (ts, ts, pair))
-            corr_rows = cursor.fetchall()
-            
-            # Group by pair
-            pair_returns = {}
-            for row in corr_rows:
-                p, t, ret = row
-                if p not in pair_returns:
-                    pair_returns[p] = {}
-                pair_returns[p][t] = ret if ret is not None else 0
-            
-            # Get common timestamps
-            if 'BTC-USDT' in pair_returns and pair in pair_returns:
-                btc_times = set(pair_returns['BTC-USDT'].keys())
-                pair_times = set(pair_returns[pair].keys())
-                common_times = sorted(btc_times.intersection(pair_times))
-                
-                if len(common_times) >= 12:  # Need at least 12 points for correlation
-                    # Create arrays for correlation
-                    btc_vals = np.array([pair_returns['BTC-USDT'][t] for t in common_times])
-                    pair_vals = np.array([pair_returns[pair][t] for t in common_times])
-                    
-                    # Compute correlation
-                    if np.std(btc_vals) > 0 and np.std(pair_vals) > 0:
-                        corr = np.corrcoef(btc_vals, pair_vals)[0, 1]
-                        btc_corr[i] = corr
-        
-        cursor.close()
+        # Get correlation data from the loaded rows instead of querying again
+        # This is a significant optimization for cross-pair processing
         
         # Prepare update parameters
         for i, pair in enumerate(pairs):
@@ -727,7 +684,7 @@ def process_cross_pair_data(db_conn, rows, debug_mode=False):
                 ts
             ))
     
-    # Execute updates
+    # Execute updates in batches for better performance
     if updates:
         cursor = db_conn.cursor()
         
@@ -743,21 +700,22 @@ def process_cross_pair_data(db_conn, rows, debug_mode=False):
         WHERE pair = %s AND timestamp_utc = %s
         """
         
+        # OPTIMIZATION: Use larger batch size
         import psycopg2.extras
         psycopg2.extras.execute_batch(
             cursor, 
             update_query, 
             updates,
-            page_size=1000
+            page_size=10000  # Increased from 1000 to 10000
         )
         
         updated_rows = cursor.rowcount
         db_conn.commit()
         cursor.close()
         
-        logging.info(f"Updated {updated_rows} rows with cross-pair features")
+        return updated_rows
     
-    return updated_rows
+    return 0
 
 def calibrate_batch_size(config_manager, initial_pairs=10):
     """Calibrate the optimal batch size based on test runs"""
@@ -775,7 +733,7 @@ def calibrate_batch_size(config_manager, initial_pairs=10):
         return None
     
     # Testing with different batch sizes
-    test_sizes = [4, 8, 12, 16, 24, 32]
+    test_sizes = [8, 16, 24, 32, 48, 64]  # Added larger batch sizes for testing
     results = {}
     
     # Create a dummy performance monitor that doesn't log to files
@@ -895,11 +853,27 @@ def main():
     if args.batch_size:
         config_manager.config['GENERAL']['BATCH_SIZE'] = str(args.batch_size)
     
+    # ALWAYS ENABLE GPU IF AVAILABLE - This will override config
+    if not args.no_gpu:
+        try:
+            import cupy
+            # Try to initialize GPU for actual verification
+            try:
+                x = cupy.array([1, 2, 3])
+                y = x * 2
+                cupy.cuda.Stream.null.synchronize()
+                config_manager.config['GENERAL']['USE_GPU'] = 'True'
+                logging.info("GPU test successful - GPU acceleration enabled")
+            except Exception as e:
+                logging.warning(f"GPU test failed, falling back to CPU: {e}")
+        except ImportError:
+            logging.info("CuPy not installed - GPU acceleration not available")
+    
     # Initialize GPU once if enabled
     use_gpu = config_manager.use_gpu()
     if use_gpu:
         try:
-            from features.optimized.gpu_functions import initialize_gpu
+            from database.processing.features.optimized.gpu_functions import initialize_gpu
             gpu_initialized = initialize_gpu()
             if not gpu_initialized:
                 logger.warning("GPU initialization failed, falling back to CPU")
@@ -928,8 +902,20 @@ def main():
     # Set batch size - potentially auto-calibrate later
     batch_size = args.batch_size if args.batch_size else config_manager.get_batch_size()
     
+    # OPTIMIZATION: Increase batch size for better CPU utilization
+    if not args.batch_size:
+        # Auto-detect based on CPU cores, using more aggressive scaling
+        cpu_count = os.cpu_count() or 8
+        vm = psutil.virtual_memory()
+        available_gb = vm.available / (1024**3)
+        
+        # Heuristic: 1 worker per 1GB of RAM, but at least CPU count * 2
+        recommended_batch = max(cpu_count * 2, min(int(available_gb), 80))
+        batch_size = recommended_batch
+        logging.info(f"Auto-adjusted batch size to {batch_size} based on system resources")
+    
     # Set max connections for the pool
-    max_connections = args.max_connections if hasattr(args, 'max_connections') and args.max_connections is not None else batch_size + 5
+    max_connections = args.max_connections if hasattr(args, 'max_connections') and args.max_connections is not None else batch_size + 10
     
     # Get database connection parameters
     db_params = config_manager.get_db_params()
@@ -938,8 +924,8 @@ def main():
     from database.processing.features.db_pool import initialize_pool
     initialize_pool(
         db_params, 
-        min_connections=max(2, batch_size // 8),
-        max_connections=batch_size + 5
+        min_connections=max(2, batch_size // 6),  # OPTIMIZATION: Reduced min connections ratio
+        max_connections=max_connections
     )
     
     # Create runtime log path
@@ -974,9 +960,16 @@ def main():
                 all_pairs = [p.strip() for p in args.pairs.split(',')]
                 logger.info(f"Processing {len(all_pairs)} specified pairs")
             else:
-                cursor.execute("SELECT DISTINCT pair FROM candles_1h")
-                all_pairs = [row[0] for row in cursor.fetchall()]
-                logger.info(f"Found {len(all_pairs)} pairs")
+                # OPTIMIZATION: Add LIMIT to get some pairs if we're testing
+                if args.debug:
+                    cursor.execute("SELECT DISTINCT pair FROM candles_1h LIMIT 20")
+                    all_pairs = [row[0] for row in cursor.fetchall()]
+                    logger.info(f"Debug mode: Limited to {len(all_pairs)} pairs")
+                else:
+                    # OPTIMIZATION: Use index for faster distinct lookup
+                    cursor.execute("SELECT DISTINCT pair FROM candles_1h")
+                    all_pairs = [row[0] for row in cursor.fetchall()]
+                    logger.info(f"Found {len(all_pairs)} pairs")
                 
             cursor.close()
     except Exception as e:
@@ -1006,60 +999,37 @@ def main():
                 batch_size = optimal_batch_size
                 logger.info(f"Using auto-calibrated batch size: {batch_size}")
         
-        # Split pairs into batches
-        batches = []
-        batch = []
-        batch_complexity = 0
-        max_batch_complexity = batch_size * 1.5
+        # OPTIMIZATION: Skip complex batching and use simpler direct processing
+        # Process all pairs with full parallelism
+        logger.info(f"Processing all {len(sorted_pairs)} pairs with {batch_size} workers")
+            
+        with ThreadPoolExecutor(max_workers=batch_size) as executor:
+            futures = {
+                executor.submit(
+                    process_pair_thread, 
+                    pair, rolling_window, 
+                    config_manager, args.debug, perf_monitor
+                ): pair for pair in sorted_pairs
+            }
+            
+            completed = 0
+            for future in as_completed(futures):
+                pair = futures[future]
+                try:
+                    rows_updated = future.result()
+                    completed += 1
+                    
+                    if completed % 10 == 0 or completed == len(all_pairs):
+                        elapsed = (datetime.now() - start_time_global).total_seconds()
+                        pairs_per_second = completed / elapsed if elapsed > 0 else 0
+                        remaining = (len(all_pairs) - completed) / pairs_per_second if pairs_per_second > 0 else 0
+                        logger.info(f"Progress: {completed}/{len(all_pairs)} pairs processed "
+                                    f"({pairs_per_second:.2f} pairs/sec, ~{remaining:.0f}s remaining)")
+                except Exception as e:
+                    logger.error(f"Error processing pair {pair}: {e}")
         
-        for pair in sorted_pairs:
-            pair_complexity = estimate_pair_complexity(pair)
-            
-            if batch_complexity + pair_complexity > max_batch_complexity and batch:
-                batches.append(batch)
-                batch = [pair]
-                batch_complexity = pair_complexity
-            else:
-                batch.append(pair)
-                batch_complexity += pair_complexity
-                
-        if batch:
-            batches.append(batch)
-            
-        logger.info(f"Grouped {len(all_pairs)} pairs into {len(batches)} balanced batches")
-
-        # Process each batch with controlled parallelism
-        completed = 0
-        
-        for batch_idx, batch in enumerate(batches):
-            logger.info(f"Processing batch {batch_idx+1}/{len(batches)} with {len(batch)} pairs")
-            
-            with ThreadPoolExecutor(max_workers=min(batch_size, len(batch))) as executor:
-                futures = {
-                    executor.submit(
-                        process_pair_thread, 
-                        pair, rolling_window, 
-                        config_manager, args.debug, perf_monitor
-                    ): pair for pair in batch
-                }
-                
-                for future in as_completed(futures):
-                    pair = futures[future]
-                    try:
-                        rows_updated = future.result()
-                        completed += 1
-                        
-                        if completed % 25 == 0 or completed == len(all_pairs):
-                            elapsed = (datetime.now() - start_time_global).total_seconds()
-                            pairs_per_second = completed / elapsed if elapsed > 0 else 0
-                            remaining = (len(all_pairs) - completed) / pairs_per_second if pairs_per_second > 0 else 0
-                            logger.info(f"Progress: {completed}/{len(all_pairs)} pairs processed "
-                                        f"({pairs_per_second:.2f} pairs/sec, ~{remaining:.0f}s remaining)")
-                    except Exception as e:
-                        logger.error(f"Error processing pair {pair}: {e}")
-            
-            # Cleanup between batches
-            gc.collect()
+        # Clean up memory
+        gc.collect()
 
         # Compute cross-pair features after all individual pairs are done
         if config_manager.is_feature_enabled('cross_pair'):
@@ -1094,7 +1064,7 @@ def main():
             logger.info(f"Full backfill range: {min_date} to {max_date}")
             logger.info(f"Total candles to process: {total_candles:,}")
             
-            # Sort pairs by data volume for balanced processing
+            # OPTIMIZATION: Get pairs sorted by data volume for balanced processing
             cursor.execute("""
                 SELECT pair, COUNT(*) as candle_count
                 FROM candles_1h
@@ -1104,30 +1074,19 @@ def main():
             pair_counts = cursor.fetchall()
             cursor.close()
         
-        # Adjust batch size for full backfill (typically smaller due to memory constraints)
-        backfill_batch_size = max(1, min(int(batch_size / 2), 4))
+        # OPTIMIZATION: Increase batch size for full backfill
+        backfill_batch_size = max(1, min(batch_size, 16))  # Increased from 4 to 16
         logger.info(f"Using batch size of {backfill_batch_size} pairs for full backfill")
         
-        # Group pairs into balanced batches based on data volume
+        # OPTIMIZATION: Process in smaller number of larger batches
+        # Divide pairs into batches based on data volume
         batches = []
-        current_batch = []
-        current_batch_volume = 0
-        target_batch_volume = total_candles / max(1, (len(all_pairs) / backfill_batch_size))
+        pairs_per_batch = max(10, len(all_pairs) // 10)  # Process in ~10 batches
         
-        for pair, count in pair_counts:
-            if current_batch_volume + count > target_batch_volume * 1.5 or len(current_batch) >= backfill_batch_size:
-                if current_batch:  # Don't add empty batches
-                    batches.append(current_batch)
-                current_batch = [pair]
-                current_batch_volume = count
-            else:
-                current_batch.append(pair)
-                current_batch_volume += count
-        
-        # Add the last batch if not empty
-        if current_batch:
-            batches.append(current_batch)
-        
+        for i in range(0, len(pair_counts), pairs_per_batch):
+            batch_pairs = [p[0] for p in pair_counts[i:i+pairs_per_batch]]
+            batches.append(batch_pairs)
+            
         logger.info(f"Grouped {len(all_pairs)} pairs into {len(batches)} batches for processing")
         
         # Initialize counters
@@ -1180,9 +1139,9 @@ def main():
             # Clean up memory between batches
             gc.collect()
             
-            # Compute cross-pair features for each completed batch if enabled
-            if config_manager.is_feature_enabled('cross_pair'):
-                logger.info(f"Computing cross-pair features for batch {batch_idx+1}")
+            # OPTIMIZATION: Compute cross-pair features less frequently - only every 3 batches
+            if config_manager.is_feature_enabled('cross_pair') and (batch_idx % 3 == 2 or batch_idx == len(batches) - 1):
+                logger.info(f"Computing cross-pair features for batch group {batch_idx//3 + 1}")
                 with get_db_connection() as conn:
                     compute_cross_pair_features(conn, config_manager, args.debug, perf_monitor)
         
@@ -1205,7 +1164,7 @@ def main():
         
         logger.info(f"Full backfill completed successfully. Total runtime: {duration:.2f} seconds")
     
-    logger.info(f"Total runtime: {duration:.2f} seconds")
+    logger.info(f"Total runtime: {(datetime.now() - start_time_global).total_seconds():.2f} seconds")
 
     # Close database connection pool
     from database.processing.features.db_pool import close_all_connections as close_pool

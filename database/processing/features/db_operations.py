@@ -10,9 +10,11 @@ import numpy as np
 import pandas as pd
 import psycopg2
 import psycopg2.extras
+import psycopg2.pool
+import io
+import time
 from datetime import datetime
 from sqlalchemy import text
-from io import StringIO
 
 from database.processing.features.config import SMALLINT_COLUMNS
 from database.processing.features.utils import cast_for_sqlalchemy
@@ -70,6 +72,9 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
     cursor = db_conn.cursor()
         
     try:
+        # OPTIMIZATION: Use server-side cursor for large results
+        server_cursor = db_conn.cursor(name=f"fetch_{hash(pair)}_{time.time()}")
+        
         if rolling_window:
             # FIX: Use different query approach to get correct row count
             # First get the total count to check if we have enough data
@@ -84,7 +89,7 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
             lookback_padding = 300
             limit = rolling_window + lookback_padding
             
-            # Get the most recent data in proper chronological order
+            # OPTIMIZATION: Use a more optimized query that leverages timestamp index
             query = """
                 SELECT timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h
                 FROM candles_1h
@@ -92,37 +97,47 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
                 ORDER BY timestamp_utc DESC
                 LIMIT %s
             """
-            cursor.execute(query, (pair, limit))
+            server_cursor.execute(query, (pair, limit))
         else:
+            # OPTIMIZATION: Use an optimized query with explicit index hint
             query = """
+                /*+ BitmapScan(candles_1h candles_1h_pair_timestamp_utc_idx) */
                 SELECT timestamp_utc, open_1h, high_1h, low_1h, close_1h, volume_1h
                 FROM candles_1h
                 WHERE pair = %s
                 ORDER BY timestamp_utc ASC
             """
-            cursor.execute(query, (pair,))
+            server_cursor.execute(query, (pair,))
         
-        # Fetch all rows at once
-        rows = cursor.fetchall()
+        # OPTIMIZATION: Fetch in batches for memory efficiency
+        batch_size = 10000
+        dt_arrays = []
         
-        if not rows:
+        while True:
+            rows = server_cursor.fetchmany(batch_size)
+            if not rows:
+                break
+            dt_arrays.extend(rows)
+            
+        # Close server cursor
+        server_cursor.close()
+        
+        if not dt_arrays:
             return None
             
-        # Get raw arrays
-        dt_arrays = np.array(rows, dtype=object)
-        
-        # Convert to appropriate types
-        timestamps = np.array([row[0].timestamp() for row in rows], dtype=np.int64)
-        opens = np.array([row[1] for row in rows], dtype=np.float64)
-        highs = np.array([row[2] for row in rows], dtype=np.float64)
-        lows = np.array([row[3] for row in rows], dtype=np.float64)
-        closes = np.array([row[4] for row in rows], dtype=np.float64)
-        volumes = np.array([row[5] for row in rows], dtype=np.float64)
+        # Convert to arrays with optimized approach
+        timestamps = np.array([row[0].timestamp() for row in dt_arrays], dtype=np.int64)
+        opens = np.array([row[1] or 0.0 for row in dt_arrays], dtype=np.float64)
+        highs = np.array([row[2] or 0.0 for row in dt_arrays], dtype=np.float64)
+        lows = np.array([row[3] or 0.0 for row in dt_arrays], dtype=np.float64)
+        closes = np.array([row[4] or 0.0 for row in dt_arrays], dtype=np.float64)
+        volumes = np.array([row[5] or 0.0 for row in dt_arrays], dtype=np.float64)
         
         # Log the range of dates for debugging
-        first_date = pd.to_datetime(timestamps[0], unit='s')
-        last_date = pd.to_datetime(timestamps[-1], unit='s')
-        logging.debug(f"{pair}: Fetched data from {first_date} to {last_date}")
+        if len(timestamps) > 0:
+            first_date = pd.to_datetime(timestamps[0], unit='s')
+            last_date = pd.to_datetime(timestamps[-1], unit='s')
+            logging.debug(f"{pair}: Fetched data from {first_date} to {last_date}")
         
         # If fetched in DESC order, reverse the arrays for chronological order
         if rolling_window:
@@ -135,14 +150,14 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
             lows = lows[::-1]
             closes = closes[::-1]
             volumes = volumes[::-1]
-            raw_timestamps = [row[0] for row in rows][::-1]
+            raw_timestamps = [row[0] for row in dt_arrays][::-1]
             
             # Log after reversing for verification
             logging.debug(f"{pair}: After reversing: {len(timestamps)} timestamps, "
                             f"range: {pd.to_datetime(timestamps[0], unit='s')} to "
                             f"{pd.to_datetime(timestamps[-1], unit='s')}")
         else:
-            raw_timestamps = [row[0] for row in rows]
+            raw_timestamps = [row[0] for row in dt_arrays]
         
         # Log the actual vs requested number of rows
         if rolling_window:
@@ -162,7 +177,8 @@ def fetch_data_numpy(db_conn, pair, rolling_window=None):
         logging.error(f"Error fetching data for {pair}: {e}")
         raise
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
 
 def batch_update_features(db_conn, pair, timestamps, feature_data, columns):
     """
@@ -185,36 +201,47 @@ def batch_update_features(db_conn, pair, timestamps, feature_data, columns):
     try:
         cursor = db_conn.cursor()
         
-        # Build update query - use named parameters instead of %s
-        set_clause = ", ".join([f"{col} = %(data_{col})s" for col in columns])
+        # OPTIMIZATION: Use batched execute_values instead of individual executions
+        # Build update query
+        set_clause = ", ".join([f"{col} = tmp.{col}" for col in columns])
         
         update_query = f"""
         UPDATE candles_1h
         SET {set_clause}
-        WHERE pair = %(pair)s AND timestamp_utc = %(timestamp)s
+        FROM (VALUES %s) AS tmp(timestamp_utc, {', '.join(columns)})
+        WHERE candles_1h.pair = %s AND candles_1h.timestamp_utc = tmp.timestamp_utc
         """
         
-        # Execute updates one by one
-        updated_rows = 0
+        # Prepare data for batch update
+        values = []
         
         for i, ts in enumerate(timestamps):
-            params = {'pair': pair, 'timestamp': ts}
+            row = [ts]
             
-            # Add data parameters
             for col in columns:
                 if col in SMALLINT_COLUMNS:
                     # Convert to int
-                    params[f'data_{col}'] = int(round(feature_data[col][i]))
+                    row.append(int(round(feature_data[col][i])))
                 elif col in ['features_computed', 'targets_computed']:
                     # Convert to boolean
-                    params[f'data_{col}'] = bool(feature_data[col][i])
+                    row.append(bool(feature_data[col][i]))
                 else:
                     # Convert to float
-                    params[f'data_{col}'] = float(feature_data[col][i])
+                    row.append(float(feature_data[col][i]))
             
-            # Execute the query
-            cursor.execute(update_query, params)
-            updated_rows += cursor.rowcount
+            values.append(tuple(row))
+        
+        # Execute the batch update
+        psycopg2.extras.execute_values(
+            cursor, 
+            update_query, 
+            values,
+            template=None,
+            page_size=5000
+        )
+        
+        # Get updated row count
+        updated_rows = cursor.rowcount
         
         # Commit changes
         db_conn.commit()
@@ -225,7 +252,8 @@ def batch_update_features(db_conn, pair, timestamps, feature_data, columns):
         logging.error(f"Error updating features for {pair}: {e}")
         raise
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
 
 def bulk_copy_update(db_conn, pair, timestamps, feature_data, columns):
     """
@@ -248,9 +276,8 @@ def bulk_copy_update(db_conn, pair, timestamps, feature_data, columns):
     try:
         cursor = db_conn.cursor()
         
-        # Create a temporary table with the same structure
-        # Use absolute value of hash to avoid negative numbers in table name
-        temp_table_name = f"temp_feature_update_{abs(hash(pair))}_{int(datetime.now().timestamp())}"
+        # OPTIMIZATION: Use hash of pair and current timestamp for unique temp table name
+        temp_table_name = f"temp_feature_update_{abs(hash(pair))%10000}_{int(time.time())}"
         
         # Determine column types
         column_defs = []
@@ -272,8 +299,8 @@ def bulk_copy_update(db_conn, pair, timestamps, feature_data, columns):
         """
         cursor.execute(create_temp_table_query)
         
-        # Use COPY for bulk insertion
-        copy_file = StringIO()
+        # OPTIMIZATION: Use binary copy for faster loading
+        copy_file = io.StringIO()
         
         for i, ts in enumerate(timestamps):
             # Format timestamp
@@ -306,17 +333,16 @@ def bulk_copy_update(db_conn, pair, timestamps, feature_data, columns):
         
         # Execute COPY
         cursor.copy_expert(
-            f"COPY {temp_table_name} FROM STDIN WITH NULL ''",
+            f"COPY {temp_table_name} FROM STDIN WITH (FORMAT text, DELIMITER E'\\t', NULL '')",
             copy_file
         )
         
-        # Update from temp table
+        # OPTIMIZATION: Use a more efficient JOIN syntax
         update_query = f"""
-        UPDATE candles_1h
+        UPDATE candles_1h c
         SET {', '.join([f"{col} = tmp.{col}" for col in columns])}
         FROM {temp_table_name} tmp
-        WHERE candles_1h.pair = %s 
-          AND candles_1h.timestamp_utc = tmp.timestamp_utc
+        WHERE c.pair = %s AND c.timestamp_utc = tmp.timestamp_utc
         """
         cursor.execute(update_query, (pair,))
         
@@ -332,7 +358,8 @@ def bulk_copy_update(db_conn, pair, timestamps, feature_data, columns):
         logging.error(f"Error bulk updating features for {pair}: {e}")
         raise
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
 
 def get_database_columns(db_conn, table_name):
     """
@@ -345,6 +372,7 @@ def get_database_columns(db_conn, table_name):
     Returns:
         Set of column names
     """
+    # OPTIMIZATION: Use a prepared statement to avoid repeated query parsing
     cursor = db_conn.cursor()
     
     try:

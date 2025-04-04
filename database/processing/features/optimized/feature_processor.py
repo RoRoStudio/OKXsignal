@@ -41,6 +41,8 @@ if GPU_AVAILABLE:
         compute_max_future_drawdown_gpu,
         compute_batch_features_gpu
     )
+    # Initialize GPU at import time
+    initialize_gpu()
 
 # Import feature parameters
 from database.processing.features.config import (
@@ -69,14 +71,28 @@ class OptimizedFeatureProcessor:
         """
         self.use_numba = use_numba
         
-        # Check if GPU was already initialized
-        self.gpu_available = GPU_AVAILABLE and is_gpu_available() if GPU_AVAILABLE else False
-        self.use_gpu = use_gpu and self.gpu_available
+        # More aggressive check for GPU availability
+        self.gpu_available = GPU_AVAILABLE
+        if self.gpu_available and GPU_AVAILABLE:
+            try:
+                from database.processing.features.optimized.gpu_functions import is_gpu_available
+                self.gpu_available = is_gpu_available()
+            except ImportError:
+                self.gpu_available = False
+                
+        # Force GPU if available
+        self.use_gpu = (use_gpu or self.gpu_available) and self.gpu_available
         
-        # Don't re-initialize GPU if it's already been initialized
+        # Force re-initialization of GPU to ensure it's properly set up
         if self.use_gpu:
-            self.gpu_initialized = True  # Assume GPU is already initialized
-            logging.debug("Using pre-initialized GPU for computation")
+            try:
+                from database.processing.features.optimized.gpu_functions import initialize_gpu
+                self.gpu_initialized = initialize_gpu()
+                logging.info("Using GPU for feature computation - expect significant speed improvement")
+            except Exception as e:
+                logging.warning(f"Failed to initialize GPU: {e}")
+                self.gpu_initialized = False
+                self.use_gpu = False
         else:
             self.gpu_initialized = False
             if use_gpu and not self.gpu_available:
@@ -117,10 +133,15 @@ class OptimizedFeatureProcessor:
         # Results dictionary
         results = {}
         
-        # Try GPU batch computation first if enabled
+        # Always try GPU batch computation first if GPU is available
+        gpu_batch_start = time.time()
         if self.use_gpu and 'price_action' in enabled_features:
-            gpu_batch_start = time.time()
             try:
+                # Force GPU initialization if needed
+                from database.processing.features.optimized.gpu_functions import initialize_gpu
+                if not self.gpu_initialized:
+                    self.gpu_initialized = initialize_gpu()
+                
                 # Compute multiple features at once using GPU
                 gpu_results = compute_batch_features_gpu(price_data)
                 if gpu_results:
@@ -129,7 +150,7 @@ class OptimizedFeatureProcessor:
                         perf_monitor.log_operation("gpu_batch_compute", time.time() - gpu_batch_start)
                     logging.info(f"GPU batch computation successful: {len(gpu_results)} features")
             except Exception as e:
-                logging.warning(f"GPU batch computation failed, falling back to individual: {e}")
+                logging.warning(f"GPU batch computation failed, falling back to individual computations: {e}")
         
         # Process individual feature groups
         if 'price_action' in enabled_features and not all(k in results for k in ['body_size', 'upper_shadow']):
@@ -176,7 +197,7 @@ class OptimizedFeatureProcessor:
         from database.processing.features.utils import validate_future_features
         results = validate_future_features(results)
         return results
-    
+        
     def process_all_features(self, price_data, perf_monitor=None):
         """
         Process all feature types including multi-timeframe features
@@ -244,9 +265,14 @@ class OptimizedFeatureProcessor:
         start_time = time.time()
         
         try:
-            # Compute candle body features
+            # Compute candle body features - Always try GPU first if available
             if self.use_gpu:
                 try:
+                    # Force a reinitialize of GPU
+                    from database.processing.features.optimized.gpu_functions import initialize_gpu
+                    if not self.gpu_initialized:
+                        initialize_gpu()
+                        
                     body_features = compute_candle_body_features_gpu(
                         opens, highs, lows, closes
                     )
@@ -254,7 +280,7 @@ class OptimizedFeatureProcessor:
                     # Fix: Ensure body_size and candle_body_size are both set properly
                     body_size = body_features[:len(closes)]
                     results['body_size'] = body_size
-                    results['candle_body_size'] = body_size  # Make sure this is set
+                    results['candle_body_size'] = body_size  # For backward compatibility
                     
                     results['upper_shadow'] = body_features[len(closes):2*len(closes)]
                     results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]
@@ -275,7 +301,7 @@ class OptimizedFeatureProcessor:
                     # Fix: Ensure body_size and candle_body_size are both set properly
                     body_size = body_features[:len(closes)]
                     results['body_size'] = body_size
-                    results['candle_body_size'] = body_size  # Make sure this is set
+                    results['candle_body_size'] = body_size  # For backward compatibility
                     
                     results['upper_shadow'] = body_features[len(closes):2*len(closes)]
                     results['lower_shadow'] = body_features[2*len(closes):3*len(closes)]
@@ -291,7 +317,7 @@ class OptimizedFeatureProcessor:
                 # Calculate candle body features directly
                 body_size = np.abs(closes - opens)
                 results['body_size'] = body_size
-                results['candle_body_size'] = body_size  # Make sure this is set
+                results['candle_body_size'] = body_size  # For backward compatibility
                 
                 results['upper_shadow'] = highs - np.maximum(opens, closes)
                 results['lower_shadow'] = np.minimum(opens, closes) - lows
