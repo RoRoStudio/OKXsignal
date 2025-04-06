@@ -1,0 +1,1 @@
+Can we teach the model to determine the optimal leverage (within the leverage reach for each pair) for each trade?

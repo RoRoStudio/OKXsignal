@@ -20,6 +20,29 @@ PERPETUAL_PAIRS = [
     "XRP-USDT-SWAP", "LTC-USDT-SWAP", "SOL-USDT-SWAP", "DOT-USDT-SWAP", "BNB-USDT-SWAP"
 ]
 
+def get_all_usdt_swap_pairs():
+    """Fetch all SWAP pairs with USDT as quote currency"""
+    try:
+        logger.info("Fetching all available USDT SWAP pairs...")
+        response = requests.get(f"{BASE_URL}/api/v5/public/instruments", params={"instType": "SWAP"}, timeout=30)
+        response.raise_for_status()
+        data = response.json().get("data", [])
+        
+        # Filter for pairs with USDT as the quote currency
+        usdt_pairs = []
+        for instrument in data:
+            inst_id = instrument.get("instId", "")
+            if inst_id.endswith("-USDT-SWAP"):
+                usdt_pairs.append(inst_id)
+        
+        logger.info(f"Found {len(usdt_pairs)} USDT SWAP pairs")
+        return usdt_pairs
+    except Exception as e:
+        logger.error(f"Error fetching USDT SWAP pairs: {e}")
+        # Fall back to predefined pairs if we can't fetch all of them
+        logger.warning(f"Falling back to predefined list of {len(PERPETUAL_PAIRS)} pairs")
+        return PERPETUAL_PAIRS
+
 DAYS_BACK = 180
 BASE_URL = "https://www.okx.com"
 
@@ -82,10 +105,17 @@ def insert_data(table, rows, columns):
         cursor.close()
         conn.close()
 
-def get_earliest_data_timestamp(table, symbol, date_column="timestamp"):
+def get_earliest_data_timestamp(table, symbol, date_column=None):
     """Get the earliest timestamp for a symbol in a table"""
     conn = get_connection()
     cursor = conn.cursor()
+    
+    # If date_column is not specified, use default column name based on table
+    if date_column is None:
+        if table == "funding_rates_raw":
+            date_column = "funding_time"
+        else:
+            date_column = "timestamp"
     
     try:
         query = f"""
@@ -153,20 +183,26 @@ def get_candle_data_for_timeframe(table_name, pair, start_date, end_date):
 def fetch_complete_candles_for_pair(pair, table_name, endpoint, params_func, row_parser, columns, rate_limit):
     """Fetch complete candle data for one pair with proper tracking"""
     
+    # For index price candles, we need to check existing data with the index symbol
+    check_symbol = pair
+    if table_name == "index_price_candles_raw":
+        check_symbol = pair.replace("-SWAP", "")
+        logger.info(f"Using index symbol {check_symbol} for database check")
+    
     # First check what's already in the database
-    earliest_timestamp = get_earliest_data_timestamp(table_name, pair)
+    earliest_timestamp = get_earliest_data_timestamp(table_name, check_symbol)
     
     if earliest_timestamp and earliest_timestamp <= TARGET_START_DATE:
-        logger.info(f"✓ {pair} already has complete {table_name} data starting from {format_date(earliest_timestamp)}")
+        logger.info(f"✓ {check_symbol} already has complete {table_name} data starting from {format_date(earliest_timestamp)}")
         return True
     
     # If we have some data but not enough, adjust our target
     actual_target_date = TARGET_START_DATE
     if earliest_timestamp:
-        logger.info(f"Partial data exists for {pair} starting from {format_date(earliest_timestamp)}")
+        logger.info(f"Partial data exists for {check_symbol} starting from {format_date(earliest_timestamp)}")
         logger.info(f"Will fetch {table_name} from {format_date(TARGET_START_DATE)} to {format_date(earliest_timestamp)}")
     else:
-        logger.info(f"No existing {table_name} data for {pair}")
+        logger.info(f"No existing {table_name} data for {check_symbol}")
         logger.info(f"Will fetch complete history from {format_date(TARGET_START_DATE)} to {format_date(UTC_NOW)}")
     
     # Need to track if we've reached our target date
@@ -177,7 +213,7 @@ def fetch_complete_candles_for_pair(pair, table_name, endpoint, params_func, row
     estimated_records = DAYS_BACK * 24 * 4  # 15-minute intervals for 180 days
     
     # Create a progress bar
-    with tqdm(total=estimated_records, desc=f"{pair} {table_name}", unit="candles") as pbar:
+    with tqdm(total=estimated_records, desc=f"{check_symbol} {table_name}", unit="candles") as pbar:
         # Start from current time and go backwards
         after = None
         before = None
@@ -188,7 +224,7 @@ def fetch_complete_candles_for_pair(pair, table_name, endpoint, params_func, row
                 data = api_request_with_retry(endpoint, params, table_name, rate_limit).get("data", [])
                 
                 if not data:
-                    logger.warning(f"No more data available for {pair} - API returned empty response")
+                    logger.warning(f"No more data available for {check_symbol} - API returned empty response")
                     break
                 
                 # Process and insert the data
@@ -212,7 +248,7 @@ def fetch_complete_candles_for_pair(pair, table_name, endpoint, params_func, row
                     oldest_dt = parse_timestamp(oldest_ts)
                 
                 # Update progress description to show the date range
-                pbar.set_description(f"{pair} {table_name} ({format_date(oldest_dt)})")
+                pbar.set_description(f"{check_symbol} {table_name} ({format_date(oldest_dt)})")
                 
                 # Check if we've reached our target date
                 if oldest_dt <= TARGET_START_DATE:
@@ -224,22 +260,25 @@ def fetch_complete_candles_for_pair(pair, table_name, endpoint, params_func, row
                 after = oldest_ts - 1
                 
             except Exception as e:
-                logger.error(f"Error fetching {pair} {table_name}: {e}")
+                logger.error(f"Error fetching {check_symbol} {table_name}: {e}")
                 time.sleep(5)  # Pause on error
     
-    logger.info(f"Completed {pair} {table_name}: Inserted {total_records} records")
+    logger.info(f"Completed {check_symbol} {table_name}: Inserted {total_records} records")
     return True
 
-def process_data_type(data_type_info, main_progress=None):
+def process_data_type(data_type_info, main_progress=None, pairs=None):
     """Process one data type for all pairs"""
     table_name, endpoint, params_func, row_parser, columns, rate_limit = data_type_info
     
+    # Use provided pairs or default to PERPETUAL_PAIRS
+    pairs_to_process = pairs if pairs is not None else PERPETUAL_PAIRS
+    
     logger.info(f"\n{'=' * 30}")
-    logger.info(f"Processing {table_name} for all pairs")
+    logger.info(f"Processing {table_name} for {len(pairs_to_process)} pairs")
     logger.info(f"{'=' * 30}")
     
-    for idx, pair in enumerate(PERPETUAL_PAIRS):
-        logger.info(f"[{idx+1}/{len(PERPETUAL_PAIRS)}] Processing {pair}")
+    for idx, pair in enumerate(pairs_to_process):
+        logger.info(f"[{idx+1}/{len(pairs_to_process)}] Processing {pair}")
         
         fetch_complete_candles_for_pair(
             pair=pair,
@@ -253,7 +292,7 @@ def process_data_type(data_type_info, main_progress=None):
         
         # Update main progress bar if provided
         if main_progress:
-            increment = 100 / (len(PERPETUAL_PAIRS) * len(DATA_TYPES))
+            increment = 100 / (len(pairs_to_process) * len(DATA_TYPES))
             main_progress.update(increment)
 
 def fetch_premium_aligned_to_candles():
@@ -439,7 +478,7 @@ DATA_TYPES = [
     ),
     (
         "mark_price_candles_raw",
-        f"{BASE_URL}/api/v5/market/mark-price-candles",
+        f"{BASE_URL}/api/v5/market/history-mark-price-candles",  # Using the historical endpoint
         lambda pair, after, before: {
             "instId": pair,
             "bar": "15m",
@@ -452,24 +491,24 @@ DATA_TYPES = [
             float(d[1]), float(d[2]), float(d[3]), float(d[4]), d[5] == "1"
         ) if len(d) >= 6 else None,
         ["timestamp", "symbol", "open", "high", "low", "close", "confirmed"],
-        (20, 2)
+        (10, 2)  # Updated rate limit according to docs
     ),
     (
         "index_price_candles_raw",
-        f"{BASE_URL}/api/v5/market/index-candles",
+        f"{BASE_URL}/api/v5/market/history-index-candles",  # Using the historical endpoint
         lambda pair, after, before: {
-            "instId": pair,
+            "instId": pair.replace("-SWAP", ""),  # Convert to index ID format
             "bar": "15m",
             "after": after,
             "before": before,
             "limit": 100
         },
         lambda d, pair: (
-            parse_timestamp(d[0]), pair,
+            parse_timestamp(d[0]), pair.replace("-SWAP", ""),  # Store the index symbol, not the SWAP symbol
             float(d[1]), float(d[2]), float(d[3]), float(d[4]), d[5] == "1"
         ) if len(d) >= 6 else None,
         ["timestamp", "symbol", "open", "high", "low", "close", "confirmed"],
-        (20, 2)
+        (10, 2)  # Updated rate limit according to docs
     )
 ]
 
@@ -482,11 +521,11 @@ def main():
     logger.info(f"Target start date: {format_date(TARGET_START_DATE)}")
     logger.info(f"{'=' * 60}")
     
-    # First fetch all candle data types for all pairs
+    # Process each data type for the 9 main pairs
     for data_type_info in DATA_TYPES:
         process_data_type(data_type_info)
     
-    # Then handle premium data as a special case
+    # Handle premium data as a special case
     logger.info("\n" + "=" * 30)
     logger.info("Processing premium data with 15m alignment")
     logger.info("=" * 30)
